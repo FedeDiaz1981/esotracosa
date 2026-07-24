@@ -75,18 +75,10 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                         >
                           {slide.title}
                         </motion.h1>
-                        <motion.p
-                          initial={{ y: 14, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
-                          className="mt-2 max-w-[24ch] text-[clamp(0.9rem,3vw,1rem)] leading-6 text-[var(--pf-text-soft)]"
-                        >
-                          {slide.subtitle}
-                        </motion.p>
                         <motion.div
                           initial={{ y: 14, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.45, ease: "easeOut", delay: 0.12 }}
+                          transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
                           className="mt-4"
                         >
                           <Link href={resolveHref(slide.link)} className={buttonVariants({ variant: "primary", size: "lg" })}>
