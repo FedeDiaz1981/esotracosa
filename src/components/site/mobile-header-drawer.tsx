@@ -1,31 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Search, X } from "lucide-react";
-import { useState } from "react";
+import { Search, X } from "lucide-react";
 import { Drawer } from "vaul";
+
 import type { DynamicHeaderMenu } from "@/application/catalog";
 import { buttonVariants } from "@/components/ui/button";
 
 type MobileHeaderDrawerProps = {
   menus: DynamicHeaderMenu[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
-export function MobileHeaderDrawer({ menus }: MobileHeaderDrawerProps) {
-  const [open, setOpen] = useState(false);
-
+export function MobileHeaderDrawer({ menus, open, onOpenChange }: MobileHeaderDrawerProps) {
   return (
-    <Drawer.Root open={open} onOpenChange={setOpen} shouldScaleBackground={false}>
-      <Drawer.Trigger asChild>
-        <button
-          type="button"
-          className={`${buttonVariants({ variant: "secondary", size: "icon" })} h-11 w-11 rounded-full`}
-          aria-label="Abrir menú"
-        >
-          <Menu className="size-5" />
-        </button>
-      </Drawer.Trigger>
-
+    <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[11040] bg-[rgba(35,28,20,0.42)] backdrop-blur-[2px]" />
         <Drawer.Content className="fixed inset-x-0 bottom-0 z-[11050] max-h-[86dvh] overflow-hidden rounded-t-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] shadow-[0_-24px_70px_rgba(74,57,38,0.28)]">
@@ -49,7 +39,7 @@ export function MobileHeaderDrawer({ menus }: MobileHeaderDrawerProps) {
             <div className="rounded-[1.4rem] border border-[var(--pf-border)] bg-[rgba(248,242,232,0.75)] p-4">
               <Link
                 href="/busqueda"
-                onClick={() => setOpen(false)}
+                onClick={() => onOpenChange(false)}
                 className="flex items-center gap-3 rounded-[1rem] border border-[var(--pf-border)] bg-white px-4 py-3 text-sm font-semibold text-[var(--pf-text)]"
               >
                 <Search className="size-4 text-[var(--pf-primary-darker)]" />
@@ -65,11 +55,7 @@ export function MobileHeaderDrawer({ menus }: MobileHeaderDrawerProps) {
                       <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">{menu.label}</p>
                       <p className="mt-1 text-sm text-[var(--pf-muted)]">Agrupado por letras</p>
                     </div>
-                    <Link
-                      href="/galeria"
-                      onClick={() => setOpen(false)}
-                      className="text-sm font-semibold text-[var(--pf-primary-darker)]"
-                    >
+                    <Link href="/galeria" onClick={() => onOpenChange(false)} className="text-sm font-semibold text-[var(--pf-primary-darker)]">
                       Ver todo
                     </Link>
                   </div>
@@ -86,7 +72,7 @@ export function MobileHeaderDrawer({ menus }: MobileHeaderDrawerProps) {
                               <Link
                                 key={item.href}
                                 href={item.href}
-                                onClick={() => setOpen(false)}
+                                onClick={() => onOpenChange(false)}
                                 className="inline-flex shrink-0 rounded-full border border-[rgba(168,109,69,0.16)] bg-white px-3 py-2 text-sm font-medium text-[var(--pf-text)] shadow-[0_6px_14px_rgba(74,57,38,0.06)]"
                               >
                                 {item.label}

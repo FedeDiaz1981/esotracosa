@@ -30,9 +30,9 @@ export function CategoryMenuStrip({ categories }: { categories: CategoryItem[] }
   return (
     <section className="w-full bg-transparent">
       <div className="pf-shell px-4 py-6 sm:px-6 sm:py-8 lg:px-12 lg:py-10">
-        <div className="grid grid-flow-col gap-4 overflow-x-auto pb-2 [scrollbar-width:none] lg:grid-flow-row lg:grid-cols-6 lg:overflow-visible">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-6">
           {categories.map((category) => (
-            <div key={category.id} className="min-w-[180px] lg:min-w-0">
+            <div key={category.id} className="min-w-0">
               <CategoryCard category={category} />
             </div>
           ))}

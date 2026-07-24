@@ -30,7 +30,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
 
   return (
     <section className="w-full overflow-hidden bg-[var(--pf-surface)] md:hidden">
-      <div className="relative h-[min(92svh,720px)] w-full overflow-hidden">
+      <div className="relative h-[min(25svh,260px)] w-full overflow-hidden">
         <div ref={emblaRef} className="h-full overflow-hidden">
           <div className="flex h-full touch-pan-y">
             {slides.map((slide, index) => {
@@ -58,12 +58,12 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                     <div className="absolute inset-x-0 top-0 h-36 bg-[linear-gradient(180deg,rgba(248,242,232,0.54),transparent)]" />
 
                     <div className="relative z-10 flex h-full w-full items-start">
-                      <div className="w-full px-4 pb-4 pt-12">
+                  <div className="w-full px-4 pb-4 pt-8">
                         <motion.span
                           initial={{ y: 10, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ duration: 0.4, ease: "easeOut" }}
-                          className="inline-flex rounded-full bg-[rgba(168,109,69,0.14)] px-4 py-2 text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(74,57,38,0.08)]"
+                          className="inline-flex rounded-full bg-[rgba(168,109,69,0.14)] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(74,57,38,0.08)]"
                         >
                           {slide.badge}
                         </motion.span>
@@ -71,7 +71,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                           initial={{ y: 14, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ duration: 0.45, ease: "easeOut", delay: 0.04 }}
-                          className="mt-4 max-w-[10ch] text-[3rem] font-extrabold leading-[0.9] tracking-[-0.065em] text-[var(--pf-text)]"
+                          className="mt-3 max-w-[10ch] text-[clamp(1.7rem,6vw,2.65rem)] font-extrabold leading-[0.92] tracking-[-0.06em] text-[var(--pf-text)]"
                         >
                           {slide.title}
                         </motion.h1>
@@ -79,7 +79,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                           initial={{ y: 14, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
-                          className="mt-4 max-w-[22ch] text-[1.05rem] leading-7 text-[var(--pf-text-soft)]"
+                          className="mt-2 max-w-[24ch] text-[clamp(0.9rem,3vw,1rem)] leading-6 text-[var(--pf-text-soft)]"
                         >
                           {slide.subtitle}
                         </motion.p>
@@ -87,7 +87,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                           initial={{ y: 14, opacity: 0 }}
                           animate={{ y: 0, opacity: 1 }}
                           transition={{ duration: 0.45, ease: "easeOut", delay: 0.12 }}
-                          className="mt-6"
+                          className="mt-4"
                         >
                           <Link href={resolveHref(slide.link)} className={buttonVariants({ variant: "primary", size: "lg" })}>
                             Ir a la galería
@@ -151,7 +151,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
       <MobileHeroCarousel slides={orderedSlides} visibleIndex={visibleIndex} />
 
       <section className="relative hidden w-full overflow-hidden bg-[var(--pf-surface)] md:block">
-        <div className="relative h-[clamp(360px,58vw,640px)] w-full overflow-hidden">
+        <div className="relative h-[clamp(306px,49vw,544px)] w-full overflow-hidden">
           {orderedSlides.map((slide, index) => {
             const active = index === visibleIndex;
 
