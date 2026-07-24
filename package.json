@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "hostinger:package": "node scripts/package-hostinger.mjs",
     "start": "next start",
     "lint": "eslint",
     "db:start": "node scripts/local-postgres.mjs start",
