@@ -50,7 +50,7 @@ export default async function RootLayout({
             </div>
             <SiteHeader menus={menus} />
             <MobileSiteChrome menus={menus} />
-            <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-[88px] pb-[88px] lg:overflow-visible lg:pt-0 lg:pb-0">
+            <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-[88px] pb-[72px] lg:overflow-visible lg:pt-0 lg:pb-0">
               {children}
             </main>
             <SiteFooter />

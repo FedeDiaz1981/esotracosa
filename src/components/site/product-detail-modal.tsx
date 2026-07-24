@@ -144,14 +144,14 @@ export function ProductDetailModal({
     >
       <div className="modal-box max-h-[calc(100dvh-1rem)] max-w-6xl overflow-y-auto overscroll-contain rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)] sm:max-h-[calc(100dvh-2rem)]">
         {product ? (
-          <div className="grid gap-0 lg:grid-cols-[1fr_1.05fr]">
-            <div className="relative min-h-[220px] bg-[linear-gradient(180deg,rgba(238,230,214,0.95),rgba(248,244,236,0.98))] p-4 sm:min-h-[420px] sm:p-8">
-              <div className="relative h-full min-h-[180px] overflow-hidden rounded-[1.75rem] bg-[rgba(255,255,255,0.92)] sm:min-h-[260px]">
+          <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
+            <div className="relative min-h-[280px] bg-[linear-gradient(180deg,rgba(238,230,214,0.95),rgba(248,244,236,0.98))] p-3 sm:min-h-[480px] sm:p-6 lg:p-8">
+              <div className="relative h-full min-h-[240px] overflow-hidden rounded-[1.75rem] bg-[rgba(255,255,255,0.92)] sm:min-h-[360px]">
                 <Image
                   src={publicAsset(product.image)}
                   alt={product.name}
                   fill
-                  className="object-contain p-4 sm:p-6"
+                  className="object-contain p-2 sm:p-4"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   priority
                 />

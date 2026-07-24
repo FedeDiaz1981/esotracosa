@@ -53,7 +53,7 @@ function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
             const isOutOfStock = product.stock != null ? product.stock <= 0 : product.status !== "published";
 
             return (
-              <div key={product.id} className="min-w-0 flex-[0_0_82vw] px-2 pb-3">
+              <div key={product.id} className="min-w-0 flex-[0_0_66vw] px-2 pb-3">
                 <motion.button
                   type="button"
                   onClick={() => setSelectedProduct(product)}
@@ -62,7 +62,7 @@ function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
                   transition={{ duration: 0.35, delay: index * 0.03 }}
                   className="group block h-full w-full text-left"
                 >
-                  <article className="flex h-full min-h-[26rem] flex-col overflow-hidden rounded-[1.6rem] border border-[rgba(74,57,38,0.14)] bg-white shadow-[0_10px_28px_rgba(74,57,38,0.08)]">
+                  <article className="flex h-full min-h-[21rem] flex-col overflow-hidden rounded-[1.6rem] border border-[rgba(74,57,38,0.14)] bg-white shadow-[0_10px_28px_rgba(74,57,38,0.08)]">
                     <div className="relative flex-[1.12] overflow-hidden bg-[linear-gradient(180deg,rgba(252,249,243,1),rgba(246,240,230,1))]">
                       <div className="absolute left-3 top-3 z-10">
                         {newLabel ? (
@@ -99,8 +99,8 @@ function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
                       </div>
                     </div>
 
-                    <div className="flex h-[7rem] flex-col justify-center border-t border-[rgba(74,57,38,0.08)] px-4 py-3 text-center">
-                      <h3 className="line-clamp-2 text-[0.98rem] font-medium leading-6 text-[var(--pf-text)]">{product.name}</h3>
+                    <div className="flex h-[5.6rem] flex-col justify-center border-t border-[rgba(74,57,38,0.08)] px-3 py-2 text-center">
+                      <h3 className="line-clamp-2 text-[0.92rem] font-medium leading-5 text-[var(--pf-text)]">{product.name}</h3>
                     </div>
                   </article>
                 </motion.button>

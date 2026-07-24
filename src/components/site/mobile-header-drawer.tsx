@@ -37,6 +37,18 @@ export function MobileHeaderDrawer({ menus, open, onOpenChange }: MobileHeaderDr
 
           <div className="max-h-[calc(86dvh-73px)] overflow-y-auto px-4 py-4">
             <div className="rounded-[1.4rem] border border-[var(--pf-border)] bg-[rgba(248,242,232,0.75)] p-4">
+              <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">Admin</p>
+              <Link
+                href="/admin"
+                onClick={() => onOpenChange(false)}
+                className="flex items-center justify-between rounded-[1rem] border border-[rgba(168,109,69,0.16)] bg-white px-4 py-3 text-sm font-semibold text-[var(--pf-text)] shadow-[0_6px_14px_rgba(74,57,38,0.06)]"
+              >
+                <span>Panel de listas</span>
+                <span className="text-[var(--pf-primary-darker)]">Abrir</span>
+              </Link>
+            </div>
+
+            <div className="rounded-[1.4rem] border border-[var(--pf-border)] bg-[rgba(248,242,232,0.75)] p-4">
               <Link
                 href="/busqueda"
                 onClick={() => onOpenChange(false)}

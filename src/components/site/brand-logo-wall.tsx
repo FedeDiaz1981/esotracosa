@@ -7,39 +7,56 @@ import useEmblaCarousel from "embla-carousel-react";
 import type { BrandItem } from "@/domain/site-content";
 import { publicAsset } from "@/lib/catalog";
 
+function chunkBrands(brands: BrandItem[], chunkSize: number) {
+  const chunks: BrandItem[][] = [];
+
+  for (let index = 0; index < brands.length; index += chunkSize) {
+    chunks.push(brands.slice(index, index + chunkSize));
+  }
+
+  return chunks;
+}
+
 function MobileBrandRail({ brands }: { brands: BrandItem[] }) {
-  const [emblaRef] = useEmblaCarousel({ loop: brands.length > 2, align: "start" });
+  const pages = useMemo(() => chunkBrands(brands, 4), [brands]);
+  const [emblaRef] = useEmblaCarousel({ loop: pages.length > 1, align: "start" });
 
   return (
     <div className="relative lg:hidden">
       <div ref={emblaRef} className="overflow-hidden">
         <div className="flex touch-pan-y">
-          {brands.map((brand) => {
-            const hasImage = Boolean(brand.image);
+          {pages.map((page, pageIndex) => (
+            <div key={page.map((brand) => brand.id).join("-")} className="min-w-0 flex-[0_0_100%] px-2 pb-3">
+              <div className="grid grid-cols-2 gap-3">
+                {page.map((brand) => {
+                  const hasImage = Boolean(brand.image);
 
-            return (
-              <div key={brand.id} className="min-w-0 flex-[0_0_68vw] px-2 sm:flex-[0_0_52vw] md:flex-[0_0_40vw]">
-                <Link
-                  href={`/galeria?brand=${encodeURIComponent(brand.name)}`}
-                  className="relative flex aspect-square overflow-hidden rounded-[1.6rem] border border-[rgba(168,109,69,0.12)] bg-[rgba(255,255,255,0.78)] shadow-[0_10px_24px_rgba(74,57,38,0.06)]"
-                >
-                  {hasImage ? (
-                    <Image
-                      src={publicAsset(brand.image)}
-                      alt={brand.name}
-                      fill
-                      className="object-cover"
-                      sizes="68vw"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center px-3 text-center">
-                      <span className="text-[0.98rem] font-semibold tracking-[0.04em] text-[var(--pf-text)]">{brand.name}</span>
-                    </div>
-                  )}
-                </Link>
+                  return (
+                    <Link
+                      key={brand.id}
+                      href={`/galeria?brand=${encodeURIComponent(brand.name)}`}
+                      className="relative flex aspect-square overflow-hidden rounded-[1.6rem] border border-[rgba(168,109,69,0.12)] bg-[rgba(255,255,255,0.78)] shadow-[0_10px_24px_rgba(74,57,38,0.06)]"
+                    >
+                      {hasImage ? (
+                        <Image
+                          src={publicAsset(brand.image)}
+                          alt={brand.name}
+                          fill
+                          className="object-cover"
+                          sizes="50vw"
+                          priority={pageIndex === 0}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center px-3 text-center">
+                          <span className="text-[0.98rem] font-semibold tracking-[0.04em] text-[var(--pf-text)]">{brand.name}</span>
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </div>
