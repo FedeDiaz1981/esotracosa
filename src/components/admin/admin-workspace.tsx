@@ -859,7 +859,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                   <button
                     type="button"
                     onClick={handleBulkDelete}
-                    className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(185,79,54,0.24)] bg-[rgba(185,79,54,0.08)] px-6 text-sm font-black text-[var(--pf-wood-muted)] shadow-[0_10px_22px_rgba(58,44,25,0.06)] transition hover:bg-[rgba(185,79,54,0.12)]"
+                    className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-6 text-sm font-black text-white shadow-[0_14px_28px_rgba(111,69,40,0.18)] transition hover:brightness-105"
                   >
                     Borrar seleccionados ({selectedRowIds.length})
                   </button>
@@ -870,7 +870,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 <button
                   type="button"
                   onClick={() => openNew(selectedTable)}
-                  className="inline-flex h-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] px-6 text-sm font-black text-slate-900 shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105"
+                  className="inline-flex h-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105"
                 >
                   {getCreateLabel(selectedTable)}
                 </button>
@@ -1007,7 +1007,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                   <button
                                     type="button"
                                     onClick={() => openEdit(selectedTable, row)}
-                                    className="rounded-full border border-[var(--pf-border-soft)] bg-white px-4 py-2 text-xs font-bold text-[var(--pf-primary-darker)] transition hover:bg-[var(--pf-surface-warm)]"
+                                    className="rounded-full border border-[rgba(111,69,40,0.18)] bg-[var(--pf-primary)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
                                   >
                                     Editar
                                   </button>
@@ -1015,7 +1015,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                   <button
                                     type="button"
                                     onClick={() => handleQuickDelete(selectedTable, row)}
-                                    className="rounded-full border border-[var(--pf-border-soft)] bg-white px-4 py-2 text-xs font-bold text-[var(--pf-wood-muted)] transition hover:bg-[var(--pf-surface-warm)]"
+                                    className="rounded-full border border-[rgba(111,69,40,0.18)] bg-[var(--pf-primary-darker)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
                                   >
                                     Borrar
                                   </button>
@@ -1568,7 +1568,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 <button
                   type="submit"
                   disabled={hasPendingUploads}
-                  className="rounded-full bg-[linear-gradient(180deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] px-6 py-3 text-sm font-black text-slate-900 shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105"
+                  className="rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105"
                 >
                   Guardar
                 </button>

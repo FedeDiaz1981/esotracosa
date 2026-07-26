@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { motion } from "motion/react";
 import type { HeroSlide } from "@/domain/site-content";
 import { publicAsset } from "@/lib/catalog";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -38,10 +37,8 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
 
               return (
                 <div key={slide.id} className="flex h-full min-w-0 flex-[0_0_100%] px-3 py-3">
-                  <motion.article
-                    animate={{ opacity: active ? 1 : 0.82, scale: active ? 1 : 0.985 }}
-                    transition={{ duration: 0.35, ease: "easeOut" }}
-                    className="relative flex h-full w-full overflow-hidden rounded-[1.9rem] border border-[rgba(168,109,69,0.18)] bg-[var(--pf-surface)] shadow-[0_18px_40px_rgba(74,57,38,0.16)]"
+                  <article
+                    className={`relative flex h-full w-full overflow-hidden rounded-[1.9rem] border border-[rgba(168,109,69,0.18)] bg-[var(--pf-surface)] shadow-[0_18px_40px_rgba(74,57,38,0.16)] transition-opacity duration-350 ease-out ${active ? "opacity-100" : "opacity-82"}`}
                   >
                     <picture className="absolute inset-0 block h-full w-full">
                       {slide.imageMobile ? <source media="(max-width: 767px)" srcSet={publicAsset(slide.imageMobile)} /> : null}
@@ -58,36 +55,21 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                     <div className="absolute inset-x-0 top-0 h-36 bg-[linear-gradient(180deg,rgba(248,242,232,0.54),transparent)]" />
 
                     <div className="relative z-10 flex h-full w-full items-start">
-                  <div className="w-full px-4 pb-4 pt-8">
-                        <motion.span
-                          initial={{ y: 10, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.4, ease: "easeOut" }}
-                          className="inline-flex rounded-full bg-[rgba(168,109,69,0.14)] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(74,57,38,0.08)]"
-                        >
+                      <div className="w-full px-4 pb-4 pt-8 text-[var(--pf-text)]">
+                        <span className="inline-flex rounded-full bg-[rgba(168,109,69,0.14)] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(74,57,38,0.08)]">
                           {slide.badge}
-                        </motion.span>
-                        <motion.h1
-                          initial={{ y: 14, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.45, ease: "easeOut", delay: 0.04 }}
-                          className="mt-3 max-w-[10ch] text-[clamp(1.7rem,6vw,2.65rem)] font-extrabold leading-[0.92] tracking-[-0.06em] text-[var(--pf-text)]"
-                        >
-                          {slide.title}
-                        </motion.h1>
-                        <motion.div
-                          initial={{ y: 14, opacity: 0 }}
-                          animate={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.45, ease: "easeOut", delay: 0.08 }}
-                          className="mt-4"
-                        >
-                          <Link href={resolveHref(slide.link)} className={buttonVariants({ variant: "primary", size: "lg" })}>
+                        </span>
+                        <div className="mt-4">
+                          <Link
+                            href={resolveHref(slide.link)}
+                            className={`${buttonVariants({ variant: "primary", size: "lg" })} !text-white`}
+                          >
                             Ir a la galería
                           </Link>
-                        </motion.div>
+                        </div>
                       </div>
                     </div>
-                  </motion.article>
+                  </article>
                 </div>
               );
             })}
@@ -176,7 +158,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                       <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-base-content sm:text-6xl">{slide.title}</h1>
                       <p className="mt-4 max-w-xl text-lg leading-8 text-base-content/78">{slide.subtitle}</p>
                       <div className="mt-8 flex flex-wrap gap-3">
-                        <Link href={resolveHref(slide.link)} className={buttonVariants({ variant: "primary", size: "lg" })}>
+                        <Link href={resolveHref(slide.link)} className={`${buttonVariants({ variant: "primary", size: "lg" })} !text-white`}>
                           Ir a la galería
                         </Link>
                       </div>

@@ -28,23 +28,25 @@ export function SpotlightBanner({ slide }: { slide: HeroSlide | null }) {
         <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(248,242,232,0.82)_80%,rgba(248,242,232,0.96))]" />
 
         <div className="absolute inset-0 z-10 flex items-end sm:items-center sm:justify-start">
-          <div className="w-full px-4 pb-8 pt-12 sm:px-6 md:max-w-2xl md:py-14 lg:px-12 lg:py-16">
-            <span className="inline-flex rounded-full bg-secondary/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-secondary shadow-none">
-              {slide.badge}
-            </span>
+          <div className="pf-shell w-full px-4 pb-8 pt-12 sm:px-6 lg:px-12 lg:py-16">
+            <div className="max-w-[16rem] rounded-[1.5rem] bg-transparent px-4 py-4 shadow-none sm:max-w-xl md:max-w-2xl md:rounded-none md:px-0 md:py-0">
+              <span className="inline-flex rounded-full bg-secondary/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-secondary shadow-none">
+                {slide.badge}
+              </span>
 
-            <h2 className="mt-5 max-w-xl text-4xl font-extrabold tracking-tight text-[var(--pf-text)] sm:text-6xl">
-              {slide.title}
-            </h2>
+              <h2 className="mt-4 max-w-[11ch] text-[2rem] font-extrabold leading-[0.95] tracking-[-0.05em] text-[var(--pf-text)] sm:mt-5 sm:max-w-xl sm:text-4xl sm:leading-none sm:tracking-tight md:text-6xl">
+                {slide.title}
+              </h2>
 
-            <p className="mt-4 max-w-xl text-lg leading-8 text-[var(--pf-text-soft)]/78">
-              {slide.subtitle}
-            </p>
+              <p className="mt-3 max-w-[18ch] text-[0.95rem] leading-6 text-[var(--pf-text-soft)]/82 sm:mt-4 sm:max-w-xl sm:text-lg sm:leading-8 sm:text-[var(--pf-text-soft)]/78">
+                {slide.subtitle}
+              </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link href={slide.link} className={buttonVariants({ variant: "primary", size: "lg" })}>
-                Ir a la galería
-              </Link>
+              <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
+                <Link href={slide.link} className={`${buttonVariants({ variant: "primary", size: "lg" })} !text-white`}>
+                  Ir a la galería
+                </Link>
+              </div>
             </div>
           </div>
         </div>

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Minus, Plus, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -101,9 +100,13 @@ export function CartPanel({
             <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-5">
               <p className="text-lg font-bold text-[var(--pf-text)]">Tu pedido está vacío</p>
               <div className="mt-4">
-                <Link href="/galeria" className={buttonVariants({ variant: "primary", size: "md" })}>
-                  Ir a la galería
-                </Link>
+                <button
+                  type="button"
+                  onClick={closeCart}
+                  className={`${buttonVariants({ variant: "primary", size: "md" })} !text-white`}
+                >
+                  Cerrar carrito
+                </button>
               </div>
             </div>
           ) : (

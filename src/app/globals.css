@@ -57,10 +57,10 @@
   --pf-border-warm: rgba(168, 109, 69, 0.18);
   --pf-border-soft: rgba(168, 109, 69, 0.1);
 
-  --pf-text: #2e3130;
-  --pf-text-soft: #49463f;
-  --pf-muted: #6f6c64;
-  --pf-muted-soft: #918a7f;
+  --pf-text: #6f4528;
+  --pf-text-soft: #8f5a35;
+  --pf-muted: #8a745c;
+  --pf-muted-soft: #a18d78;
 
   --pf-shadow: 0 18px 40px rgba(74, 57, 38, 0.14);
   --pf-shadow-soft: 0 10px 24px rgba(74, 57, 38, 0.1);
@@ -142,6 +142,20 @@ a {
 a:hover,
 a:focus {
   color: var(--pf-primary);
+}
+
+:where(
+    .text-black,
+    .text-slate-900,
+    .text-slate-950,
+    .text-gray-900,
+    .text-gray-950,
+    .text-neutral-900,
+    .text-neutral-950,
+    .text-zinc-900,
+    .text-zinc-950
+  ) {
+  color: var(--pf-primary-darker) !important;
 }
 
 h1,

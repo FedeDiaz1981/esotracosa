@@ -163,7 +163,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
         type="button"
         onClick={openDialog}
         disabled={disabled}
-        className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(74,57,38,0.12)] bg-white px-6 text-sm font-black text-[var(--pf-primary-darker)] shadow-[0_10px_22px_rgba(58,44,25,0.06)] transition hover:bg-[var(--pf-surface-warm)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Importar Excel
       </button>
@@ -229,7 +229,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                     }}
                     className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                       mode === "guest"
-                        ? "bg-[linear-gradient(180deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] text-[var(--pf-primary-darker)]"
+                        ? "bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] text-white"
                         : "border border-[rgba(74,57,38,0.12)] bg-white text-slate-600 hover:bg-[var(--pf-surface-warm)]"
                     }`}
                   >
@@ -243,7 +243,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                     }}
                     className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                       mode === "member"
-                        ? "bg-[linear-gradient(180deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] text-[var(--pf-primary-darker)]"
+                        ? "bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] text-white"
                         : "border border-[rgba(74,57,38,0.12)] bg-white text-slate-600 hover:bg-[var(--pf-surface-warm)]"
                     }`}
                   >
@@ -261,7 +261,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                 type="button"
                 onClick={analyzeFile}
                 disabled={loading || applying}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] px-5 text-sm font-black text-[var(--pf-primary-darker)] shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Analizando..." : "Previsualizar"}
               </button>
@@ -270,7 +270,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                 type="button"
                 onClick={applyImport}
                 disabled={!preview || loading || applying}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-[rgba(74,57,38,0.12)] bg-white px-5 text-sm font-black text-[var(--pf-primary-darker)] shadow-[0_10px_22px_rgba(58,44,25,0.06)] transition hover:bg-[var(--pf-surface-warm)] disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {applying ? "Aplicando..." : "Aplicar importación"}
               </button>

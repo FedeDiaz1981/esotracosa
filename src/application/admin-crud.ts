@@ -221,14 +221,14 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
       columns: [
         { key: "id", label: "ID" },
         { key: "name", label: "Nombre" },
-        { key: "slug", label: "Slug" },
+        { key: "slug", label: "Apodo" },
         { key: "visible", label: "Visible" },
         { key: "homeMenu", label: "Menú" },
       ],
       fields: [
         numberField("id", "ID", true, "Se genera automaticamente.", true),
         textField("name", "Nombre", true),
-        textField("slug", "Slug", true, "Se genera automaticamente.", true),
+        textField("slug", "Apodo", true, "Se genera automaticamente.", true),
         booleanField("visible", "Visible"),
         booleanField("homeMenu", "Mostrar en menú"),
         textField("icon", "Icono", false, "Se genera automaticamente.", true, true),

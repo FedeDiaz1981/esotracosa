@@ -6,7 +6,7 @@ type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "border border-[rgba(168,109,69,0.18)] bg-[linear-gradient(180deg,var(--pf-primary),var(--pf-primary-dark))] text-white shadow-[0_14px_28px_rgba(168,109,69,0.18)] hover:brightness-105",
+    "border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] text-white shadow-[0_14px_28px_rgba(111,69,40,0.18)] hover:brightness-105",
   secondary:
     "border border-[rgba(168,109,69,0.15)] bg-[rgba(255,255,255,0.9)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(74,57,38,0.08)] hover:bg-[rgba(248,242,232,0.9)]",
   outline:
