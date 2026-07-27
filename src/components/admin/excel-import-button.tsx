@@ -103,7 +103,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
 
   async function analyzeFile() {
     if (!file) {
-      setError("Eleg? un archivo Excel primero.");
+      setError("Elegí un archivo Excel primero.");
       return;
     }
 
@@ -128,7 +128,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
 
   async function applyImport() {
     if (!file) {
-      setError("Eleg? un archivo Excel primero.");
+      setError("Elegí un archivo Excel primero.");
       return;
     }
 
@@ -151,7 +151,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
         resetDialog();
       }, 650);
     } catch (importError) {
-      setError(importError instanceof Error ? importError.message : "No se pudo aplicar la importaci?n.");
+      setError(importError instanceof Error ? importError.message : "No se pudo aplicar la importación.");
     } finally {
       setApplying(false);
     }
@@ -180,10 +180,10 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
         <div className="modal-box max-w-5xl overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
           <div className="flex items-start justify-between gap-4 border-b border-[rgba(74,57,38,0.08)] px-6 py-5">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[var(--pf-secondary-dark)]">Importaci?n masiva</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[var(--pf-secondary-dark)]">Importación masiva</p>
               <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--pf-text)]">Cargar precios desde Excel</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pf-muted)]">
-                Seleccion? el archivo D o I, revis? el resultado y despu?s aplic? la actualizaci?n sobre productos, marcas y categor?as.
+                Seleccioná el archivo D o I, revisá el resultado y después aplicá la actualización sobre productos, marcas y categorías.
               </p>
             </div>
 
@@ -233,7 +233,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                         : "border border-[rgba(74,57,38,0.12)] bg-white text-[var(--pf-primary-darker)] hover:bg-[var(--pf-surface-warm)]"
                     }`}
                   >
-                    I - P?blico / invitados
+                    I - Público / invitados
                   </button>
                   <button
                     type="button"
@@ -251,7 +251,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                   </button>
                 </div>
                 <p className="mt-3 text-sm text-[var(--pf-muted)]">
-                  Este modo determina qu? columna se actualiza en productos existentes.
+                  Este modo determina qué columna se actualiza en productos existentes.
                 </p>
               </div>
             </div>
@@ -272,7 +272,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                 disabled={!preview || loading || applying}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {applying ? "Aplicando..." : "Aplicar importaci?n"}
+                {applying ? "Aplicando..." : "Aplicar importación"}
               </button>
             </div>
 
@@ -305,10 +305,10 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
                     <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Marcas</p>
-                    <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.createdBrands)}</p>
+                <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.createdBrands)}</p>
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Categor?as</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Categorías</p>
                     <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.createdCategories)}</p>
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
@@ -330,7 +330,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                             Fila
                           </th>
                           <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
-                            Acci?n
+                            Acción
                           </th>
                           <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             Marca
@@ -339,7 +339,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                             Producto
                           </th>
                           <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
-                            Categor?a
+                            Categoría
                           </th>
                           <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             Precio
