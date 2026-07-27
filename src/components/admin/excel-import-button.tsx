@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -103,7 +103,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
 
   async function analyzeFile() {
     if (!file) {
-      setError("Elegí un archivo Excel primero.");
+      setError("Eleg? un archivo Excel primero.");
       return;
     }
 
@@ -128,7 +128,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
 
   async function applyImport() {
     if (!file) {
-      setError("Elegí un archivo Excel primero.");
+      setError("Eleg? un archivo Excel primero.");
       return;
     }
 
@@ -151,7 +151,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
         resetDialog();
       }, 650);
     } catch (importError) {
-      setError(importError instanceof Error ? importError.message : "No se pudo aplicar la importación.");
+      setError(importError instanceof Error ? importError.message : "No se pudo aplicar la importaci?n.");
     } finally {
       setApplying(false);
     }
@@ -180,17 +180,17 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
         <div className="modal-box max-w-5xl overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
           <div className="flex items-start justify-between gap-4 border-b border-[rgba(74,57,38,0.08)] px-6 py-5">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[var(--pf-secondary-dark)]">Importación masiva</p>
+              <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[var(--pf-secondary-dark)]">Importaci?n masiva</p>
               <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--pf-text)]">Cargar precios desde Excel</h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--pf-muted)]">
-                Seleccioná el archivo D o I, revisá el resultado y después aplicá la actualización sobre productos, marcas y categorías.
+                Seleccion? el archivo D o I, revis? el resultado y despu?s aplic? la actualizaci?n sobre productos, marcas y categor?as.
               </p>
             </div>
 
             <button
               type="button"
               onClick={closeDialog}
-              className="rounded-full border border-[rgba(74,57,38,0.12)] bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-[var(--pf-surface-warm)]"
+              className="rounded-full border border-[rgba(74,57,38,0.12)] bg-white px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[var(--pf-surface-warm)]"
             >
               Cerrar
             </button>
@@ -199,7 +199,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
           <div className="max-h-[calc(92vh-110px)] overflow-auto px-6 py-6">
             <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
               <label className="rounded-[1.5rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                <span className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Archivo</span>
+                <span className="text-xs font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">Archivo</span>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -211,7 +211,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="mt-3 block w-full rounded-[1rem] border border-[rgba(74,57,38,0.12)] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-sm text-slate-700 file:mr-4 file:rounded-full file:border-0 file:bg-[var(--pf-primary)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+                  className="mt-3 block w-full rounded-[1rem] border border-[rgba(74,57,38,0.12)] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-sm text-[var(--pf-text)] file:mr-4 file:rounded-full file:border-0 file:bg-[var(--pf-primary)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
                 />
                 <p className="mt-2 text-xs text-[var(--pf-muted)]">
                   {file ? `Seleccionado: ${file.name}` : "Excel con hoja PEDIDO CLIENTE."}
@@ -219,7 +219,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
               </label>
 
               <div className="rounded-[1.5rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                <span className="text-xs font-black uppercase tracking-[0.28em] text-slate-400">Tipo de precio</span>
+                <span className="text-xs font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">Tipo de precio</span>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -230,10 +230,10 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                     className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                       mode === "guest"
                         ? "bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] text-white"
-                        : "border border-[rgba(74,57,38,0.12)] bg-white text-slate-600 hover:bg-[var(--pf-surface-warm)]"
+                        : "border border-[rgba(74,57,38,0.12)] bg-white text-[var(--pf-primary-darker)] hover:bg-[var(--pf-surface-warm)]"
                     }`}
                   >
-                    I - Público / invitados
+                    I - P?blico / invitados
                   </button>
                   <button
                     type="button"
@@ -244,14 +244,14 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                     className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                       mode === "member"
                         ? "bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] text-white"
-                        : "border border-[rgba(74,57,38,0.12)] bg-white text-slate-600 hover:bg-[var(--pf-surface-warm)]"
+                        : "border border-[rgba(74,57,38,0.12)] bg-white text-[var(--pf-primary-darker)] hover:bg-[var(--pf-surface-warm)]"
                     }`}
                   >
                     D - Logueados / miembros
                   </button>
                 </div>
                 <p className="mt-3 text-sm text-[var(--pf-muted)]">
-                  Este modo determina qué columna se actualiza en productos existentes.
+                  Este modo determina qu? columna se actualiza en productos existentes.
                 </p>
               </div>
             </div>
@@ -272,7 +272,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                 disabled={!preview || loading || applying}
                 className="inline-flex h-12 items-center justify-center rounded-full border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {applying ? "Aplicando..." : "Aplicar importación"}
+                {applying ? "Aplicando..." : "Aplicar importaci?n"}
               </button>
             </div>
 
@@ -283,7 +283,7 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
             ) : null}
 
             {success ? (
-              <div className="mt-4 rounded-[1.25rem] border border-[rgba(74,57,38,0.14)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm text-slate-700">
+              <div className="mt-4 rounded-[1.25rem] border border-[rgba(74,57,38,0.14)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm text-[var(--pf-text)]">
                 {success}
               </div>
             ) : null}
@@ -292,59 +292,59 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
               <div className="mt-6 grid gap-4">
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Filas</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{formatNumber(preview.parsedRows)}</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Filas</p>
+                    <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.parsedRows)}</p>
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Nuevos</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{formatNumber(preview.createdProducts)}</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Nuevos</p>
+                    <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.createdProducts)}</p>
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Actualizados</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{formatNumber(preview.updatedProducts)}</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Actualizados</p>
+                    <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.updatedProducts)}</p>
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Marcas</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{formatNumber(preview.createdBrands)}</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Marcas</p>
+                    <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.createdBrands)}</p>
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Categorías</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{formatNumber(preview.createdCategories)}</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Categor?as</p>
+                    <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.createdCategories)}</p>
                   </div>
                   <div className="rounded-[1.25rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
-                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Omitidas</p>
-                    <p className="mt-2 text-2xl font-black text-slate-900">{formatNumber(preview.ignoredRows)}</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Omitidas</p>
+                    <p className="mt-2 text-2xl font-black text-[var(--pf-text)]">{formatNumber(preview.ignoredRows)}</p>
                   </div>
                 </div>
 
                 <div className="overflow-hidden rounded-[1.5rem] border border-[rgba(74,57,38,0.12)] bg-white">
                   <div className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3">
-                    <p className="text-[11px] font-black uppercase tracking-[0.28em] text-slate-400">Vista previa</p>
+                    <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">Vista previa</p>
                   </div>
 
                   <div className="max-h-[24rem] overflow-auto">
                     <table className="min-w-[900px] w-full border-collapse">
                       <thead className="bg-[rgba(248,242,232,0.8)]">
                         <tr>
-                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
+                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             Fila
                           </th>
-                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
-                            Acción
+                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
+                            Acci?n
                           </th>
-                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
+                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             Marca
                           </th>
-                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
+                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             Producto
                           </th>
-                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
-                            Categoría
+                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
+                            Categor?a
                           </th>
-                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
+                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             Precio
                           </th>
-                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">
+                          <th className="border-b border-[rgba(74,57,38,0.08)] px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             Nota
                           </th>
                         </tr>
@@ -352,16 +352,16 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
                       <tbody>
                         {preview.rows.slice(0, 60).map((row) => (
                           <tr key={`${row.rowNumber}-${row.productKey}`} className="border-b border-[rgba(74,57,38,0.06)]">
-                            <td className="px-4 py-3 text-sm text-slate-700">{row.rowNumber}</td>
+                            <td className="px-4 py-3 text-sm text-[var(--pf-text)]">{row.rowNumber}</td>
                             <td className="px-4 py-3 text-sm font-semibold text-[var(--pf-primary-darker)]">
                               {row.action === "create" ? "Nuevo" : "Actualiza"}
                             </td>
-                            <td className="px-4 py-3 text-sm text-slate-700">{row.brand}</td>
-                            <td className="px-4 py-3 text-sm text-slate-700">{row.detail}</td>
-                            <td className="px-4 py-3 text-sm text-slate-700">{row.categoryLabel}</td>
-                            <td className="px-4 py-3 text-sm font-semibold text-slate-900">{formatCurrency(row.price)}</td>
-                            <td className="px-4 py-3 text-sm text-slate-500">
-                              {row.notes.length > 0 ? row.notes.join(" · ") : row.currentPriceField ?? "—"}
+                            <td className="px-4 py-3 text-sm text-[var(--pf-text)]">{row.brand}</td>
+                            <td className="px-4 py-3 text-sm text-[var(--pf-text)]">{row.detail}</td>
+                            <td className="px-4 py-3 text-sm text-[var(--pf-text)]">{row.categoryLabel}</td>
+                            <td className="px-4 py-3 text-sm font-semibold text-[var(--pf-text)]">{formatCurrency(row.price)}</td>
+                            <td className="px-4 py-3 text-sm text-[var(--pf-muted)]">
+                              {row.notes.length > 0 ? row.notes.join(" · ") : row.currentPriceField ? "—" : "—"}
                             </td>
                           </tr>
                         ))}
@@ -381,3 +381,4 @@ export function ExcelImportButton({ disabled = false }: { disabled?: boolean }) 
     </>
   );
 }
+

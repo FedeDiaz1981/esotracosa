@@ -158,6 +158,35 @@ a:focus {
   color: var(--pf-primary-darker) !important;
 }
 
+.pf-admin :where(
+    .text-slate-950,
+    .text-slate-900,
+    .text-gray-950,
+    .text-gray-900,
+    .text-neutral-950,
+    .text-neutral-900,
+    .text-zinc-950,
+    .text-zinc-900
+  ) {
+  color: var(--pf-text) !important;
+}
+
+.pf-admin :where(.text-slate-800, .text-slate-700) {
+  color: var(--pf-primary-darker) !important;
+}
+
+.pf-admin :where(.text-slate-600, .text-slate-500, .text-slate-400, .text-slate-300) {
+  color: var(--pf-muted) !important;
+}
+
+.pf-admin :where(.bg-slate-50, .bg-slate-100, .bg-slate-200) {
+  background-color: rgba(248, 242, 232, 0.72) !important;
+}
+
+.pf-admin :where(.border-slate-100, .border-slate-200) {
+  border-color: var(--pf-border-soft) !important;
+}
+
 h1,
 h2,
 h3,
