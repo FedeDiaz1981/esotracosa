@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useMemo } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
@@ -21,10 +20,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
+
   const currentPath = useMemo(() => {
     const query = searchParams.toString();
     return query ? `${pathname}?${query}` : pathname;
   }, [pathname, searchParams]);
+
   const returnTo = pathname.startsWith("/admin") ? "/" : currentPath;
 
   if (!open) {
@@ -98,9 +99,13 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               <button type="submit" className={buttonVariants({ variant: "primary", size: "md" })} disabled={isPending}>
                 {isPending ? "Ingresando..." : "Entrar"}
               </button>
-              <Link href="/galeria" onClick={() => onOpenChange(false)} className={buttonVariants({ variant: "secondary", size: "md" })}>
-                Ir a la galería
-              </Link>
+              <button
+                type="button"
+                onClick={() => onOpenChange(false)}
+                className={buttonVariants({ variant: "secondary", size: "md" })}
+              >
+                Cerrar
+              </button>
             </div>
           </form>
         ) : (
@@ -127,9 +132,13 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
             <div className="grid gap-3 pt-2">
               {viewer.isAdmin ? (
-                <Link href="/admin" onClick={() => onOpenChange(false)} className={buttonVariants({ variant: "primary", size: "md" })}>
+                <button
+                  type="button"
+                  onClick={() => onOpenChange(false)}
+                  className={`${buttonVariants({ variant: "primary", size: "md" })} w-full`}
+                >
                   Administración
-                </Link>
+                </button>
               ) : null}
               <form action={logoutAction}>
                 <input type="hidden" name="returnTo" value={returnTo} />
