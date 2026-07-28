@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { recordProductView } from "@/app/catalog-actions";
+import { useViewer } from "@/components/auth/viewer-provider";
 import { CartAddButton } from "@/components/cart/cart-add-button";
 import type { ProductItem } from "@/domain/site-content";
+import { resolveProductUnitPrice } from "@/lib/pricing";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ export function ProductDetailModal({
   const detailsDialogRef = useRef<HTMLDialogElement | null>(null);
   const addTimerRef = useRef<number | null>(null);
   const trackedProductIdRef = useRef<number | null>(null);
+  const viewer = useViewer();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [showFullDetails, setShowFullDetails] = useState(false);
@@ -130,12 +133,13 @@ export function ProductDetailModal({
     : fullDescription;
 
   const safeQuantity = Math.min(Math.max(quantity, 1), maxQuantity);
-  const totalPrice = product ? product.publicPrice * safeQuantity : 0;
+  const unitPrice = product ? resolveProductUnitPrice(product, viewer) : 0;
+  const totalPrice = product ? unitPrice * safeQuantity : 0;
 
   return (
     <dialog
       ref={dialogRef}
-      className="modal modal-bottom sm:modal-middle"
+      className="modal modal-top !z-[12050] items-start pt-[96px] lg:pt-[136px]"
       onClick={(event) => {
         if (event.target === dialogRef.current) {
           dialogRef.current?.close();
@@ -235,7 +239,7 @@ export function ProductDetailModal({
                 <p className="text-xs uppercase tracking-[0.32em] text-[var(--pf-muted)]">Total</p>
                 <p className="mt-2 text-4xl font-extrabold tracking-tight text-[var(--pf-text)]">{formatCurrency(totalPrice)}</p>
                 <p className="mt-1 text-sm text-[var(--pf-muted)]">
-                  {safeQuantity} x {formatCurrency(product.publicPrice)}
+                  {safeQuantity} x {formatCurrency(unitPrice)}
                 </p>
               </div>
 
@@ -282,7 +286,7 @@ export function ProductDetailModal({
 
       <dialog
         ref={detailsDialogRef}
-        className="modal modal-bottom sm:modal-middle"
+        className="modal modal-top !z-[12050] items-start pt-[96px] lg:pt-[136px]"
         onClick={(event) => {
           if (event.target === detailsDialogRef.current) {
             detailsDialogRef.current?.close();

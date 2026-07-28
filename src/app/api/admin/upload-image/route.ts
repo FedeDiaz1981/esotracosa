@@ -1,3 +1,4 @@
+import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { storeImageOnSupabase } from "@/infrastructure/storage/supabase-storage";
 
 export const runtime = "nodejs";
@@ -12,6 +13,12 @@ function toStringValue(value: FormDataEntryValue | null) {
 
 export async function POST(request: Request) {
   try {
+    const viewer = await getCurrentViewer();
+
+    if (!viewer?.isAdmin) {
+      return Response.json({ ok: false, error: "No autorizado." }, { status: 403 });
+    }
+
     const formData = await request.formData();
     const fileEntry = formData.get("file");
     const scope = toStringValue(formData.get("scope")) || "uploads";

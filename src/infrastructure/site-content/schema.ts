@@ -91,12 +91,16 @@ export const siteContentSchemaSql = `
 
   create table if not exists users (
     id integer primary key,
+    auth_user_id uuid unique,
     name text not null,
     email text not null unique,
     role text not null,
     can_see_prices boolean not null,
     active boolean not null
   );
+
+  alter table users add column if not exists auth_user_id uuid;
+  create unique index if not exists users_auth_user_id_key on users(auth_user_id);
 
   create table if not exists products (
     id integer primary key,

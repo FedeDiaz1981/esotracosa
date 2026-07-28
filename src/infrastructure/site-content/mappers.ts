@@ -241,6 +241,7 @@ export function mapSiteContentDocument(params: {
     })),
     users: users.map((user) => ({
       id: user.id,
+      authUserId: user.auth_user_id ?? undefined,
       name: user.name,
       email: user.email,
       role: user.role,

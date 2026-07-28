@@ -2,95 +2,28 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Search, UserRound, X } from "lucide-react";
+import { Search, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
 import type { DynamicHeaderMenu } from "@/application/catalog";
+import { AuthModal } from "@/components/auth/auth-modal";
+import { useViewer } from "@/components/auth/viewer-provider";
 import { CartButton } from "@/components/cart/cart-button";
-import { publicAsset } from "@/lib/catalog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { publicAsset } from "@/lib/catalog";
 
 type SiteHeaderProps = {
   menus: DynamicHeaderMenu[];
 };
-
-function DesktopLoginModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  if (!open) {
-    return null;
-  }
-
-  return (
-    <div className="modal modal-open z-[11080] hidden lg:block">
-      <div className="modal-box w-[min(92vw,26rem)] max-w-none overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
-        <div className="flex items-center justify-between border-b border-[rgba(168,109,69,0.12)] px-5 py-4">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">Acceso</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--pf-text)]">Iniciar sesión</h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className={`${buttonVariants({ variant: "secondary", size: "icon" })} h-10 w-10 rounded-full`}
-            aria-label="Cerrar login"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
-
-        <form className="space-y-4 px-5 py-5" onSubmit={(event) => event.preventDefault()}>
-          <div>
-            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]" htmlFor="desktop-login-email">
-              Correo
-            </label>
-            <input
-              id="desktop-login-email"
-              name="email"
-              type="email"
-              placeholder="tu@email.com"
-              className="w-full rounded-[1rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-sm outline-none transition focus:border-[var(--pf-primary)]"
-            />
-          </div>
-
-          <div>
-            <label
-              className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]"
-              htmlFor="desktop-login-password"
-            >
-              Contraseña
-            </label>
-            <input
-              id="desktop-login-password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              className="w-full rounded-[1rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-sm outline-none transition focus:border-[var(--pf-primary)]"
-            />
-          </div>
-
-          <div className="grid gap-3 pt-2">
-            <button type="submit" className={buttonVariants({ variant: "primary", size: "md" })}>
-              Entrar
-            </button>
-            <Link href="/admin" onClick={() => onOpenChange(false)} className={buttonVariants({ variant: "secondary", size: "md" })}>
-              Ir al admin
-            </Link>
-          </div>
-        </form>
-      </div>
-
-      <button type="button" className="modal-backdrop" aria-label="Cerrar login" onClick={() => onOpenChange(false)} />
-    </div>
-  );
-}
 
 export function SiteHeader({ menus }: SiteHeaderProps) {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
+  const viewer = useViewer();
 
   const submitSearch = () => {
     const normalized = searchInputRef.current?.value.trim() ?? "";
@@ -150,12 +83,11 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                 <UserRound className="size-4" />
               </Button>
               <CartButton />
-              <Link
-                href="/admin"
-                className={`${buttonVariants({ variant: "primary", size: "md" })} !text-white`}
-              >
-                Admin demo
-              </Link>
+              {viewer?.isAdmin ? (
+                <Link href="/admin" className={`${buttonVariants({ variant: "primary", size: "md" })} !text-white`}>
+                  Administración
+                </Link>
+              ) : null}
             </div>
           </div>
         </div>
@@ -190,7 +122,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                         <p className="text-sm text-[var(--pf-muted)]">Agrupado por letras</p>
                       </div>
                       <Link
-                        href={menu.key === "brands" ? "/galeria" : "/galeria"}
+                        href="/galeria"
                         className="btn btn-ghost btn-sm rounded-full border border-[var(--pf-border)] normal-case"
                       >
                         Ver todo
@@ -232,7 +164,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
         </div>
       </header>
 
-      <DesktopLoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+      <AuthModal open={loginOpen} onOpenChange={setLoginOpen} />
     </>
   );
 }

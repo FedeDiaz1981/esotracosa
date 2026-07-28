@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { DynamicHeaderMenu } from "@/application/catalog";
+import { AuthModal } from "@/components/auth/auth-modal";
+import { useViewer } from "@/components/auth/viewer-provider";
 import { MobileCartButton } from "@/components/cart/mobile-cart-button";
 import { buttonVariants } from "@/components/ui/button";
 import { publicAsset } from "@/lib/catalog";
@@ -14,87 +16,6 @@ import { publicAsset } from "@/lib/catalog";
 type MobileSiteChromeProps = {
   menus: DynamicHeaderMenu[];
 };
-
-function MobileLoginModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
-  if (!open) {
-    return null;
-  }
-
-  return (
-    <div className="modal modal-open z-[11080] lg:hidden">
-      <div className="modal-box w-[min(92vw,26rem)] max-w-none overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
-        <div className="flex items-center justify-between border-b border-[rgba(168,109,69,0.12)] px-5 py-4">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">Acceso</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--pf-text)]">Iniciar sesión</h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            className={`${buttonVariants({ variant: "secondary", size: "icon" })} h-10 w-10 rounded-full`}
-            aria-label="Cerrar login"
-          >
-            <X className="size-5" />
-          </button>
-        </div>
-
-        <form className="space-y-4 px-5 py-5" onSubmit={(event) => event.preventDefault()}>
-          <div>
-            <label
-              className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]"
-              htmlFor="mobile-login-email"
-            >
-              Correo
-            </label>
-            <input
-              id="mobile-login-email"
-              name="email"
-              type="email"
-              placeholder="tu@email.com"
-              className="w-full rounded-[1rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-sm outline-none transition focus:border-[var(--pf-primary)]"
-            />
-          </div>
-
-          <div>
-            <label
-              className="mb-2 block text-xs font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]"
-              htmlFor="mobile-login-password"
-            >
-              Contraseña
-            </label>
-            <input
-              id="mobile-login-password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              className="w-full rounded-[1rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-sm outline-none transition focus:border-[var(--pf-primary)]"
-            />
-          </div>
-
-          <div className="grid gap-3 pt-2">
-            <button type="submit" className={buttonVariants({ variant: "primary", size: "md" })}>
-              Entrar
-            </button>
-            <Link href="/admin" onClick={() => onOpenChange(false)} className={buttonVariants({ variant: "secondary", size: "md" })}>
-              Ir al admin
-            </Link>
-          </div>
-
-          <p className="text-sm leading-6 text-[var(--pf-muted)]">
-            Acceso demo para administración. Si querés ver el panel, tocá{" "}
-            <Link href="/admin" onClick={() => onOpenChange(false)} className="font-semibold text-[var(--pf-primary-darker)]">
-              ir al admin
-            </Link>
-            .
-          </p>
-        </form>
-      </div>
-
-      <button type="button" className="modal-backdrop" aria-label="Cerrar login" onClick={() => onOpenChange(false)} />
-    </div>
-  );
-}
 
 function MobileSearchModal({
   open,
@@ -117,7 +38,7 @@ function MobileSearchModal({
   };
 
   return (
-    <div className="modal modal-open z-[11080] lg:hidden">
+    <div className="modal modal-open !z-[12050] items-start pt-[96px] lg:pt-[136px] lg:hidden">
       <div className="modal-box w-[min(92vw,26rem)] max-w-none overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
         <div className="flex items-center justify-between border-b border-[rgba(168,109,69,0.12)] px-5 py-4">
           <div>
@@ -174,7 +95,10 @@ function MobileSearchModal({
 export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
   const [loginOpen, setLoginOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const viewer = useViewer();
   void menus;
+
+  const navColumns = viewer?.isAdmin ? "repeat(4, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))";
 
   return (
     <>
@@ -201,20 +125,20 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
       </div>
 
       <div className="fixed inset-x-0 bottom-0 z-[10020] border-t border-[var(--pf-border)] bg-[rgba(248,242,232,0.98)] shadow-[0_-14px_32px_rgba(74,57,38,0.08)] backdrop-blur lg:hidden">
-        <div className="pf-shell grid h-[72px] grid-cols-4 items-center px-3">
+        <div className="pf-shell grid h-[72px] items-center px-3" style={{ gridTemplateColumns: navColumns }}>
           <button
             type="button"
             onClick={() => setLoginOpen(true)}
-            className="flex h-12 items-center justify-center rounded-2xl text-[var(--pf-muted)] transition hover:text-[var(--pf-primary-darker)]"
-            aria-label="Abrir login"
+            className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            aria-label="Login"
           >
             <UserRound className="size-5" />
           </button>
 
           <Link
             href="/"
-            className="flex h-12 items-center justify-center rounded-2xl text-[var(--pf-muted)] transition hover:text-[var(--pf-primary-darker)]"
-            aria-label="Ir a inicio"
+            className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            aria-label="Home"
           >
             <House className="size-5" />
           </Link>
@@ -222,23 +146,25 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
           <button
             type="button"
             onClick={() => setSearchOpen(true)}
-            className="flex h-12 items-center justify-center rounded-2xl text-[var(--pf-muted)] transition hover:text-[var(--pf-primary-darker)]"
-            aria-label="Abrir búsqueda"
+            className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            aria-label="Buscar"
           >
             <Search className="size-5" />
           </button>
 
-          <Link
-            href="/admin"
-            className="flex h-12 items-center justify-center rounded-2xl text-[var(--pf-muted)] transition hover:text-[var(--pf-primary-darker)]"
-            aria-label="Abrir admin de listas"
-          >
-            <Menu className="size-5" />
-          </Link>
+          {viewer?.isAdmin ? (
+            <Link
+              href="/admin"
+              className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+              aria-label="Administración"
+            >
+              <Menu className="size-5" />
+            </Link>
+          ) : null}
         </div>
       </div>
 
-      <MobileLoginModal open={loginOpen} onOpenChange={setLoginOpen} />
+      <AuthModal open={loginOpen} onOpenChange={setLoginOpen} />
       <MobileSearchModal open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );

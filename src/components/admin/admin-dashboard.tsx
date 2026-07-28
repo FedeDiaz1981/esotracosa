@@ -4,8 +4,8 @@ import type { AdminOverview } from "@/application/admin";
 
 function AdminMetric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.9)] p-4 shadow-[0_10px_22px_rgba(58,44,25,0.06)]">
-      <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">{label}</p>
+    <div className="min-w-[132px] overflow-hidden rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.9)] p-4 shadow-[0_10px_22px_rgba(58,44,25,0.06)]">
+      <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">{label}</p>
       <p className="mt-1 text-3xl font-black text-[var(--pf-text)]">{value}</p>
     </div>
   );
@@ -23,7 +23,7 @@ export function AdminDashboard({ admin }: { admin: AdminOverview }) {
           Este tablero ya está leyendo la base local. Sirve como primer puente entre la maqueta y el futuro panel de
           mantenimiento.
         </p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-6 2xl:w-[960px]">
           <AdminMetric label="Productos" value={admin.counts.products} />
           <AdminMetric label="Promociones" value={admin.counts.packs} />
           <AdminMetric label="Marcas" value={admin.counts.brands} />

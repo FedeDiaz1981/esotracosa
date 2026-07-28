@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useViewer } from "@/components/auth/viewer-provider";
 import type { PackItem, ProductItem } from "@/domain/site-content";
 
 export type CartLine = {
@@ -12,8 +13,14 @@ export type CartLine = {
   presentation: string;
   image?: string;
   publicPrice: number;
+  memberPrice: number;
   quantity: number;
 };
+
+type PricingViewer = {
+  authenticated: boolean;
+  canSeePrices: boolean;
+} | null | undefined;
 
 type CartContextValue = {
   items: CartLine[];
@@ -56,18 +63,28 @@ function safeParseCart(value: string | null): CartLine[] {
         presentation: String(item.presentation),
         image: item.image ? String(item.image) : undefined,
         publicPrice: Number(item.publicPrice),
+        memberPrice: Number(item.memberPrice ?? item.publicPrice),
         quantity: Math.max(1, Number(item.quantity) || 1),
       }))
-      .filter((item) => item.sku && Number.isFinite(item.publicPrice));
+      .filter((item) => item.sku && Number.isFinite(item.publicPrice) && Number.isFinite(item.memberPrice));
   } catch {
     return [];
   }
+}
+
+export function resolveCartLineUnitPrice(item: CartLine, viewer: PricingViewer) {
+  if (item.kind === "product" && viewer?.authenticated && viewer.canSeePrices && Number.isFinite(item.memberPrice) && item.memberPrice > 0) {
+    return item.memberPrice;
+  }
+
+  return item.publicPrice;
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const viewer = useViewer();
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -88,7 +105,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-    const totalPrice = items.reduce((sum, item) => sum + item.quantity * item.publicPrice, 0);
+    const totalPrice = items.reduce((sum, item) => sum + item.quantity * resolveCartLineUnitPrice(item, viewer), 0);
 
     return {
       items,
@@ -119,6 +136,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               presentation: product.presentation,
               image: product.image,
               publicPrice: product.publicPrice,
+              memberPrice: product.memberPrice,
               quantity: nextQuantity,
             },
           ];
@@ -145,6 +163,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               presentation: `${pack.items.length} productos incluidos`,
               image: pack.image,
               publicPrice: pack.publicPrice,
+              memberPrice: pack.publicPrice,
               quantity: nextQuantity,
             },
           ];
@@ -164,7 +183,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       totalItems,
       totalPrice,
     };
-  }, [hydrated, isOpen, items]);
+  }, [hydrated, isOpen, items, viewer]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

@@ -94,6 +94,10 @@ function toDraftValue(field: AdminFieldDefinition, value: unknown): string | num
     return value == null ? "" : String(value);
   }
 
+  if (field.kind === "password") {
+    return value == null ? "" : String(value);
+  }
+
   if (field.kind === "boolean") {
     return Boolean(value);
   }
@@ -817,29 +821,29 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 </h1>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:w-[740px] xl:grid-cols-6">
-                <div className="flex min-h-[94px] flex-col justify-between rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.26em] text-[var(--pf-muted)]">Productos</p>
+              <div className="grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-6 2xl:w-[960px]">
+                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Productos</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.products}</p>
                 </div>
-                <div className="flex min-h-[94px] flex-col justify-between rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.26em] text-[var(--pf-muted)]">Promociones</p>
+                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Promociones</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.packs}</p>
                 </div>
-                <div className="flex min-h-[94px] flex-col justify-between rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.26em] text-[var(--pf-muted)]">Categorías</p>
+                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Categorías</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.categories}</p>
                 </div>
-                <div className="flex min-h-[94px] flex-col justify-between rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.26em] text-[var(--pf-muted)]">Marcas</p>
+                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Marcas</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.brands}</p>
                 </div>
-                <div className="flex min-h-[94px] flex-col justify-between rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.26em] text-[var(--pf-muted)]">Usuarios</p>
+                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Usuarios</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.users}</p>
                 </div>
-                <div className="flex min-h-[94px] flex-col justify-between rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="text-[10px] font-black uppercase leading-none tracking-[0.26em] text-[var(--pf-muted)]">Registro</p>
+                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Registro</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{totalCount}</p>
                 </div>
               </div>
@@ -1038,7 +1042,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
       </div>
 
       {bulkDeleteState?.open ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[#2d1f1470] px-4 py-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[12050] flex items-start justify-center bg-[#2d1f1470] px-4 py-6 pt-[96px] backdrop-blur-sm lg:pt-[136px]">
           <div className="w-full max-w-md rounded-[28px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] p-6 shadow-[0_32px_120px_rgba(74,57,38,0.3)]">
             <div className="flex items-start gap-4">
               <div
@@ -1093,7 +1097,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
       {editor ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#2d1f1480] px-4 py-6 backdrop-blur-sm"
+          className="fixed inset-0 z-[12050] flex items-start justify-center bg-[#2d1f1480] px-4 py-6 pt-[96px] backdrop-blur-sm lg:pt-[136px]"
           onClick={closeEditor}
         >
           <div
@@ -1143,6 +1147,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                     field.kind === "textarea" ||
                     field.kind === "file" ||
                     field.kind === "select" ||
+                    field.kind === "password" ||
                     field.kind === "boolean" ||
                     field.kind === "pack_products" ||
                     field.kind === "multiselect";
@@ -1378,6 +1383,44 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                           rows={5}
                           className="w-full rounded-[22px] border border-[var(--pf-border-soft)] bg-white px-4 py-3 text-sm text-[var(--pf-text)] outline-none transition placeholder:text-[var(--pf-muted)] focus:border-[var(--pf-primary)]"
                           readOnly={field.readonly}
+                        />
+                      </label>
+                    );
+                  }
+
+                  if (field.kind === "password") {
+                    return (
+                      <label key={field.key} className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">
+                            {field.label}
+                          </span>
+                          {field.helper ? <span className="text-xs text-[var(--pf-muted)]">{field.helper}</span> : null}
+                        </div>
+                        <input
+                          type="password"
+                          value={value == null ? "" : String(value)}
+                          onChange={(event) =>
+                            setEditor((current) =>
+                              current
+                                ? {
+                                    ...current,
+                                    draft: {
+                                      ...current.draft,
+                                      [field.key]: event.target.value,
+                                    },
+                                  }
+                                : current,
+                            )
+                          }
+                          className={`w-full rounded-[22px] border px-4 py-3 text-sm outline-none transition placeholder:text-[var(--pf-muted)] focus:border-[var(--pf-primary)] ${
+                            field.readonly
+                              ? "border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] text-[var(--pf-muted)]"
+                              : "border-[var(--pf-border-soft)] bg-white text-[var(--pf-text)]"
+                          }`}
+                          readOnly={field.readonly}
+                          disabled={field.readonly}
+                          autoComplete="new-password"
                         />
                       </label>
                     );

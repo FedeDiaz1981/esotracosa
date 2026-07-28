@@ -15,7 +15,16 @@ export type AdminTableKey =
   | "users"
   | "products";
 
-export type AdminFieldKind = "text" | "number" | "boolean" | "textarea" | "pack_products" | "multiselect" | "file" | "select";
+export type AdminFieldKind =
+  | "text"
+  | "number"
+  | "boolean"
+  | "textarea"
+  | "pack_products"
+  | "multiselect"
+  | "file"
+  | "select"
+  | "password";
 
 export interface AdminFieldOption {
   value: string;
@@ -76,6 +85,17 @@ function textField(
   hidden = false,
 ): AdminFieldDefinition {
   return { key, label, kind: "text", required, helper, readonly, hidden };
+}
+
+function passwordField(
+  key: string,
+  label: string,
+  required = false,
+  helper?: string,
+  readonly = false,
+  hidden = false,
+): AdminFieldDefinition {
+  return { key, label, kind: "password", required, helper, readonly, hidden };
 }
 
 function numberField(
@@ -142,6 +162,13 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
       value: String(category.id),
       label: category.name,
     }));
+  const brandOptions = (content.brands ?? [])
+    .slice()
+    .sort((left, right) => left.name.localeCompare(right.name, "es", { sensitivity: "base" }))
+    .map((brand) => ({
+      value: brand.name,
+      label: brand.name,
+    }));
 
   return [
     {
@@ -172,7 +199,7 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         textField("name", "Nombre", true),
         textareaField("detail", "Detalle", true),
         multiselectField("categoryIds", "Categorias", visibleCategoryOptions, "Elegi una o mas categorias visibles."),
-        textField("brand", "Marca", true),
+        selectField("brand", "Marca", brandOptions, true, "Elegí una marca registrada."),
         numberField("publicPrice", "Precio publico", true),
         numberField("memberPrice", "Precio miembro", true),
         fileField("image", "Imagen", false, "Subí una imagen de portada para la promoción."),
@@ -252,6 +279,7 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         numberField("id", "ID", true, "Se genera automaticamente.", true, true),
         textField("name", "Nombre", true),
         textField("email", "Correo", true),
+        passwordField("password", "Contraseña", false, "Definila al crear la cuenta. En edición es opcional."),
         selectField(
           "role",
           "Rol",

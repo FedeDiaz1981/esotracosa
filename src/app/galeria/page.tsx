@@ -3,6 +3,8 @@ import { getGalleryPageViewModel, getPacksGalleryPageViewModel } from "@/applica
 import { CatalogGrid } from "@/components/site/catalog-grid";
 import { PackGrid } from "@/components/site/pack-grid";
 import { buttonVariants } from "@/components/ui/button";
+import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
+import { resolveProductUnitPrice } from "@/lib/pricing";
 
 type GallerySearchParams = {
   q?: string;
@@ -41,6 +43,7 @@ export default function GalleryPage({ searchParams }: { searchParams: Promise<Ga
 
 async function GalleryPageContent({ searchParams }: { searchParams: Promise<GallerySearchParams> }) {
   const params = await searchParams;
+  const viewer = await getCurrentViewer();
   const query = (params.q ?? "").trim();
   const brand = (params.brand ?? "").trim();
   const category = (params.category ?? "").trim();
@@ -208,7 +211,10 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
 
   const sortedProducts = [...gallery.products].sort((left, right) => {
     if (sort === "price") {
-      return left.publicPrice - right.publicPrice || left.name.localeCompare(right.name, "es", { sensitivity: "base" });
+      return (
+        resolveProductUnitPrice(left, viewer) - resolveProductUnitPrice(right, viewer) ||
+        left.name.localeCompare(right.name, "es", { sensitivity: "base" })
+      );
     }
 
     return left.name.localeCompare(right.name, "es", { sensitivity: "base" });

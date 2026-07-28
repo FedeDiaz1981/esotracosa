@@ -85,6 +85,7 @@ export type SeedBrand = {
 
 export type SeedUser = {
   id: number;
+  auth_user_id?: string | null;
   name: string;
   email: string;
   role: string;

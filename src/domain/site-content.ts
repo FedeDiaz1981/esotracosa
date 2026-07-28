@@ -125,6 +125,7 @@ export interface UserItem {
   role: string;
   canSeePrices: boolean;
   active: boolean;
+  authUserId?: string | null;
 }
 
 export interface SiteContentDocument {

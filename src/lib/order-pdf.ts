@@ -7,6 +7,7 @@ export type OrderPdfLine = {
   presentation: string;
   image?: string;
   publicPrice: number;
+  unitPrice?: number;
   quantity: number;
 };
 
@@ -54,17 +55,19 @@ export function buildOrderPdfHtml(data: OrderPdfData) {
       ...item,
       quantity: Math.max(1, Number(item.quantity) || 1),
       publicPrice: Math.max(0, Number(item.publicPrice) || 0),
+      unitPrice: Number.isFinite(Number(item.unitPrice)) ? Math.max(0, Number(item.unitPrice) || 0) : undefined,
     }))
     .filter((item) => item.sku && item.name);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce((sum, item) => sum + item.quantity * item.publicPrice, 0);
+  const totalPrice = items.reduce((sum, item) => sum + item.quantity * (item.unitPrice ?? item.publicPrice), 0);
   const generatedAt = formatDate(data.generatedAt ?? new Date().toISOString());
   const orderNumber = `PF-${new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14)}`;
 
   const rows = items
     .map((item) => {
-      const subtotal = item.quantity * item.publicPrice;
+      const unitPrice = item.unitPrice ?? item.publicPrice;
+      const subtotal = item.quantity * unitPrice;
       const typeLabel = item.kind === "pack" ? "Promocion" : "Producto";
 
       return `
@@ -76,7 +79,7 @@ export function buildOrderPdfHtml(data: OrderPdfData) {
           </td>
           <td class="mono">${escapeHtml(item.sku)}</td>
           <td class="center">${item.quantity}</td>
-          <td class="right">${formatCurrency(item.publicPrice)}</td>
+          <td class="right">${formatCurrency(unitPrice)}</td>
           <td class="right strong">${formatCurrency(subtotal)}</td>
         </tr>
       `;

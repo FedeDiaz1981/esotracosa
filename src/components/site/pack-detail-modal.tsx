@@ -79,7 +79,7 @@ export function PackDetailModal({
     <>
       <dialog
         ref={dialogRef}
-        className="modal modal-bottom sm:modal-middle"
+        className="modal modal-top !z-[12050] items-start pt-[96px] lg:pt-[136px]"
         onClick={(event) => {
           if (event.target === dialogRef.current) {
             dialogRef.current?.close();

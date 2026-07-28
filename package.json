@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "hostinger:package": "node scripts/package-hostinger.mjs",
+    "bootstrap:admin": "node scripts/bootstrap-admin-user.mjs",
     "start": "next start",
     "lint": "eslint",
     "db:start": "node scripts/local-postgres.mjs start",

@@ -4,8 +4,10 @@ import { notFound } from "next/navigation";
 import { recordProductView } from "@/app/catalog-actions";
 import { getProductBySku } from "@/application/catalog";
 import { CartAddButton } from "@/components/cart/cart-add-button";
-import { formatCurrency, publicAsset } from "@/lib/catalog";
 import { buttonVariants } from "@/components/ui/button";
+import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
+import { formatCurrency, publicAsset } from "@/lib/catalog";
+import { resolveProductUnitPrice } from "@/lib/pricing";
 
 export default async function ProductPage({
   params,
@@ -18,6 +20,8 @@ export default async function ProductPage({
   if (!product) {
     notFound();
   }
+
+  const viewer = await getCurrentViewer();
 
   await recordProductView(product.id).catch(() => undefined);
 
@@ -46,17 +50,19 @@ export default async function ProductPage({
 
           <div className="rounded-[1.75rem] border border-[var(--pf-border)] bg-[rgba(237,220,195,0.55)] p-5">
             <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Precio</p>
-            <p className="mt-2 text-4xl font-extrabold text-[var(--pf-text)]">{formatCurrency(product.publicPrice)}</p>
+            <p className="mt-2 text-4xl font-extrabold text-[var(--pf-text)]">
+              {formatCurrency(resolveProductUnitPrice(product, viewer))}
+            </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-4">
               <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Marca</p>
-              <p className="mt-1 text-lg font-semibold">{product.brand}</p>
+              <p className="mt-1 text-lg font-semibold text-[var(--pf-text)]">{product.brand}</p>
             </div>
             <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-4">
               <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Categoría</p>
-              <p className="mt-1 text-lg font-semibold">{product.categoryName}</p>
+              <p className="mt-1 text-lg font-semibold text-[var(--pf-text)]">{product.categoryName}</p>
             </div>
           </div>
 

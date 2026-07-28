@@ -228,8 +228,8 @@ async function seedIfNeeded(client: PoolClient) {
 
     for (const user of fallbackSiteContent.users ?? []) {
       await client.query(
-        "insert into users (id, name, email, role, can_see_prices, active) values ($1, $2, $3, $4, $5, $6)",
-        [user.id, user.name, user.email, user.role, user.canSeePrices, user.active],
+        "insert into users (id, auth_user_id, name, email, role, can_see_prices, active) values ($1, $2, $3, $4, $5, $6, $7)",
+        [user.id, user.authUserId ?? null, user.name, user.email, user.role, user.canSeePrices, user.active],
       );
     }
 
@@ -353,7 +353,7 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
     );
     const userRows = await readRows<UserRow>(
       client,
-      "select id, name, email, role, can_see_prices, active from users order by id",
+      "select id, auth_user_id, name, email, role, can_see_prices, active from users order by id",
     );
 
     const headerNavigation = mapHeaderNavigation(scopesRows, sectionsRows, groupsRows, itemsRows);

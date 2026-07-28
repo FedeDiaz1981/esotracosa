@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { postgresPool } from "@/infrastructure/db/postgres";
+import { createSupabaseServiceClient, requireAdminViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { siteContentSchemaSql } from "@/infrastructure/site-content/schema";
 import { normalizeText } from "@/lib/catalog";
 import { resolveCategoryIconKey } from "@/lib/category-icons";
@@ -359,8 +360,94 @@ async function saveCategory(record: PayloadRecord) {
   );
 }
 
+type AuthAdminUser = {
+  id: string;
+  email?: string | null;
+};
+
+async function findAuthUserByEmail(email: string) {
+  const supabase = createSupabaseServiceClient();
+  let page = 1;
+
+  while (page <= 10) {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      page,
+      perPage: 1000,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const found = data.users.find((user) => String(user.email ?? "").toLowerCase() === email.toLowerCase());
+    if (found) {
+      return found as AuthAdminUser;
+    }
+
+    if (data.users.length < 1000) {
+      return null;
+    }
+
+    page += 1;
+  }
+
+  return null;
+}
+
+async function upsertAuthUser(email: string, password: string, existingAuthUserId?: string | null) {
+  const supabase = createSupabaseServiceClient();
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPassword = password.trim();
+  let authUserId = existingAuthUserId ?? null;
+
+  if (!authUserId) {
+    const existingAuthUser = await findAuthUserByEmail(normalizedEmail);
+    authUserId = existingAuthUser?.id ?? null;
+  }
+
+  if (!authUserId) {
+    if (!normalizedPassword) {
+      throw new Error("La contraseña es obligatoria para crear un usuario.");
+    }
+
+    const { data, error } = await supabase.auth.admin.createUser({
+      email: normalizedEmail,
+      password: normalizedPassword,
+      email_confirm: true,
+    });
+
+    if (error || !data.user) {
+      throw new Error(error?.message || "No se pudo crear el usuario de acceso.");
+    }
+
+    return data.user.id;
+  }
+
+  const updatePayload: { email?: string; password?: string; email_confirm?: boolean } = {
+    email: normalizedEmail,
+    email_confirm: true,
+  };
+
+  if (normalizedPassword) {
+    updatePayload.password = normalizedPassword;
+  }
+
+  const { data, error } = await supabase.auth.admin.updateUserById(authUserId, updatePayload);
+
+  if (error || !data.user) {
+    throw new Error(error?.message || "No se pudo actualizar el usuario de acceso.");
+  }
+
+  return data.user.id;
+}
+
 async function saveUser(record: PayloadRecord) {
   const id = record.id ? toNumber(record.id) : await nextNumericId("users");
+  const existingResult = await postgresPool!.query<{
+    auth_user_id: string | null;
+    email: string;
+  }>("select auth_user_id, email from users where id = $1 limit 1", [id]);
+  const existing = existingResult.rows[0];
   const rawRole = toStringValue(record.role);
   const normalizedRole = (() => {
     const value = rawRole.toLowerCase();
@@ -372,12 +459,15 @@ async function saveUser(record: PayloadRecord) {
     }
     return rawRole || "Cliente";
   })();
+  const password = toStringValue(record.password);
+  const authUserId = await upsertAuthUser(toStringValue(record.email), password, existing?.auth_user_id);
 
   await postgresPool!.query(
     `
-      insert into users (id, name, email, role, can_see_prices, active)
-      values ($1, $2, $3, $4, $5, $6)
+      insert into users (id, auth_user_id, name, email, role, can_see_prices, active)
+      values ($1, $2, $3, $4, $5, $6, $7)
       on conflict (id) do update set
+        auth_user_id = excluded.auth_user_id,
         name = excluded.name,
         email = excluded.email,
         role = excluded.role,
@@ -386,6 +476,7 @@ async function saveUser(record: PayloadRecord) {
     `,
     [
       id,
+      authUserId,
       toStringValue(record.name),
       toStringValue(record.email),
       normalizedRole,
@@ -752,7 +843,24 @@ async function deleteRow(table: AdminTableKey, id: string) {
       await postgresPool!.query("delete from categories where id = $1", [toNumber(id)]);
       return;
     case "users":
-      await postgresPool!.query("delete from users where id = $1", [toNumber(id)]);
+      {
+        const userResult = await postgresPool!.query<{ auth_user_id: string | null }>(
+          "select auth_user_id from users where id = $1 limit 1",
+          [toNumber(id)],
+        );
+        const authUserId = userResult.rows[0]?.auth_user_id;
+
+        if (authUserId) {
+          const supabase = createSupabaseServiceClient();
+          const { error } = await supabase.auth.admin.deleteUser(authUserId);
+
+          if (error) {
+            throw new Error(error.message || "No se pudo borrar el usuario de acceso.");
+          }
+        }
+
+        await postgresPool!.query("delete from users where id = $1", [toNumber(id)]);
+      }
       return;
     case "hero_slides":
       await postgresPool!.query("delete from hero_slides where id = $1", [toNumber(id)]);
@@ -813,6 +921,7 @@ function refreshAdminViews() {
 }
 
 export async function saveAdminRecord(formData: FormData) {
+  await requireAdminViewer();
   await ensureDatabase();
 
   const table = String(formData.get("table") || "") as AdminTableKey;
@@ -827,6 +936,7 @@ export async function saveAdminRecord(formData: FormData) {
 }
 
 export async function deleteAdminRecord(formData: FormData) {
+  await requireAdminViewer();
   await ensureDatabase();
 
   const table = String(formData.get("table") || "") as AdminTableKey;
@@ -841,6 +951,7 @@ export async function deleteAdminRecord(formData: FormData) {
 }
 
 export async function deleteAdminRecords(formData: FormData) {
+  await requireAdminViewer();
   await ensureDatabase();
 
   const table = String(formData.get("table") || "") as AdminTableKey;

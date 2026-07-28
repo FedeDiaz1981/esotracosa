@@ -3,16 +3,18 @@
 import { useRouter } from "next/navigation";
 import { Minus, Plus, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useCart } from "@/components/cart/cart-context";
+import { useCart, resolveCartLineUnitPrice } from "@/components/cart/cart-context";
+import { useViewer } from "@/components/auth/viewer-provider";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
 import { Button, buttonVariants } from "@/components/ui/button";
 
 export function CartPanel({
   mode = "drawer",
-}: {
+  }: {
   mode?: "drawer" | "page";
 }) {
   const { items, hydrated, isOpen, closeCart, updateQuantity, removeItem, clearCart, totalItems, totalPrice } = useCart();
+  const viewer = useViewer();
   const router = useRouter();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -30,7 +32,10 @@ export function CartPanel({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items,
+          items: items.map((item) => ({
+            ...item,
+            unitPrice: resolveCartLineUnitPrice(item, viewer),
+          })),
         }),
       });
 
@@ -53,7 +58,7 @@ export function CartPanel({
     } finally {
       setIsGeneratingPdf(false);
     }
-  }, [hydrated, items, isGeneratingPdf]);
+  }, [hydrated, items, isGeneratingPdf, viewer]);
 
   const visible = mode === "page" ? true : isOpen;
   const containerClass =
@@ -163,7 +168,9 @@ export function CartPanel({
 
                         <div className="text-right">
                           <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--pf-muted)]">Subtotal</p>
-                          <p className="text-base font-black text-[var(--pf-text)]">{formatCurrency(item.publicPrice * item.quantity)}</p>
+                          <p className="text-base font-black text-[var(--pf-text)]">
+                            {formatCurrency(resolveCartLineUnitPrice(item, viewer) * item.quantity)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -203,7 +210,7 @@ export function CartPanel({
         </div>
       </aside>
     ),
-    [clearCart, closeCart, hydrated, handleConfirmPedido, isGeneratingPdf, items, mode, removeItem, totalItems, totalPrice, updateQuantity],
+    [clearCart, closeCart, hydrated, handleConfirmPedido, isGeneratingPdf, items, mode, removeItem, totalItems, totalPrice, updateQuantity, viewer],
   );
 
   if (!visible) {
