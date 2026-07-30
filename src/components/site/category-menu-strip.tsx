@@ -3,7 +3,7 @@ import type { CategoryItem } from "@/domain/site-content";
 import { categoryIconComponents, resolveCategoryIconKey, type CategoryIconKey } from "@/lib/category-icons";
 
 function CategoryCard({ category }: { category: CategoryItem }) {
-  const iconKey: CategoryIconKey = (category.icon as CategoryIconKey | undefined) ?? resolveCategoryIconKey(category.name);
+  const iconKey: CategoryIconKey = resolveCategoryIconKey(category.name, category.icon as CategoryIconKey | undefined);
   const Icon = categoryIconComponents[iconKey] ?? categoryIconComponents.package;
 
   return (
