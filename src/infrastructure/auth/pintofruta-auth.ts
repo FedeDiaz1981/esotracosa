@@ -307,6 +307,30 @@ export async function signOutViewerSession() {
   });
 }
 
+export async function getCurrentViewerFromCookie(): Promise<ViewerSession | null> {
+  const cookieStore = await cookies();
+  const rawCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
+  const payload = decodeSessionCookieValue(rawCookie);
+
+  if (!payload || isExpired(payload)) {
+    return null;
+  }
+
+  const role = normalizeRole(payload.role);
+
+  return {
+    authenticated: true,
+    userId: 0,
+    authUserId: payload.authUserId,
+    email: payload.email,
+    name: payload.name,
+    role,
+    canSeePrices: true,
+    active: true,
+    isAdmin: role === "Administrador",
+  };
+}
+
 export const getCurrentViewer = cache(async (): Promise<ViewerSession | null> => {
   const cookieStore = await cookies();
   const rawCookie = cookieStore.get(SESSION_COOKIE_NAME)?.value ?? null;
@@ -334,4 +358,3 @@ export async function requireAdminViewer() {
 
   return viewer;
 }
-

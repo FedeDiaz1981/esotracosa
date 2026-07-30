@@ -151,6 +151,7 @@ export function mapSiteContentDocument(params: {
       salesCount: product.sales_count ?? undefined,
       description: product.description ?? undefined,
       sourceSection: product.source_section ?? undefined,
+      templateRowMap: product.template_row_map ?? undefined,
       createdAt: product.created_at ?? undefined,
       updatedAt: product.updated_at ?? undefined,
     };

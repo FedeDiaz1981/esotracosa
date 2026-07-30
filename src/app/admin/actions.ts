@@ -100,6 +100,39 @@ function parseStringArray(value: unknown) {
   return [];
 }
 
+function parseTemplateRowMap(value: unknown) {
+  if (typeof value === "string" && value.trim()) {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return {};
+      }
+
+      return Object.entries(parsed as Record<string, unknown>).reduce<Record<string, number>>((acc, [key, currentValue]) => {
+        const rowNumber = Math.floor(toNumber(currentValue));
+        if (key && rowNumber > 0) {
+          acc[key] = rowNumber;
+        }
+        return acc;
+      }, {});
+    } catch {
+      return {};
+    }
+  }
+
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return Object.entries(value as Record<string, unknown>).reduce<Record<string, number>>((acc, [key, currentValue]) => {
+      const rowNumber = Math.floor(toNumber(currentValue));
+      if (key && rowNumber > 0) {
+        acc[key] = rowNumber;
+      }
+      return acc;
+    }, {});
+  }
+
+  return {};
+}
+
 function generateSku(id: number) {
   return `PF${String(id).padStart(4, "0")}`;
 }
@@ -194,9 +227,10 @@ async function saveProduct(record: PayloadRecord) {
         sales_count: number | null;
         description: string | null;
         source_section: string | null;
+        template_row_map: unknown;
       }>(
         `select sku, presentation, category_id, category_name, category_ids, category_names, status, image,
-                featured_priority, stock, views_count, sales_count, description, source_section
+                featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
          from products
          where id = $1
          limit 1`,
@@ -248,15 +282,19 @@ async function saveProduct(record: PayloadRecord) {
     record.salesCount == null || record.salesCount === "" ? existing?.sales_count ?? 0 : toNumber(record.salesCount);
   const description = toStringValue(record.description) || existing?.description || null;
   const sourceSection = toStringValue(record.sourceSection) || existing?.source_section || null;
+  const existingTemplateRowMap = parseTemplateRowMap(existing?.template_row_map);
+  const hasTemplateRowMap = Object.prototype.hasOwnProperty.call(record, "templateRowMap");
+  const templateRowMap = hasTemplateRowMap ? parseTemplateRowMap(record.templateRowMap) : existingTemplateRowMap;
+  const finalTemplateRowMap = hasTemplateRowMap ? templateRowMap : existingTemplateRowMap;
 
   await postgresPool!.query(
     `
       insert into products (
         id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand,
         vegano, kosher, testeado_en_animales, public_price, member_price, image,
-        status, featured, featured_priority, stock, views_count, sales_count, description, source_section
+        status, featured, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
       ) values (
-        $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24
+        $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25
       )
       on conflict (id) do update set
         sku = excluded.sku,
@@ -282,6 +320,7 @@ async function saveProduct(record: PayloadRecord) {
         sales_count = excluded.sales_count,
         description = excluded.description,
         source_section = excluded.source_section,
+        template_row_map = excluded.template_row_map,
         updated_at = now()
     `,
     [
@@ -309,6 +348,7 @@ async function saveProduct(record: PayloadRecord) {
       salesCount,
       description,
       sourceSection,
+      JSON.stringify(finalTemplateRowMap),
     ],
   );
 }

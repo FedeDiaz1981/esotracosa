@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { House, Menu, Search, UserRound, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { DynamicHeaderMenu } from "@/application/catalog";
 import { AuthModal } from "@/components/auth/auth-modal";
@@ -60,30 +60,42 @@ function MobileSearchModal({
           <label className="block text-xs font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]" htmlFor="mobile-search-query">
             Qué estás buscando
           </label>
-          <input
-            id="mobile-search-query"
-            name="query"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                event.preventDefault();
-                submitSearch();
-              }
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submitSearch();
             }}
-            placeholder="Ej: aloe vera, cosmética, natier"
-            className="w-full rounded-[1rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-sm outline-none transition focus:border-[var(--pf-primary)]"
-          />
+          >
+            <input
+              id="mobile-search-query"
+              name="query"
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  submitSearch();
+                }
+              }}
+              placeholder="Ej: aloe vera, cosmética, natier"
+              className="w-full rounded-[1rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-sm outline-none transition focus:border-[var(--pf-primary)]"
+            />
 
-          <div className="grid gap-3 pt-2">
-            <button type="button" onClick={submitSearch} className={buttonVariants({ variant: "primary", size: "md" })}>
-              Buscar
-            </button>
-            <Link href="/galeria" onClick={() => onOpenChange(false)} className={buttonVariants({ variant: "secondary", size: "md" })}>
-              Ver galería
-            </Link>
-          </div>
+            <div className="grid gap-3 pt-2">
+              <button type="submit" className={buttonVariants({ variant: "primary", size: "md" })}>
+                Buscar
+              </button>
+              <Link
+                href="/galeria"
+                onClick={() => onOpenChange(false)}
+                className={buttonVariants({ variant: "secondary", size: "md" })}
+              >
+                Ver galería
+              </Link>
+            </div>
+          </form>
         </div>
       </div>
 
@@ -93,12 +105,26 @@ function MobileSearchModal({
 }
 
 export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
-  const [loginOpen, setLoginOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const viewer = useViewer();
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
   void menus;
 
   const navColumns = viewer?.isAdmin ? "repeat(4, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))";
+
+  useEffect(() => {
+    const searchButton = searchButtonRef.current;
+    if (!searchButton) {
+      return undefined;
+    }
+
+    const handleClick = () => setSearchOpen(true);
+    searchButton.addEventListener("click", handleClick);
+
+    return () => {
+      searchButton.removeEventListener("click", handleClick);
+    };
+  }, []);
 
   return (
     <>
@@ -128,8 +154,8 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
         <div className="pf-shell grid h-[72px] items-center px-3" style={{ gridTemplateColumns: navColumns }}>
           <button
             type="button"
-            onClick={() => setLoginOpen(true)}
-            className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            onClick={() => window.dispatchEvent(new Event("pf-auth-modal:open"))}
+            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
             aria-label="Login"
           >
             <UserRound className="size-5" />
@@ -137,16 +163,16 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
 
           <Link
             href="/"
-            className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
             aria-label="Home"
           >
             <House className="size-5" />
           </Link>
 
           <button
+            ref={searchButtonRef}
             type="button"
-            onClick={() => setSearchOpen(true)}
-            className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
             aria-label="Buscar"
           >
             <Search className="size-5" />
@@ -155,7 +181,7 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
           {viewer?.isAdmin ? (
             <Link
               href="/admin"
-              className="flex h-12 items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+              className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
               aria-label="Administración"
             >
               <Menu className="size-5" />
@@ -164,7 +190,7 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
         </div>
       </div>
 
-      <AuthModal open={loginOpen} onOpenChange={setLoginOpen} />
+      <AuthModal toggleId="mobile-login-toggle" />
       <MobileSearchModal open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );

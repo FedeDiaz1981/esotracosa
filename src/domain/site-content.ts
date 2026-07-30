@@ -74,6 +74,7 @@ export interface ProductItem {
   salesCount?: number;
   description?: string;
   sourceSection?: string;
+  templateRowMap?: Record<string, number>;
   createdAt?: string;
   updatedAt?: string;
 }

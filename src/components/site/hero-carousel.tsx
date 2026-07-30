@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import type { HeroSlide } from "@/domain/site-content";
 import { publicAsset } from "@/lib/catalog";
@@ -97,6 +97,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
 export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
   const orderedSlides = useMemo(() => [...slides].sort((left, right) => left.order - right.order), [slides]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const desktopHeroRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (orderedSlides.length <= 1) {
@@ -108,6 +109,51 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     }, 5000);
 
     return () => window.clearInterval(timer);
+  }, [orderedSlides.length]);
+
+  useEffect(() => {
+    if (orderedSlides.length <= 1) {
+      return undefined;
+    }
+
+    const root = desktopHeroRef.current;
+
+    if (!root) {
+      return undefined;
+    }
+
+    const previousButton = root.querySelector<HTMLButtonElement>('button[aria-label="Banner anterior"]');
+    const nextButton = root.querySelector<HTMLButtonElement>('button[aria-label="Banner siguiente"]');
+    const dotButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-hero-slide-index]'));
+
+    const handlePrevious = () => {
+      setActiveIndex((current) => (current - 1 + orderedSlides.length) % orderedSlides.length);
+    };
+
+    const handleNext = () => {
+      setActiveIndex((current) => (current + 1) % orderedSlides.length);
+    };
+
+    const handleDot = (event: Event) => {
+      const target = event.currentTarget as HTMLButtonElement | null;
+      const nextIndex = Number(target?.dataset.heroSlideIndex);
+
+      if (Number.isNaN(nextIndex)) {
+        return;
+      }
+
+      setActiveIndex(nextIndex);
+    };
+
+    previousButton?.addEventListener("click", handlePrevious);
+    nextButton?.addEventListener("click", handleNext);
+    dotButtons.forEach((button) => button.addEventListener("click", handleDot));
+
+    return () => {
+      previousButton?.removeEventListener("click", handlePrevious);
+      nextButton?.removeEventListener("click", handleNext);
+      dotButtons.forEach((button) => button.removeEventListener("click", handleDot));
+    };
   }, [orderedSlides.length]);
 
   if (orderedSlides.length === 0) {
@@ -124,7 +170,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
     <>
       <MobileHeroCarousel slides={orderedSlides} visibleIndex={visibleIndex} />
 
-      <section className="relative hidden w-full overflow-hidden bg-[var(--pf-surface)] md:block">
+      <section ref={desktopHeroRef} className="relative hidden w-full overflow-hidden bg-[var(--pf-surface)] md:block">
         <div className="relative h-[clamp(306px,49vw,544px)] w-full overflow-hidden">
           {orderedSlides.map((slide, index) => {
             const active = index === visibleIndex;
@@ -173,7 +219,6 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
             <>
               <Button
                 type="button"
-                onClick={() => goToSlide(activeIndex - 1)}
                 variant="secondary"
                 size="icon"
                 className="absolute left-4 top-1/2 z-20 -translate-y-1/2 shadow-[0_12px_24px_rgba(74,57,38,0.16)]"
@@ -183,7 +228,6 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
               </Button>
               <Button
                 type="button"
-                onClick={() => goToSlide(activeIndex + 1)}
                 variant="secondary"
                 size="icon"
                 className="absolute right-4 top-1/2 z-20 -translate-y-1/2 shadow-[0_12px_24px_rgba(74,57,38,0.16)]"
@@ -200,7 +244,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 <button
                   key={slide.id}
                   type="button"
-                  onClick={() => setActiveIndex(index)}
+                  data-hero-slide-index={index}
                   aria-label={`Ir al banner ${index + 1}`}
                   className={`h-2.5 rounded-full transition-all ${index === visibleIndex ? "w-8 bg-[var(--pf-primary-darker)]" : "w-2.5 bg-[rgba(74,57,38,0.28)]"}`}
                 />

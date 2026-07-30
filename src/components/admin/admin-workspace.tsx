@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { deleteAdminRecord, deleteAdminRecords, saveAdminRecord } from "@/app/admin/actions";
 import { ExcelImportButton } from "@/components/admin/excel-import-button";
+import { OrderExcelTemplateButton } from "@/components/admin/order-excel-template-button";
 import type {
   AdminCrudViewModel,
   AdminFieldDefinition,
@@ -20,6 +21,8 @@ type PackSelection = {
   quantity: number;
   order: number;
 };
+
+type TemplateRowMap = Record<string, number>;
 
 type CatalogProductRow = Pick<
   ProductItem,
@@ -86,6 +89,18 @@ function toDraftValue(field: AdminFieldDefinition, value: unknown): string | num
     return "[]";
   }
 
+  if (field.kind === "template_rows") {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return JSON.stringify(value);
+    }
+
+    return "{}";
+  }
+
   if (field.kind === "file") {
     return value == null ? "" : String(value);
   }
@@ -127,6 +142,11 @@ function emptyDraftFor(table: AdminTableDefinition): DraftRecord {
       continue;
     }
 
+    if (field.kind === "template_rows") {
+      draft[field.key] = "{}";
+      continue;
+    }
+
     draft[field.key] = "";
   }
 
@@ -141,6 +161,11 @@ function draftFromRow(table: AdminTableDefinition, row: Record<string, unknown> 
   }
 
   for (const field of table.fields) {
+    if (table.key === "products" && field.kind === "template_rows") {
+      draft[field.key] = toDraftValue(field, row.template_row_map ?? row.templateRowMap);
+      continue;
+    }
+
     if (table.key === "products" && field.key === "active" && field.kind === "boolean" && row.active == null) {
       draft[field.key] = String(row.status ?? "").toLowerCase() !== "inactive";
       continue;
@@ -216,6 +241,33 @@ function serializeMultiSelectValues(values: string[]) {
 
 function serializePackSelections(selections: PackSelection[]) {
   return JSON.stringify(selections.map((item, index) => ({ ...item, order: index + 1 })));
+}
+
+function parseTemplateRowMap(value: unknown): TemplateRowMap {
+  if (typeof value !== "string" || !value.trim()) {
+    return {};
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return {};
+    }
+
+    return Object.entries(parsed as Record<string, unknown>).reduce<TemplateRowMap>((acc, [key, currentValue]) => {
+      const rowNumber = Math.floor(Number(currentValue));
+      if (key && Number.isFinite(rowNumber) && rowNumber > 0) {
+        acc[key] = rowNumber;
+      }
+      return acc;
+    }, {});
+  } catch {
+    return {};
+  }
+}
+
+function serializeTemplateRowMap(values: TemplateRowMap) {
+  return JSON.stringify(values);
 }
 
 async function uploadAdminImage(file: File, scope: string, fallbackName: string) {
@@ -874,6 +926,8 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
                 {selectedTable.key === "products" ? <ExcelImportButton /> : null}
 
+                {selectedTable.key === "products" ? <OrderExcelTemplateButton /> : null}
+
                 <button
                   type="button"
                   onClick={() => openNew(selectedTable)}
@@ -1143,14 +1197,15 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                   }
 
                   const value = editor.draft[field.key];
-                  const fullWidth =
+              const fullWidth =
                     field.kind === "textarea" ||
                     field.kind === "file" ||
                     field.kind === "select" ||
                     field.kind === "password" ||
                     field.kind === "boolean" ||
                     field.kind === "pack_products" ||
-                    field.kind === "multiselect";
+                    field.kind === "multiselect" ||
+                    field.kind === "template_rows";
 
                   if (field.kind === "pack_products") {
                     return (
@@ -1385,6 +1440,113 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                           readOnly={field.readonly}
                         />
                       </label>
+                    );
+                  }
+
+                  if (field.kind === "template_rows") {
+                    if (!editor.rowId) {
+                      return null;
+                    }
+
+                    const templateRowMap = parseTemplateRowMap(value);
+                    const templates = model.orderExcelTemplates ?? [];
+
+                    return (
+                      <div key={field.key} className="md:col-span-2">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">
+                            {field.label}
+                          </span>
+                          {field.helper ? <span className="text-xs text-[var(--pf-muted)]">{field.helper}</span> : null}
+                        </div>
+
+                        {templates.length === 0 ? (
+                          <div className="rounded-[22px] border border-dashed border-[var(--pf-border-soft)] bg-white px-4 py-4 text-sm text-[var(--pf-muted)]">
+                            Todavía no hay templates Excel cargados.
+                          </div>
+                        ) : (
+                          <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
+                            <div className="grid gap-3 md:grid-cols-2">
+                              {templates.map((template) => {
+                                const key = String(template.id);
+                                const currentValue = templateRowMap[key] ?? "";
+
+                                return (
+                                  <label
+                                    key={key}
+                                    className="rounded-[18px] border border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.55)] p-4"
+                                  >
+                                    <div className="mb-2 flex items-start justify-between gap-3">
+                                      <div>
+                                        <p className="text-xs font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">
+                                          {template.audience === "member" ? "Logueado" : "Público"} · v{template.version}
+                                        </p>
+                                        <p className="mt-1 text-sm font-bold text-[var(--pf-text)]">{template.file_name}</p>
+                                      </div>
+                                      <span
+                                        className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] ${
+                                          template.active
+                                            ? "bg-[rgba(168,109,69,0.12)] text-[var(--pf-primary-darker)]"
+                                            : "bg-[rgba(122,102,82,0.08)] text-[var(--pf-muted)]"
+                                        }`}
+                                      >
+                                        {template.active ? "Activo" : "Histórico"}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-xs font-semibold text-[var(--pf-muted)]">Fila exacta</span>
+                                      <input
+                                        type="number"
+                                        min={1}
+                                        placeholder="Ej: 49"
+                                        value={currentValue}
+                                        onChange={(event) => {
+                                          const rawValue = event.target.value.trim();
+                                          const nextTemplateRowMap = (() => {
+                                            const nextMap = { ...templateRowMap };
+
+                                            if (!rawValue) {
+                                              delete nextMap[key];
+                                              return nextMap;
+                                            }
+
+                                            const nextRowNumber = Math.floor(Number(rawValue));
+                                            if (Number.isFinite(nextRowNumber) && nextRowNumber > 0) {
+                                              nextMap[key] = nextRowNumber;
+                                              return nextMap;
+                                            }
+
+                                            delete nextMap[key];
+                                            return nextMap;
+                                          })();
+
+                                          setEditor((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  draft: {
+                                                    ...current.draft,
+                                                    [field.key]: serializeTemplateRowMap(nextTemplateRowMap),
+                                                  },
+                                                }
+                                              : current,
+                                          );
+                                        }}
+                                        className="min-w-0 flex-1 rounded-[18px] border border-[var(--pf-border-soft)] bg-white px-4 py-2.5 text-sm text-[var(--pf-text)] outline-none transition focus:border-[var(--pf-primary)]"
+                                      />
+                                    </div>
+                                  </label>
+                                );
+                              })}
+                            </div>
+
+                            <div className="rounded-[18px] border border-dashed border-[rgba(168,109,69,0.18)] bg-[rgba(168,109,69,0.06)] px-4 py-3 text-sm text-[var(--pf-primary-darker)]">
+                              Esta configuración sólo se usa para exportar el pedido Excel y marcar la fila exacta de este producto.
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     );
                   }
 

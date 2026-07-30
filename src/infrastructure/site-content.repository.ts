@@ -239,12 +239,12 @@ async function seedIfNeeded(client: PoolClient) {
           insert into products (
             id, sku, name, detail, presentation, category_id, category_name, brand,
             vegano, kosher, testeado_en_animales, public_price, member_price, image,
-            status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section
+            status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map
           ) values (
             $1, $2, $3, $4, $5, $6, $7, $8,
             $9, $10, $11, $12, $13, $14,
             $15, $16, $17, $18, $19, $20,
-            $21, $22, $23
+            $21, $22, $23, $24
           )
         `,
         [
@@ -271,6 +271,7 @@ async function seedIfNeeded(client: PoolClient) {
           product.salesCount ?? 0,
           product.description ?? null,
           product.sourceSection ?? null,
+          JSON.stringify(product.templateRowMap ?? {}),
         ],
       );
     }
@@ -333,7 +334,7 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
     );
     const productRows = await readRows<ProductRow>(
       client,
-      "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, created_at, updated_at from products where deleted_at is null order by id",
+      "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by id",
     );
     const packRows = await readRows<PackRow>(
       client,

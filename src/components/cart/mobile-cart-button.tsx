@@ -1,28 +1,26 @@
 "use client";
 
-import { ShoppingCart, X } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/cart/cart-context";
-import { Button } from "@/components/ui/button";
+
+const CART_TOGGLE_ID = "pf-cart-toggle";
 
 export function MobileCartButton() {
-  const { isOpen, toggleCart, totalItems } = useCart();
+  const { totalItems } = useCart();
 
   return (
-    <Button
-      type="button"
-      variant="secondary"
-      size="icon"
-      aria-label={isOpen ? "Cerrar carrito" : "Abrir carrito"}
-      aria-pressed={isOpen}
-      onClick={toggleCart}
-      className="relative"
+    <label
+      htmlFor={CART_TOGGLE_ID}
+      role="button"
+      aria-label="Carrito"
+      className="relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[rgba(168,109,69,0.15)] bg-[rgba(255,255,255,0.9)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(74,57,38,0.08)] transition hover:bg-[rgba(248,242,232,0.9)]"
     >
-      {isOpen ? <X className="size-4" /> : <ShoppingCart className="size-4" />}
+      <ShoppingCart className="size-4" />
       {totalItems > 0 ? (
         <span className="absolute -right-1 -top-1 inline-flex min-w-5 items-center justify-center rounded-full bg-[var(--pf-primary-darker)] px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
           {totalItems}
         </span>
       ) : null}
-    </Button>
+    </label>
   );
 }

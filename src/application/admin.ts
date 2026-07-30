@@ -1,6 +1,7 @@
 import { getSiteContent } from "@/infrastructure/site-content.repository";
 import type { BrandItem, CategoryItem, ProductItem, UserItem } from "@/domain/site-content";
 import { buildAdminCrudViewModel, type AdminCrudViewModel } from "@/application/admin-crud";
+import { listOrderExcelTemplates } from "@/infrastructure/order-template";
 
 function hasRenderableImage(product: ProductItem) {
   return Boolean(product.image && product.image.trim());
@@ -50,6 +51,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
 
 export async function getAdminPanelViewModel(): Promise<AdminCrudViewModel> {
   const content = await getSiteContent();
+  const orderExcelTemplates = await listOrderExcelTemplates();
   const activeProducts = content.products.filter((product) => product.status === "published");
   const activeBrands = content.brands.filter((brand) => brand.active !== false);
   const visibleCategories = (content.categories ?? []).filter((category) => category.visible);
@@ -72,5 +74,5 @@ export async function getAdminPanelViewModel(): Promise<AdminCrudViewModel> {
     currentPanel: content.activeAdminPanel ?? "hero",
   };
 
-  return buildAdminCrudViewModel(content, overview);
+  return buildAdminCrudViewModel(content, overview, orderExcelTemplates);
 }

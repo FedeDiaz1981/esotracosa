@@ -3,8 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Search, UserRound } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState, type FormEvent } from "react";
 
 import type { DynamicHeaderMenu } from "@/application/catalog";
 import { AuthModal } from "@/components/auth/auth-modal";
@@ -19,16 +18,31 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ menus }: SiteHeaderProps) {
-  const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [loginOpen, setLoginOpen] = useState(false);
   const [openMenuKey, setOpenMenuKey] = useState<string | null>(null);
   const viewer = useViewer();
 
-  const submitSearch = () => {
+  const openAuthModal = useCallback(() => {
+    window.dispatchEvent(new Event("pf-auth-modal:open"));
+  }, []);
+
+  const closeAllMenus = useCallback(() => {
+    setOpenMenuKey(null);
+  }, []);
+
+  const submitSearch = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const normalized = searchInputRef.current?.value.trim() ?? "";
+      window.location.assign(normalized ? `/busqueda?q=${encodeURIComponent(normalized)}` : "/galeria");
+    },
+    [],
+  );
+
+  const submitSearchDirect = useCallback(() => {
     const normalized = searchInputRef.current?.value.trim() ?? "";
-    router.push(normalized ? `/busqueda?q=${encodeURIComponent(normalized)}` : "/galeria");
-  };
+    window.location.assign(normalized ? `/busqueda?q=${encodeURIComponent(normalized)}` : "/galeria");
+  }, []);
 
   return (
     <>
@@ -49,21 +63,16 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
               />
             </Link>
 
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                submitSearch();
-              }}
-              className="w-full"
-            >
+            <form className="w-full" onSubmit={submitSearch}>
               <div className="overflow-hidden rounded-full border border-[var(--pf-border)] bg-[var(--pf-surface)] shadow-[var(--pf-shadow-soft)]">
                 <div className="flex flex-col sm:flex-row">
                   <Button
-                    type="submit"
+                    type="button"
                     variant="primary"
                     size="icon"
                     className="min-h-[52px] w-full rounded-none sm:w-[52px]"
                     aria-label="Buscar"
+                    onClick={submitSearchDirect}
                   >
                     <Search className="size-5" />
                   </Button>
@@ -79,9 +88,14 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
             </form>
 
             <div className="flex items-center justify-end gap-2">
-              <Button type="button" variant="secondary" size="icon" aria-label="Cuenta" onClick={() => setLoginOpen(true)}>
+              <button
+                type="button"
+                onClick={openAuthModal}
+                className={`${buttonVariants({ variant: "secondary", size: "icon" })} cursor-pointer`}
+                aria-label="Cuenta"
+              >
                 <UserRound className="size-4" />
-              </Button>
+              </button>
               <CartButton />
               {viewer?.isAdmin ? (
                 <Link href="/admin" className={`${buttonVariants({ variant: "primary", size: "md" })} !text-white`}>
@@ -121,10 +135,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--pf-muted)]">{menu.label}</p>
                         <p className="text-sm text-[var(--pf-muted)]">Agrupado por letras</p>
                       </div>
-                      <Link
-                        href="/galeria"
-                        className="btn btn-ghost btn-sm rounded-full border border-[var(--pf-border)] normal-case"
-                      >
+                      <Link href="/galeria" className="btn btn-ghost btn-sm rounded-full border border-[var(--pf-border)] normal-case">
                         Ver todo
                       </Link>
                     </div>
@@ -142,7 +153,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                                     <li key={item.href}>
                                       <Link
                                         href={item.href}
-                                        onClick={() => setOpenMenuKey(null)}
+                                        onClick={closeAllMenus}
                                         className="block rounded-xl px-3 py-2 text-sm text-[var(--pf-text)] transition hover:bg-[rgba(168,109,69,0.08)] hover:text-[var(--pf-primary-darker)]"
                                       >
                                         {item.label}
@@ -164,7 +175,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
         </div>
       </header>
 
-      <AuthModal open={loginOpen} onOpenChange={setLoginOpen} />
+      <AuthModal toggleId="desktop-login-toggle" />
     </>
   );
 }
