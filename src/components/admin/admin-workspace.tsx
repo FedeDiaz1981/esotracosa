@@ -1151,13 +1151,13 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
       {editor ? (
         <div
-          className="fixed inset-0 z-[12050] flex items-start justify-center bg-[#2d1f1480] px-4 py-6 pt-[96px] backdrop-blur-sm lg:pt-[136px]"
+          className="fixed inset-0 z-[12050] flex items-start justify-center bg-[#2d1f1480] px-4 pt-[96px] pb-8 backdrop-blur-sm lg:pt-[136px] lg:pb-10"
           onClick={closeEditor}
         >
-          <div
-            className="max-h-[92vh] w-full max-w-5xl overflow-hidden rounded-[30px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] shadow-[0_40px_120px_rgba(74,57,38,0.28)]"
-            onClick={(event) => event.stopPropagation()}
-          >
+        <div
+          className="flex max-h-[calc(100svh-10rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[30px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] shadow-[0_40px_120px_rgba(74,57,38,0.28)]"
+          onClick={(event) => event.stopPropagation()}
+        >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--pf-border-soft)] px-6 py-5">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-secondary)]">Edición</p>
@@ -1185,7 +1185,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                   event.preventDefault();
                 }
               }}
-              className="max-h-[calc(92vh-110px)] overflow-auto px-6 py-6"
+              className="min-h-0 flex-1 overflow-y-auto px-6 py-6 pb-12"
             >
               <input type="hidden" name="table" value={editor.tableKey} />
               <input type="hidden" name="payload_json" value={stringifyDraft(editor.draft)} />
