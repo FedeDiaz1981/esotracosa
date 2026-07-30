@@ -1,4 +1,19 @@
-import { Coffee, Dna, Leaf, Megaphone, Package, Sparkles, Snowflake, Ban, ShieldCheck, ShoppingBag } from "lucide-react";
+﻿import {
+  Ban,
+  CandyOff,
+  Coffee,
+  Dna,
+  Flame,
+  Leaf,
+  Megaphone,
+  Package,
+  ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Snowflake,
+  Sprout,
+  WheatOff,
+} from "lucide-react";
 
 const CATEGORY_ICON_KEYS = [
   "package",
@@ -11,6 +26,10 @@ const CATEGORY_ICON_KEYS = [
   "shield-check",
   "dna",
   "shopping-bag",
+  "flame",
+  "candy-off",
+  "wheat-off",
+  "sprout",
 ] as const;
 
 export type CategoryIconKey = (typeof CATEGORY_ICON_KEYS)[number];
@@ -39,6 +58,30 @@ function normalizeForMatch(value: string) {
 export function resolveCategoryIconKey(name: string, fallback: CategoryIconKey = "package"): CategoryIconKey {
   const normalized = normalizeForMatch(name);
 
+  if (/^keto\b/.test(normalized)) {
+    return "flame";
+  }
+
+  if (/^kosher\b/.test(normalized)) {
+    return "shield-check";
+  }
+
+  if (/^(organico|org[aá]nico)\b/.test(normalized)) {
+    return "leaf";
+  }
+
+  if (/^sin\s+azucar\b/.test(normalized)) {
+    return "candy-off";
+  }
+
+  if (/^sin\s+gluten\b/.test(normalized)) {
+    return "wheat-off";
+  }
+
+  if (/^vegano\b/.test(normalized)) {
+    return "sprout";
+  }
+
   for (const rule of keywordRules) {
     if (rule.patterns.some((pattern) => pattern.test(normalized))) {
       return rule.icon;
@@ -61,6 +104,10 @@ export const categoryIconLabels: Record<CategoryIconKey, string> = {
   "shield-check": "Certificado",
   dna: "Genético",
   "shopping-bag": "Bolsa",
+  flame: "Keto",
+  "candy-off": "Sin azúcar",
+  "wheat-off": "Sin gluten",
+  sprout: "Vegano",
 };
 
 export const categoryIconComponents = {
@@ -74,4 +121,8 @@ export const categoryIconComponents = {
   "shield-check": ShieldCheck,
   dna: Dna,
   "shopping-bag": ShoppingBag,
+  flame: Flame,
+  "candy-off": CandyOff,
+  "wheat-off": WheatOff,
+  sprout: Sprout,
 } satisfies Record<CategoryIconKey, typeof Package>;

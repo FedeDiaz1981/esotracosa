@@ -24,7 +24,8 @@ export type AdminFieldKind =
   | "multiselect"
   | "file"
   | "select"
-  | "password";
+  | "password"
+  | "template_rows";
 
 export interface AdminFieldOption {
   value: string;
@@ -60,6 +61,15 @@ export interface AdminCrudViewModel {
   overview: AdminOverview;
   tables: AdminTableDefinition[];
   productSelectionRows: ProductItem[];
+  orderExcelTemplates: {
+    id: number;
+    template_key: string;
+    audience: "guest" | "member";
+    version: number;
+    file_name: string;
+    active: boolean;
+    updated_at: string;
+  }[];
 }
 
 const tableOrder: AdminTableKey[] = [
@@ -131,6 +141,10 @@ function selectField(
 
 function packProductsField(key: string, label: string, helper?: string): AdminFieldDefinition {
   return { key, label, kind: "pack_products", helper };
+}
+
+function templateRowsField(key: string, label: string, helper?: string): AdminFieldDefinition {
+  return { key, label, kind: "template_rows", helper };
 }
 
 function multiselectField(
@@ -215,6 +229,11 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         numberField("salesCount", "Ventas", false, "Uso interno", true, true),
         textareaField("description", "Descripcion", false, "Uso interno", true),
         textField("sourceSection", "Seccion origen", false, "Uso interno", true, true),
+        templateRowsField(
+          "templateRowMap",
+          "Fila por template",
+          "Uso interno. Completa la fila exacta a marcar por cada plantilla guardada.",
+        ),
       ],
     },
     {
@@ -471,7 +490,11 @@ export function getAdminTableDefinition(content: SiteContentDocument, key: Admin
   return getAdminTableDefinitions(content).find((table) => table.key === key) ?? null;
 }
 
-export function buildAdminCrudViewModel(content: SiteContentDocument, overview: AdminOverview): AdminCrudViewModel {
+export function buildAdminCrudViewModel(
+  content: SiteContentDocument,
+  overview: AdminOverview,
+  orderExcelTemplates: AdminCrudViewModel["orderExcelTemplates"] = [],
+): AdminCrudViewModel {
   const tables = getAdminTableDefinitions(content);
   const orderedTables = tableOrder
     .map((key) => tables.find((table) => table.key === key))
@@ -484,6 +507,7 @@ export function buildAdminCrudViewModel(content: SiteContentDocument, overview: 
     overview,
     tables: orderedTables,
     productSelectionRows,
+    orderExcelTemplates,
   };
 }
 

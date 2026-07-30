@@ -66,7 +66,22 @@ async function ensurePublicBucket(bucket: string) {
   return supabase;
 }
 
-export async function storeImageOnSupabase(file: File, scope: string, fallbackName: string, adminLog?: (stage: string, details?: Record<string, unknown>) => void) {
+export type StoredFileResult = {
+  bucket: string;
+  storagePath: string;
+  fileName: string;
+  publicUrl: string;
+  mimeType: string;
+  size: number;
+};
+
+export async function storeFileOnSupabase(
+  file: File,
+  scope: string,
+  fallbackName: string,
+  adminLog?: (stage: string, details?: Record<string, unknown>) => void,
+  options?: { allowDataUrlFallback?: boolean },
+): Promise<StoredFileResult> {
   const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
   const extension = extname(file.name || "").toLowerCase() || ".png";
   const safeName = slugify(fallbackName || file.name || "imagen");
@@ -106,8 +121,19 @@ export async function storeImageOnSupabase(file: File, scope: string, fallbackNa
       size: buffer.length,
     });
 
-    return publicUrl;
+    return {
+      bucket,
+      storagePath,
+      fileName,
+      publicUrl,
+      mimeType,
+      size: buffer.length,
+    };
   } catch (error) {
+    if (options?.allowDataUrlFallback === false) {
+      throw error;
+    }
+
     const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
     adminLog?.("upload:supabase-failed-data-url-fallback", {
       scope,
@@ -116,6 +142,23 @@ export async function storeImageOnSupabase(file: File, scope: string, fallbackNa
       error: error instanceof Error ? error.message : String(error),
       fallbackLength: dataUrl.length,
     });
-    return dataUrl;
+    return {
+      bucket,
+      storagePath,
+      fileName,
+      publicUrl: dataUrl,
+      mimeType,
+      size: buffer.length,
+    };
   }
+}
+
+export async function storeImageOnSupabase(
+  file: File,
+  scope: string,
+  fallbackName: string,
+  adminLog?: (stage: string, details?: Record<string, unknown>) => void,
+) {
+  const result = await storeFileOnSupabase(file, scope, fallbackName, adminLog);
+  return result.publicUrl;
 }

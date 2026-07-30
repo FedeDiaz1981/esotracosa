@@ -119,6 +119,7 @@ export type SeedProduct = {
   sales_count: number | null;
   description: string | null;
   source_section: string | null;
+  template_row_map?: Record<string, number> | null;
   created_at: string | null;
   updated_at: string | null;
 };

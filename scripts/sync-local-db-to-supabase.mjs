@@ -18,6 +18,7 @@ const targetTables = [
   "products",
   "promotion_packs",
   "promotion_pack_items",
+  "order_excel_templates",
 ];
 
 function loadEnv(filePath) {
@@ -68,6 +69,7 @@ async function fetchRows(client, tableName) {
     products: "id",
     promotion_packs: "order_index, id",
     promotion_pack_items: "order_index, pack_id, product_id",
+    order_excel_templates: "template_key, audience, version, id",
   }[tableName];
 
   const query = orderBy

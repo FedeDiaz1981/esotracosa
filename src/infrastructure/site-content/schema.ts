@@ -128,6 +128,7 @@ export const siteContentSchemaSql = `
     sales_count integer not null default 0,
     description text,
     source_section text,
+    template_row_map jsonb not null default '{}'::jsonb,
     deleted_at timestamptz,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
@@ -140,6 +141,7 @@ export const siteContentSchemaSql = `
   alter table products add column if not exists sales_count integer not null default 0;
   alter table products add column if not exists category_ids jsonb not null default '[]'::jsonb;
   alter table products add column if not exists category_names jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists template_row_map jsonb not null default '{}'::jsonb;
   alter table products add column if not exists deleted_at timestamptz;
 
   create table if not exists promotion_packs (
@@ -167,4 +169,25 @@ export const siteContentSchemaSql = `
 
   alter table promotion_packs add column if not exists created_at timestamptz not null default now();
   alter table promotion_packs add column if not exists updated_at timestamptz not null default now();
-`;
+
+  create table if not exists order_excel_templates (
+    id integer primary key,
+    template_key text not null,
+    audience text not null,
+    version integer not null,
+    file_name text not null,
+    storage_bucket text not null default 'uploads',
+    storage_path text not null,
+    mime_type text not null default 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    active boolean not null default true,
+    notes text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  );
+
+  create unique index if not exists order_excel_templates_key_version_key on order_excel_templates (template_key, audience, version);
+  create index if not exists order_excel_templates_active_idx on order_excel_templates (template_key, audience, active);
+
+  alter table order_excel_templates add column if not exists created_at timestamptz not null default now();
+  alter table order_excel_templates add column if not exists updated_at timestamptz not null default now();
+`; 
