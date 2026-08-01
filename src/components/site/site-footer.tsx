@@ -7,7 +7,7 @@ export function SiteFooter() {
     <footer className="hidden border-t border-[var(--pf-border-warm)] bg-[linear-gradient(180deg,var(--pf-primary-darker),var(--pf-primary-dark))] text-[#f8f1e7] lg:block">
       <div className="pf-shell grid gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.4fr_1fr] lg:px-12">
         <div>
-          <div className="inline-flex items-center gap-3 rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3 shadow-sm">
+          <div className="inline-flex items-center gap-3 rounded-full border-2 border-[rgba(214,184,152,0.75)] bg-[#f8f2e8f5] px-4 py-3 shadow-[0_8px_18px_rgba(74,57,38,0.10),inset_0_0_0_1px_rgba(255,255,255,0.22)]">
             <Image
               src={publicAsset("/assets/images/logo/logo-Pintofruta.png")}
               alt="Pintofruta"
