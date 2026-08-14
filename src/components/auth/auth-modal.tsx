@@ -57,8 +57,8 @@ export function AuthModal({ toggleId }: AuthModalProps) {
         className={`relative z-[12051] mx-auto flex min-h-full items-start justify-center px-4 pt-[96px] transition-opacity lg:pt-[136px] ${isOpen ? "opacity-100" : "opacity-0"}`}
         aria-hidden={!isOpen}
       >
-        <div className="w-[min(92vw,26rem)] max-w-none overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
-          <div className="flex items-center justify-between border-b border-[rgba(168,109,69,0.12)] px-5 py-4">
+        <div className="w-[min(92vw,26rem)] max-w-none overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(29,24,20,0.26)]">
+          <div className="flex items-center justify-between border-b border-[rgba(200,154,21,0.12)] px-5 py-4">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">Acceso</p>
               <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--pf-text)]">{viewer ? "Mi cuenta" : "Iniciar sesión"}</h2>
@@ -107,7 +107,7 @@ export function AuthModal({ toggleId }: AuthModalProps) {
               </div>
 
               {state.error ? (
-                <p className="rounded-2xl border border-[rgba(216,75,57,0.22)] bg-[rgba(216,75,57,0.08)] px-4 py-3 text-sm font-medium text-[#9c2c1d]">
+                <p className="rounded-2xl border border-[rgba(227,48,38,0.22)] bg-[rgba(227,48,38,0.08)] px-4 py-3 text-sm font-medium text-[#9c2c1d]">
                   {state.error}
                 </p>
               ) : null}
@@ -128,7 +128,7 @@ export function AuthModal({ toggleId }: AuthModalProps) {
                 <p className="mt-2 text-lg font-black text-[var(--pf-text)]">{viewer.name}</p>
                 <p className="mt-1 text-sm text-[var(--pf-muted)]">{viewer.email}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-[rgba(168,109,69,0.12)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
+                  <span className="rounded-full bg-[rgba(200,154,21,0.12)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
                     {viewer.role}
                   </span>
                   {viewer.isAdmin ? (
@@ -136,7 +136,7 @@ export function AuthModal({ toggleId }: AuthModalProps) {
                       Administrador
                     </span>
                   ) : (
-                    <span className="rounded-full bg-[rgba(168,109,69,0.08)] px-3 py-1 text-xs font-semibold text-[var(--pf-muted)]">
+                    <span className="rounded-full bg-[rgba(200,154,21,0.08)] px-3 py-1 text-xs font-semibold text-[var(--pf-muted)]">
                       Cliente
                     </span>
                   )}

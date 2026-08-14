@@ -117,13 +117,13 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-5">
               <div className="flex items-center gap-3">
                 <span className="text-sm text-[var(--pf-muted)]">Ordenar por:</span>
-                <div className="flex overflow-hidden rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] p-1">
+                <div className="flex overflow-hidden rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] p-1">
                   <Link
                     href={buildHref({ sort: "name", type: "packs" })}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                       sort === "name"
-                        ? "bg-[rgba(168,109,69,0.16)] text-[var(--pf-primary-darker)]"
-                        : "text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                        ? "bg-[rgba(200,154,21,0.16)] text-[var(--pf-primary-darker)]"
+                        : "text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                     }`}
                   >
                     Nombre
@@ -132,8 +132,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                     href={buildHref({ sort: "price", type: "packs" })}
                     className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                       sort === "price"
-                        ? "bg-[rgba(168,109,69,0.16)] text-[var(--pf-primary-darker)]"
-                        : "text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                        ? "bg-[rgba(200,154,21,0.16)] text-[var(--pf-primary-darker)]"
+                        : "text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                     }`}
                   >
                     Precio
@@ -154,8 +154,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                         href={buildHref({ view: option, type: "packs" })}
                         className={`inline-flex h-8 items-center justify-center rounded-md border px-2 transition ${
                           selected
-                            ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)]"
-                            : "border-[var(--pf-border)] bg-[rgba(255,255,255,0.84)] hover:bg-[rgba(248,242,232,0.75)]"
+                            ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)]"
+                            : "border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] hover:bg-[rgba(245,243,239,0.75)]"
                         }`}
                         aria-label={`Ver en ${option} columnas`}
                       >
@@ -179,14 +179,14 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               href={buildHref({ type: "products" })}
-              className="inline-flex items-center rounded-full border border-[rgba(168,109,69,0.18)] bg-[rgba(255,255,255,0.78)] px-4 py-2 text-sm font-semibold text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.92)]"
+              className="inline-flex items-center rounded-full border border-[rgba(200,154,21,0.18)] bg-[rgba(255,255,255,0.88)] px-4 py-2 text-sm font-semibold text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.92)]"
             >
               Ver productos
             </Link>
             {query ? (
               <Link
                 href={buildHref({ q: "" })}
-                className="inline-flex items-center rounded-full border border-[rgba(168,109,69,0.18)] bg-[rgba(255,255,255,0.78)] px-4 py-2 text-sm font-semibold text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.92)]"
+                className="inline-flex items-center rounded-full border border-[rgba(200,154,21,0.18)] bg-[rgba(255,255,255,0.88)] px-4 py-2 text-sm font-semibold text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.92)]"
               >
                 Búsqueda: {query}
               </Link>
@@ -249,8 +249,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                 href={buildHref({ brand: "" })}
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                   !brand
-                    ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                    : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                    ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                    : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                 }`}
               >
                 <span>Todas las marcas</span>
@@ -265,12 +265,12 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                     href={buildHref({ brand: active ? "" : item.value })}
                     className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                       active
-                        ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                        ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                     }`}
                   >
                     <span className="line-clamp-1">{item.label}</span>
-                    <span className="rounded-full bg-[rgba(168,109,69,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
+                    <span className="rounded-full bg-[rgba(200,154,21,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
                       {item.count}
                     </span>
                   </Link>
@@ -296,8 +296,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                 href={buildHref({ category: "" })}
                 className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                   !category
-                    ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                    : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                    ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                    : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                 }`}
               >
                 <span>Todas las categorías</span>
@@ -312,12 +312,12 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                     href={buildHref({ category: active ? "" : item.value })}
                     className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                       active
-                        ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                        ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                     }`}
                   >
                     <span className="line-clamp-1">{item.label}</span>
-                    <span className="rounded-full bg-[rgba(168,109,69,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
+                    <span className="rounded-full bg-[rgba(200,154,21,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
                       {item.count}
                     </span>
                   </Link>
@@ -336,13 +336,13 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                 </span>
                 <span className="mt-1 block text-sm text-[var(--pf-muted)]">Marca y categoría</span>
               </span>
-              <span className="rounded-full border border-[rgba(168,109,69,0.18)] bg-[rgba(255,255,255,0.78)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
+              <span className="rounded-full border border-[rgba(200,154,21,0.18)] bg-[rgba(255,255,255,0.88)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
                 Abrir
               </span>
             </summary>
 
             <div className="mt-4 grid gap-4">
-              <section className="rounded-[1.5rem] border border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] p-4">
+              <section className="rounded-[1.5rem] border border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--pf-primary-darker)]">Marca</p>
@@ -359,8 +359,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                     href={buildHref({ brand: "" })}
                     className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                       !brand
-                        ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                        ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                     }`}
                   >
                     <span>Todas las marcas</span>
@@ -375,12 +375,12 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                         href={buildHref({ brand: active ? "" : item.value })}
                         className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                           active
-                            ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                            : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                            ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                            : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                         }`}
                       >
                         <span className="line-clamp-1">{item.label}</span>
-                        <span className="rounded-full bg-[rgba(168,109,69,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
+                        <span className="rounded-full bg-[rgba(200,154,21,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
                           {item.count}
                         </span>
                       </Link>
@@ -389,7 +389,7 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                 </div>
               </section>
 
-              <section className="rounded-[1.5rem] border border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] p-4">
+              <section className="rounded-[1.5rem] border border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--pf-primary-darker)]">Categoría</p>
@@ -406,8 +406,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                     href={buildHref({ category: "" })}
                     className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                       !category
-                        ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                        ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                        : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                     }`}
                   >
                     <span>Todas las categorías</span>
@@ -422,12 +422,12 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                         href={buildHref({ category: active ? "" : item.value })}
                         className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
                           active
-                            ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)] font-semibold text-[var(--pf-primary-darker)]"
-                            : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.72)] text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                            ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)] font-semibold text-[var(--pf-primary-darker)]"
+                            : "border-[var(--pf-border-soft)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                         }`}
                       >
                         <span className="line-clamp-1">{item.label}</span>
-                        <span className="rounded-full bg-[rgba(168,109,69,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
+                        <span className="rounded-full bg-[rgba(200,154,21,0.10)] px-2.5 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]">
                           {item.count}
                         </span>
                       </Link>
@@ -450,13 +450,13 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-5">
                 <div className="flex items-center gap-3">
                   <span className="text-sm text-[var(--pf-muted)]">Ordenar por:</span>
-                  <div className="flex overflow-hidden rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] p-1">
+                  <div className="flex overflow-hidden rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] p-1">
                     <Link
                       href={buildHref({ sort: "name", type: "products" })}
                       className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                         sort === "name"
-                          ? "bg-[rgba(168,109,69,0.16)] text-[var(--pf-primary-darker)]"
-                          : "text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                          ? "bg-[rgba(200,154,21,0.16)] text-[var(--pf-primary-darker)]"
+                          : "text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                       }`}
                     >
                       Nombre
@@ -465,8 +465,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                       href={buildHref({ sort: "price", type: "products" })}
                       className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
                         sort === "price"
-                          ? "bg-[rgba(168,109,69,0.16)] text-[var(--pf-primary-darker)]"
-                          : "text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.75)]"
+                          ? "bg-[rgba(200,154,21,0.16)] text-[var(--pf-primary-darker)]"
+                          : "text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
                       }`}
                     >
                       Precio
@@ -487,8 +487,8 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                           href={buildHref({ view: option, type: "products" })}
                           className={`inline-flex h-8 items-center justify-center rounded-md border px-2 transition ${
                             selected
-                              ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.10)]"
-                              : "border-[var(--pf-border)] bg-[rgba(255,255,255,0.84)] hover:bg-[rgba(248,242,232,0.75)]"
+                              ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.10)]"
+                              : "border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] hover:bg-[rgba(245,243,239,0.75)]"
                           }`}
                           aria-label={`Ver en ${option} columnas`}
                         >
@@ -515,7 +515,7 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                   <Link
                     key={filter.label}
                     href={filter.href}
-                    className="inline-flex items-center rounded-full border border-[rgba(168,109,69,0.18)] bg-[rgba(255,255,255,0.78)] px-4 py-2 text-sm font-semibold text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.92)]"
+                    className="inline-flex items-center rounded-full border border-[rgba(200,154,21,0.18)] bg-[rgba(255,255,255,0.88)] px-4 py-2 text-sm font-semibold text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.92)]"
                   >
                     {filter.label}
                   </Link>

@@ -1,4 +1,4 @@
-ï»¿"use client";
+"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -336,7 +336,7 @@ function formatCellValue(field: AdminFieldDefinition | undefined, value: unknown
 
   if (field?.kind === "number") {
     if (value == null || value === "") {
-      return "â€”";
+      return "—";
     }
 
     const numeric = Number(value);
@@ -352,7 +352,7 @@ function formatCellValue(field: AdminFieldDefinition | undefined, value: unknown
   }
 
   if (value == null || value === "") {
-    return "â€”";
+    return "—";
   }
 
   return String(value);
@@ -365,11 +365,11 @@ function getCreateLabel(table: AdminTableDefinition) {
     case "products":
       return "Nuevo producto";
     case "packs":
-      return "Nueva promociÃ³n";
+      return "Nueva promoción";
     case "brands":
       return "Nueva marca";
     case "categories":
-      return "Nueva categorÃ­a";
+      return "Nueva categoría";
     case "users":
       return "Nuevo usuario";
     default:
@@ -515,7 +515,7 @@ function PackProductsField({
   return (
     <div className="space-y-4 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex h-12 flex-1 items-center rounded-full border border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] px-4 text-[var(--pf-muted)]">
+        <label className="flex h-12 flex-1 items-center rounded-full border border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 text-[var(--pf-muted)]">
           <span className="text-sm">Buscar</span>
           <input
             type="text"
@@ -529,7 +529,7 @@ function PackProductsField({
         <button
           type="button"
           onClick={() => updateSelections([])}
-          className="rounded-full border border-[var(--pf-border-soft)] bg-white px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(248,242,232,0.6)]"
+          className="rounded-full border border-[var(--pf-border-soft)] bg-white px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(245,243,239,0.6)]"
         >
           Limpiar selecci?n
         </button>
@@ -547,7 +547,7 @@ function PackProductsField({
             return (
               <span
                 key={selection.productId}
-                className="inline-flex items-center gap-2 rounded-full border border-[rgba(168,109,69,0.16)] bg-[rgba(168,109,69,0.08)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]"
+                className="inline-flex items-center gap-2 rounded-full border border-[rgba(200,154,21,0.16)] bg-[rgba(200,154,21,0.08)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]"
               >
                 {String(product.name)}
                 <button
@@ -566,7 +566,7 @@ function PackProductsField({
       </div>
 
       <div className="max-h-[320px] overflow-auto rounded-[20px] border border-[var(--pf-border-soft)]">
-        <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,0.7fr)_auto] gap-3 border-b border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] px-4 py-3 text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
+        <div className="grid grid-cols-[minmax(0,1.5fr)_minmax(0,0.7fr)_auto] gap-3 border-b border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 py-3 text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
           <span>Producto</span>
           <span>Cantidad</span>
           <span>Acci?n</span>
@@ -588,7 +588,7 @@ function PackProductsField({
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-[var(--pf-text)]">{product.name}</p>
                   <p className="text-sm text-[var(--pf-muted)]">
-                    {product.sku} Â· {product.brand}
+                    {product.sku} · {product.brand}
                   </p>
                 </div>
 
@@ -599,7 +599,7 @@ function PackProductsField({
                     value={selection?.quantity ?? 1}
                     onChange={(event) => setQuantity(productId, Number(event.target.value))}
                     disabled={!selected}
-                    className="w-full rounded-xl border border-[var(--pf-border-soft)] bg-white px-3 py-2 text-sm font-semibold text-[var(--pf-text)] outline-none disabled:bg-[rgba(248,242,232,0.6)]"
+                    className="w-full rounded-xl border border-[var(--pf-border-soft)] bg-white px-3 py-2 text-sm font-semibold text-[var(--pf-text)] outline-none disabled:bg-[rgba(245,243,239,0.6)]"
                   />
                 </div>
 
@@ -608,8 +608,8 @@ function PackProductsField({
                   onClick={() => toggleProduct(product)}
                   className={`rounded-full px-4 py-2 text-xs font-bold transition ${
                     selected
-                      ? "border border-[rgba(168,109,69,0.18)] bg-[rgba(168,109,69,0.12)] text-[var(--pf-primary-darker)]"
-                      : "border border-[var(--pf-border-soft)] bg-white text-[var(--pf-primary-darker)] hover:bg-[rgba(248,242,232,0.6)]"
+                      ? "border border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.12)] text-[var(--pf-primary-darker)]"
+                      : "border border-[var(--pf-border-soft)] bg-white text-[var(--pf-primary-darker)] hover:bg-[rgba(245,243,239,0.6)]"
                   }`}
                 >
                   {selected ? "Quitar" : "Agregar"}
@@ -798,7 +798,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
     <main className="pf-admin min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,252,246,0.98),_rgba(244,235,221,0.96)_44%,_rgba(232,218,194,0.98))] text-[var(--pf-text)]">
       <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col xl:flex-row">
         <aside className="border-b border-[var(--pf-border)] bg-[linear-gradient(180deg,var(--pf-primary-darker)_0%,var(--pf-primary-dark)_52%,var(--pf-primary)_100%)] px-4 py-5 text-[#fff8ee] shadow-[inset_-1px_0_0_rgba(255,255,255,0.05)] xl:w-[300px] xl:border-b-0 xl:border-r xl:px-5 xl:py-6">
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-4 shadow-[0_20px_50px_rgba(74,57,38,0.14)]">
+          <div className="rounded-[28px] border border-white/10 bg-white/10 p-4 shadow-[0_20px_50px_rgba(29,24,20,0.14)]">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,var(--pf-secondary-dark)_0%,var(--pf-primary)_100%)] text-lg font-black tracking-tight text-white">
                 PF
@@ -824,7 +824,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 <div key={section.title}>
                   <div className="mb-3 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.34em] text-[#f8f1e7]/70">
                     <span>{section.title}</span>
-                    <span>â–¾</span>
+                    <span>?</span>
                   </div>
                   <div className="space-y-2">
                     {sectionTables.map((table) => {
@@ -844,7 +844,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                           }}
                           className={`flex w-full items-center justify-between rounded-[18px] px-4 py-4 text-left transition ${
                             active
-                              ? "bg-[linear-gradient(90deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] text-[var(--pf-text)] shadow-[0_14px_30px_rgba(168,109,69,0.18)]"
+                              ? "bg-[linear-gradient(90deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] text-[var(--pf-text)] shadow-[0_14px_30px_rgba(200,154,21,0.18)]"
                               : "bg-transparent text-[#f8f1e7]/80 hover:bg-white/10"
                           }`}
                         >
@@ -864,7 +864,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
         </aside>
 
         <section className="flex-1 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
-          <div className="rounded-[30px] border border-[var(--pf-border)] bg-[rgba(250,246,239,0.92)] p-5 shadow-[0_24px_60px_rgba(58,44,25,0.12)] backdrop-blur">
+          <div className="rounded-[30px] border border-[var(--pf-border)] bg-[rgba(245,243,239,0.92)] p-5 shadow-[0_24px_60px_rgba(58,44,25,0.12)] backdrop-blur">
             <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
               <div className="max-w-3xl">
                 <p className="text-[11px] font-black uppercase tracking-[0.36em] text-[var(--pf-secondary)]">Administracion</p>
@@ -883,7 +883,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.packs}</p>
                 </div>
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">CategorÃ­as</p>
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Categorías</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.categories}</p>
                 </div>
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
@@ -918,7 +918,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                   <button
                     type="button"
                     onClick={handleBulkDelete}
-                    className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-6 text-sm font-black text-white shadow-[0_14px_28px_rgba(111,69,40,0.18)] transition hover:brightness-105"
+                    className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(29,24,20,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-6 text-sm font-black text-white shadow-[0_14px_28px_rgba(29,24,20,0.18)] transition hover:brightness-105"
                   >
                     Borrar seleccionados ({selectedRowIds.length})
                   </button>
@@ -931,7 +931,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 <button
                   type="button"
                   onClick={() => openNew(selectedTable)}
-                  className="inline-flex h-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105"
+                  className="inline-flex h-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(200,154,21,0.22)] transition hover:brightness-105"
                 >
                   {getCreateLabel(selectedTable)}
                 </button>
@@ -956,15 +956,15 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="min-w-[120px] rounded-[20px] border border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] px-4 py-3">
+                    <div className="min-w-[120px] rounded-[20px] border border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 py-3">
                       <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Activos</p>
                       <p className="mt-1 text-xl font-black text-[var(--pf-text)]">{activeCount}</p>
                     </div>
-                    <div className="min-w-[120px] rounded-[20px] border border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] px-4 py-3">
+                    <div className="min-w-[120px] rounded-[20px] border border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 py-3">
                       <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Orden max</p>
                       <p className="mt-1 text-xl font-black text-[var(--pf-text)]">{maxOrder}</p>
                     </div>
-                    <div className="min-w-[120px] rounded-[20px] border border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] px-4 py-3">
+                    <div className="min-w-[120px] rounded-[20px] border border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 py-3">
                       <p className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">Total</p>
                       <p className="mt-1 text-xl font-black text-[var(--pf-text)]">{totalCount}</p>
                     </div>
@@ -974,7 +974,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 <div className="mt-5 overflow-hidden rounded-[24px] border border-[var(--pf-border-soft)] bg-white">
                   <div className="overflow-x-auto">
                     <table className="min-w-[960px] w-full border-collapse">
-                      <thead className="bg-[rgba(248,242,232,0.6)]">
+                      <thead className="bg-[rgba(245,243,239,0.6)]">
                         <tr>
                           <th className="border-b border-[var(--pf-border-soft)] px-4 py-4 text-left text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
                             <input
@@ -1054,7 +1054,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                     <div
                                       className={
                                         field?.kind === "boolean"
-                                          ? "inline-flex rounded-full bg-[rgba(168,109,69,0.12)] px-3 py-1 text-[11px] font-bold text-[var(--pf-primary-darker)]"
+                                          ? "inline-flex rounded-full bg-[rgba(200,154,21,0.12)] px-3 py-1 text-[11px] font-bold text-[var(--pf-primary-darker)]"
                                           : "max-w-[15rem] break-words leading-6"
                                       }
                                     >
@@ -1068,7 +1068,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                   <button
                                     type="button"
                                     onClick={() => openEdit(selectedTable, row)}
-                                    className="rounded-full border border-[rgba(111,69,40,0.18)] bg-[var(--pf-primary)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
+                                    className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
                                   >
                                     Editar
                                   </button>
@@ -1076,7 +1076,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                   <button
                                     type="button"
                                     onClick={() => handleQuickDelete(selectedTable, row)}
-                                    className="rounded-full border border-[rgba(111,69,40,0.18)] bg-[var(--pf-primary-darker)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
+                                    className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary-darker)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
                                   >
                                     Borrar
                                   </button>
@@ -1097,15 +1097,15 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
       {bulkDeleteState?.open ? (
         <div className="fixed inset-0 z-[12050] flex items-start justify-center bg-[#2d1f1470] px-4 py-6 pt-[96px] backdrop-blur-sm lg:pt-[136px]">
-          <div className="w-full max-w-md rounded-[28px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] p-6 shadow-[0_32px_120px_rgba(74,57,38,0.3)]">
+          <div className="w-full max-w-md rounded-[28px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] p-6 shadow-[0_32px_120px_rgba(29,24,20,0.3)]">
             <div className="flex items-start gap-4">
               <div
                 className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${
                   bulkDeleteState.loading
-                    ? "border-[rgba(168,109,69,0.22)] bg-[rgba(168,109,69,0.12)]"
+                    ? "border-[rgba(200,154,21,0.22)] bg-[rgba(200,154,21,0.12)]"
                     : bulkDeleteState.error
                       ? "border-[rgba(185,79,54,0.24)] bg-[rgba(185,79,54,0.12)]"
-                      : "border-[rgba(74,57,38,0.14)] bg-white"
+                      : "border-[rgba(29,24,20,0.14)] bg-white"
                 }`}
               >
                 {bulkDeleteState.loading ? (
@@ -1113,7 +1113,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 ) : bulkDeleteState.error ? (
                   <span className="text-lg font-black text-[var(--pf-wood-muted)]">!</span>
                 ) : (
-                  <span className="text-lg font-black text-[var(--pf-primary-darker)]">âœ“</span>
+                  <span className="text-lg font-black text-[var(--pf-primary-darker)]">?</span>
                 )}
               </div>
 
@@ -1140,7 +1140,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
               <button
                 type="button"
                 onClick={() => setBulkDeleteState(null)}
-                className="rounded-full border border-[var(--pf-border-soft)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(248,242,232,0.6)]"
+                className="rounded-full border border-[var(--pf-border-soft)] bg-white px-5 py-2.5 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(245,243,239,0.6)]"
               >
                 {bulkDeleteState.loading ? "Procesando..." : "Cerrar"}
               </button>
@@ -1155,24 +1155,24 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
           onClick={closeEditor}
         >
         <div
-          className="flex max-h-[calc(100svh-10rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[30px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] shadow-[0_40px_120px_rgba(74,57,38,0.28)]"
+          className="flex max-h-[calc(100svh-10rem)] w-full max-w-5xl flex-col overflow-hidden rounded-[30px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] shadow-[0_40px_120px_rgba(29,24,20,0.28)]"
           onClick={(event) => event.stopPropagation()}
         >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--pf-border-soft)] px-6 py-5">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-secondary)]">EdiciÃ³n</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-secondary)]">Edición</p>
                 <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--pf-text)]">
                   {editor.rowId ? "Editar registro" : "Nuevo registro"}
                 </h3>
                 <p className="mt-2 text-sm text-[var(--pf-primary-darker)]">
-                  {selectedTable.label} / {editor.rowId || "creaciÃ³n"}
+                  {selectedTable.label} / {editor.rowId || "creación"}
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={closeEditor}
-                className="rounded-full border border-[var(--pf-border-soft)] bg-white px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(248,242,232,0.6)]"
+                className="rounded-full border border-[var(--pf-border-soft)] bg-white px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(245,243,239,0.6)]"
               >
                 Cerrar
               </button>
@@ -1262,7 +1262,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                 return (
                                   <span
                                     key={selectedValue}
-                                    className="inline-flex items-center gap-2 rounded-full border border-[rgba(168,109,69,0.18)] bg-[rgba(168,109,69,0.08)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]"
+                                    className="inline-flex items-center gap-2 rounded-full border border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.08)] px-3 py-1 text-xs font-semibold text-[var(--pf-primary-darker)]"
                                   >
                                     {option?.label ?? selectedValue}
                                     <button
@@ -1302,8 +1302,8 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                     key={option.value}
                                     className={`flex cursor-pointer items-center justify-between rounded-[18px] border px-4 py-3 transition ${
                                       checked
-                                        ? "border-[rgba(168,109,69,0.2)] bg-[rgba(168,109,69,0.08)]"
-                                        : "border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] hover:bg-white"
+                                        ? "border-[rgba(200,154,21,0.2)] bg-[rgba(200,154,21,0.08)]"
+                                        : "border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] hover:bg-white"
                                     }`}
                                   >
                                     <span className="text-sm font-semibold text-[var(--pf-text)]">{option.label}</span>
@@ -1462,7 +1462,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
                         {templates.length === 0 ? (
                           <div className="rounded-[22px] border border-dashed border-[var(--pf-border-soft)] bg-white px-4 py-4 text-sm text-[var(--pf-muted)]">
-                            TodavÃ­a no hay templates Excel cargados.
+                            Todavía no hay templates Excel cargados.
                           </div>
                         ) : (
                           <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
@@ -1474,23 +1474,23 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                 return (
                                   <label
                                     key={key}
-                                    className="rounded-[18px] border border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.55)] p-4"
+                                    className="rounded-[18px] border border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.55)] p-4"
                                   >
                                     <div className="mb-2 flex items-start justify-between gap-3">
                                       <div>
                                         <p className="text-xs font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">
-                                          {template.audience === "member" ? "Logueado" : "PÃºblico"} Â· v{template.version}
+                                          {template.audience === "member" ? "Logueado" : "Público"} · v{template.version}
                                         </p>
                                         <p className="mt-1 text-sm font-bold text-[var(--pf-text)]">{template.file_name}</p>
                                       </div>
                                       <span
                                         className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] ${
                                           template.active
-                                            ? "bg-[rgba(168,109,69,0.12)] text-[var(--pf-primary-darker)]"
+                                            ? "bg-[rgba(200,154,21,0.12)] text-[var(--pf-primary-darker)]"
                                             : "bg-[rgba(122,102,82,0.08)] text-[var(--pf-muted)]"
                                         }`}
                                       >
-                                        {template.active ? "Activo" : "HistÃ³rico"}
+                                        {template.active ? "Activo" : "Histórico"}
                                       </span>
                                     </div>
 
@@ -1541,8 +1541,8 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                               })}
                             </div>
 
-                            <div className="rounded-[18px] border border-dashed border-[rgba(168,109,69,0.18)] bg-[rgba(168,109,69,0.06)] px-4 py-3 text-sm text-[var(--pf-primary-darker)]">
-                              Esta configuraciÃ³n sÃ³lo se usa para exportar el pedido Excel y marcar la fila exacta de este producto.
+                            <div className="rounded-[18px] border border-dashed border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.06)] px-4 py-3 text-sm text-[var(--pf-primary-darker)]">
+                              Esta configuración sólo se usa para exportar el pedido Excel y marcar la fila exacta de este producto.
                             </div>
                           </div>
                         )}
@@ -1577,7 +1577,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                           }
                           className={`w-full rounded-[22px] border px-4 py-3 text-sm outline-none transition placeholder:text-[var(--pf-muted)] focus:border-[var(--pf-primary)] ${
                             field.readonly
-                              ? "border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] text-[var(--pf-muted)]"
+                              ? "border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] text-[var(--pf-muted)]"
                               : "border-[var(--pf-border-soft)] bg-white text-[var(--pf-text)]"
                           }`}
                           readOnly={field.readonly}
@@ -1603,20 +1603,20 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                         </div>
 
                         <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
-                          <label className="flex min-h-20 cursor-pointer items-center justify-between gap-4 rounded-[18px] border border-dashed border-[rgba(168,109,69,0.24)] bg-[rgba(168,109,69,0.05)] px-4 py-4 transition hover:bg-[rgba(168,109,69,0.08)]">
+                          <label className="flex min-h-20 cursor-pointer items-center justify-between gap-4 rounded-[18px] border border-dashed border-[rgba(200,154,21,0.24)] bg-[rgba(200,154,21,0.05)] px-4 py-4 transition hover:bg-[rgba(200,154,21,0.08)]">
                             <div className="min-w-0">
                               <span className="block text-sm font-bold text-[var(--pf-primary-darker)]">
                                 Seleccionar imagen
                               </span>
                               <span className="mt-1 block text-xs text-[var(--pf-muted)]">
-                                CargÃ¡ un archivo para subirlo al sitio.
+                                Cargá un archivo para subirlo al sitio.
                               </span>
                               <span className="mt-2 block truncate text-xs font-semibold text-[var(--pf-primary-darker)]">
-                                {selectedFileName || "NingÃºn archivo seleccionado todavÃ­a"}
+                                {selectedFileName || "Ningún archivo seleccionado todavía"}
                               </span>
                             </div>
 
-                            <div className="shrink-0 rounded-full bg-[linear-gradient(180deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] px-4 py-2 text-sm font-black text-[var(--pf-text)] shadow-[0_10px_24px_rgba(168,109,69,0.18)]">
+                            <div className="shrink-0 rounded-full bg-[linear-gradient(180deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] px-4 py-2 text-sm font-black text-[var(--pf-text)] shadow-[0_10px_24px_rgba(200,154,21,0.18)]">
                               Buscar archivo
                             </div>
 
@@ -1699,7 +1699,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                           </label>
 
                           {uploadState?.loading ? (
-                            <div className="rounded-[18px] border border-[rgba(168,109,69,0.18)] bg-[rgba(168,109,69,0.08)] px-4 py-3 text-sm text-[var(--pf-primary-darker)]">
+                            <div className="rounded-[18px] border border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.08)] px-4 py-3 text-sm text-[var(--pf-primary-darker)]">
                               Subiendo imagen...
                             </div>
                           ) : null}
@@ -1728,8 +1728,8 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                               </div>
                             </div>
                           ) : (
-                            <div className="rounded-[18px] border border-dashed border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] px-4 py-5 text-sm text-[var(--pf-muted)]">
-                              TodavÃ­a no se subiÃ³ una imagen para esta promociÃ³n.
+                            <div className="rounded-[18px] border border-dashed border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 py-5 text-sm text-[var(--pf-muted)]">
+                              Todavía no se subió una imagen para esta promoción.
                             </div>
                           )}
                         </div>
@@ -1763,7 +1763,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                         }
                         className={`w-full rounded-[22px] border px-4 py-3 text-sm outline-none transition placeholder:text-[var(--pf-muted)] focus:border-[var(--pf-primary)] ${
                           field.readonly
-                            ? "border-[var(--pf-border-soft)] bg-[rgba(248,242,232,0.6)] text-[var(--pf-muted)]"
+                            ? "border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] text-[var(--pf-muted)]"
                             : "border-[var(--pf-border-soft)] bg-white text-[var(--pf-text)]"
                         }`}
                         readOnly={field.readonly}
@@ -1778,7 +1778,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 <button
                   type="submit"
                   disabled={hasPendingUploads}
-                  className="rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105"
+                  className="rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(200,154,21,0.22)] transition hover:brightness-105"
                 >
                   Guardar
                 </button>
@@ -1796,7 +1796,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                         : current,
                     );
                   }}
-                  className="rounded-full border border-[var(--pf-border-soft)] bg-white px-6 py-3 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(248,242,232,0.6)]"
+                  className="rounded-full border border-[var(--pf-border-soft)] bg-white px-6 py-3 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[rgba(245,243,239,0.6)]"
                 >
                   Limpiar
                 </button>

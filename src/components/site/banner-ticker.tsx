@@ -36,9 +36,9 @@ export function BannerTicker({ texts }: { texts: string[] }) {
   const current = items[index % items.length];
 
   return (
-    <div className="overflow-hidden rounded-full border border-[rgba(255,220,184,0.26)] bg-[linear-gradient(90deg,#5e2f1f_0%,#8f5a35_42%,#b87f54_72%,#6f4528_100%)] px-4 py-2 text-center shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_0_22px_rgba(168,109,69,0.28),inset_0_0_24px_rgba(255,214,163,0.06)]">
+    <div className="overflow-hidden rounded-full border border-[rgba(200,154,21,0.28)] bg-[linear-gradient(90deg,var(--pf-primary-darker)_0%,#2f2923_45%,var(--pf-primary-dark)_100%)] px-4 py-2 text-center shadow-[0_0_0_1px_rgba(255,255,255,0.05),0_0_22px_rgba(200,154,21,0.26),inset_0_0_24px_rgba(255,214,163,0.05)]">
       <div
-        className={`inline-flex min-h-[1.5rem] items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.24em] text-[#fff5e8] transition-all duration-500 ease-out sm:text-xs ${
+        className={`inline-flex min-h-[1.5rem] items-center justify-center gap-3 text-[11px] font-black uppercase tracking-[0.24em] text-[#fffaf0] transition-all duration-500 ease-out sm:text-xs ${
           phase === "enter" ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-1 scale-95"
         }`}
         aria-live="polite"

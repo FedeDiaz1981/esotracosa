@@ -4,9 +4,9 @@ import { publicAsset } from "@/lib/catalog";
 
 export function BrandCard({ brand }: { brand: BrandItem }) {
   return (
-    <article className="rounded-[1.6rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] p-4 shadow-[0_12px_28px_rgba(74,57,38,0.06)]">
+    <article className="rounded-[1.6rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] p-4 shadow-[0_12px_28px_rgba(29,24,20,0.06)]">
       <div className="flex items-center gap-4">
-        <div className="relative grid size-16 place-items-center overflow-hidden rounded-2xl bg-[rgba(248,242,232,0.96)]">
+        <div className="relative grid size-16 place-items-center overflow-hidden rounded-2xl bg-[rgba(245,243,239,0.96)]">
           <Image
             src={publicAsset(brand.image)}
             alt={brand.name}

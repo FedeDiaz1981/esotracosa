@@ -68,15 +68,15 @@ export function CartPanel({
   }, [hydrated, isGeneratingExcel, items]);
 
   const panel = (
-    <aside className="flex h-full w-full max-w-[460px] flex-col border-l border-[var(--pf-border-warm)] bg-[linear-gradient(180deg,var(--pf-surface-warm)_0%,var(--pf-sand-soft)_44%,var(--pf-cream-soft)_100%)] shadow-[0_24px_80px_rgba(74,57,38,0.26)]">
-      <div className="flex items-center justify-between border-b border-[rgba(168,109,69,0.16)] px-5 py-4">
+    <aside className="flex h-full w-full max-w-[460px] flex-col border-l border-[var(--pf-border-warm)] bg-[linear-gradient(180deg,var(--pf-surface-warm)_0%,var(--pf-sand-soft)_44%,var(--pf-cream-soft)_100%)] shadow-[0_24px_80px_rgba(29,24,20,0.26)]">
+      <div className="flex items-center justify-between border-b border-[rgba(200,154,21,0.16)] px-5 py-4">
         <div>
           <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--pf-text)]">Mi pedido</h2>
         </div>
         {mode === "drawer" ? (
           <label
             htmlFor={CART_TOGGLE_ID}
-            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] text-[var(--pf-text)] transition hover:bg-[rgba(248,242,232,0.92)]"
+            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.92)]"
             aria-label="Cerrar carrito"
           >
             <X className="size-5" />
@@ -84,7 +84,7 @@ export function CartPanel({
         ) : (
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] text-[var(--pf-text)] transition hover:bg-[rgba(248,242,232,0.92)] lg:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.92)] lg:hidden"
             aria-label="Cerrar carrito"
             onClick={() => router.back()}
           >
@@ -94,11 +94,11 @@ export function CartPanel({
       </div>
 
       <div className="grid gap-3 px-5 pt-5 sm:grid-cols-2">
-        <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] p-4 shadow-[0_10px_22px_rgba(74,57,38,0.06)]">
+        <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] p-4 shadow-[0_10px_22px_rgba(29,24,20,0.06)]">
           <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Artículos</p>
           <p className="mt-1 text-3xl font-black text-[var(--pf-text)]">{totalItems}</p>
         </div>
-        <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] p-4 shadow-[0_10px_22px_rgba(74,57,38,0.06)]">
+        <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] p-4 shadow-[0_10px_22px_rgba(29,24,20,0.06)]">
           <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Total</p>
           <p className="mt-1 text-3xl font-black text-[var(--pf-text)]">{formatCurrency(totalPrice)}</p>
         </div>
@@ -106,11 +106,11 @@ export function CartPanel({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-5">
         {!hydrated ? (
-          <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-5 text-sm text-[var(--pf-muted)]">
+          <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-5 text-sm text-[var(--pf-muted)]">
             Cargando pedido...
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-5">
+          <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-5">
             <p className="text-lg font-bold text-[var(--pf-text)]">Tu pedido está vacío</p>
             <div className="mt-4">
               {mode === "drawer" ? (
@@ -132,10 +132,10 @@ export function CartPanel({
             {items.map((item) => (
               <article
                 key={item.sku}
-                className="rounded-[1.4rem] border border-[rgba(168,109,69,0.12)] bg-[rgba(255,255,255,0.92)] p-4 shadow-[0_10px_22px_rgba(74,57,38,0.06)]"
+                className="rounded-[1.4rem] border border-[rgba(200,154,21,0.12)] bg-[rgba(255,255,255,0.92)] p-4 shadow-[0_10px_22px_rgba(29,24,20,0.06)]"
               >
                 <div className="flex gap-4">
-                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[1rem] border border-[rgba(168,109,69,0.12)] bg-[rgba(251,248,241,0.92)]">
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[1rem] border border-[rgba(200,154,21,0.12)] bg-[rgba(255,255,255,0.92)]">
                     {item.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={publicAsset(item.image)} alt={item.name} className="h-full w-full object-contain p-2" />
@@ -151,14 +151,14 @@ export function CartPanel({
                       </div>
                       <button
                         type="button"
-                        className="rounded-full border border-[var(--pf-border)] px-3 py-1 text-xs font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(248,242,232,0.8)]"
+                        className="rounded-full border border-[var(--pf-border)] px-3 py-1 text-xs font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.8)]"
                         onClick={() => removeItem(item.sku)}
                       >
                         Quitar
                       </button>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.1rem] bg-[rgba(248,242,232,0.82)] px-3 py-2">
+                    <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.1rem] bg-[rgba(245,243,239,0.82)] px-3 py-2">
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -194,7 +194,7 @@ export function CartPanel({
         )}
       </div>
 
-      <div className="border-t border-[rgba(168,109,69,0.16)] px-5 py-4">
+      <div className="border-t border-[rgba(200,154,21,0.16)] px-5 py-4">
         <div className="rounded-[1.35rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.85)] p-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-2xl font-black text-[var(--pf-text)]">{formatCurrency(totalPrice)}</p>
@@ -233,7 +233,7 @@ export function CartPanel({
               <h1 className="text-3xl font-black tracking-tight text-[var(--pf-text)] sm:text-4xl">Mi pedido</h1>
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] text-[var(--pf-text)] transition hover:bg-[rgba(248,242,232,0.92)] lg:hidden"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.92)] lg:hidden"
                 aria-label="Cerrar carrito"
                 onClick={() => router.back()}
               >

@@ -10,6 +10,7 @@ import { PromotionCarousel } from "@/components/site/promotion-carousel";
 import { SectionHeading } from "@/components/site/section-heading";
 import { SpotlightBanner } from "@/components/site/spotlight-banner";
 import { buttonVariants } from "@/components/ui/button";
+import { publicAsset } from "@/lib/catalog";
 
 export default async function HomePage() {
   const content = await getHomePageViewModel();
@@ -39,7 +40,7 @@ export default async function HomePage() {
         <SpotlightBanner slide={content.spotlightSlide} />
       </div>
 
-      <section className="w-full bg-[linear-gradient(180deg,var(--pf-surface-warm)_0%,var(--pf-sand-soft)_48%,var(--pf-surface-strong)_100%)] py-10 sm:py-12 lg:py-14">
+      <section className="w-full bg-[linear-gradient(180deg,rgba(251,250,247,0.98)_0%,rgba(248,246,242,0.96)_48%,rgba(241,236,229,0.96)_100%)] py-10 sm:py-12 lg:py-14">
         <div className="pf-shell px-4 sm:px-6 lg:px-12">
           <div className="space-y-5">
             <SectionHeading eyebrow="Identidad" title="Marcas destacadas" />
@@ -65,13 +66,13 @@ export default async function HomePage() {
 
       <section
         id="Nosotros"
-        className="w-full bg-[linear-gradient(180deg,var(--pf-surface-warm)_0%,var(--pf-sand-soft)_48%,var(--pf-surface-strong)_100%)] py-10 sm:py-12 lg:py-14"
+        className="w-full bg-[linear-gradient(180deg,rgba(251,250,247,0.98)_0%,rgba(248,246,242,0.96)_48%,rgba(241,236,229,0.96)_100%)] py-10 sm:py-12 lg:py-14"
       >
         <div className="pf-shell px-4 sm:px-6 lg:px-12">
           <div className="grid gap-8 lg:grid-cols-[1.15fr_.95fr] lg:gap-10">
             <div className="flex flex-col justify-between">
               <div>
-                <span className="inline-flex rounded-full bg-[rgba(168,109,69,0.14)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--pf-primary-darker)]">
+                <span className="inline-flex rounded-full bg-[rgba(200,154,21,0.14)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--pf-primary-darker)]">
                   Quienes somos
                 </span>
                 <h2 className="mt-3 max-w-xl text-[2.15rem] font-light leading-[0.96] tracking-[-0.05em] text-[var(--pf-text)] sm:text-[2.75rem] lg:text-[3.15rem]">
@@ -90,22 +91,22 @@ export default async function HomePage() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-[1.25rem] border border-[rgba(212,189,156,0.55)] bg-[rgba(237,220,195,0.55)] px-4 py-3 text-[0.88rem] leading-6 text-[var(--pf-text)] sm:text-[0.95rem]">
+              <div className="mt-4 rounded-[1.25rem] border border-[rgba(200,154,21,0.16)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-[0.88rem] leading-6 text-[var(--pf-text)] shadow-[0_10px_24px_rgba(29,24,20,0.06)] sm:text-[0.95rem]">
                 <strong className="font-semibold text-[var(--pf-primary-darker)]">Creemos en relaciones de largo plazo:</strong>{" "}
                 cada pedido, cada consulta y cada entrega forman parte de una misma idea, hacer que comprar saludable sea mas facil, mas
                 ordenado y mas confiable.
               </div>
 
-              <div className="mt-4 border-t border-[rgba(212,189,156,0.4)] pt-3 text-[0.85rem] leading-6 text-[var(--pf-muted)]">
+              <div className="mt-4 border-t border-[rgba(224,208,180,0.4)] pt-3 text-[0.85rem] leading-6 text-[var(--pf-muted)]">
                 Gracias por confiar y contar con nosotros. Estamos seguros de que, trabajando juntos, podemos seguir armando un gran equipo.
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] bg-[rgba(248,242,232,0.74)] p-0">
-              <div className="overflow-hidden rounded-[1.3rem] bg-[rgba(249,247,240,0.96)] px-4 py-5 sm:px-5 sm:py-6">
+            <div className="rounded-[1.5rem] border border-[rgba(200,154,21,0.14)] bg-white p-0 shadow-[0_14px_34px_rgba(29,24,20,0.08)]">
+              <div className="overflow-hidden rounded-[1.3rem] bg-white px-4 py-5 sm:px-5 sm:py-6">
                 <div className="relative mx-auto h-[170px] w-full max-w-[560px] sm:h-[210px]">
                   <Image
-                    src="/assets/images/logo/logo-Pintofruta.png"
+                    src={publicAsset("/assets/images/logo/logo_v2.png")}
                     alt="Pintofruta"
                     fill
                     className="object-contain"
@@ -118,7 +119,7 @@ export default async function HomePage() {
                 {content.stats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-[1.1rem] border border-[rgba(212,189,156,0.5)] bg-[rgba(251,248,241,0.92)] px-3 py-3.5 text-center"
+                    className="rounded-[1.1rem] border border-[rgba(200,154,21,0.14)] bg-white px-3 py-3.5 text-center shadow-[0_10px_24px_rgba(29,24,20,0.05)]"
                   >
                     <p className="text-[1.7rem] font-black tracking-tight text-[var(--pf-primary-darker)]">{stat.value}</p>
                     <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">{stat.label}</p>

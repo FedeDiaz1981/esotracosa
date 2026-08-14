@@ -31,7 +31,7 @@ export default async function ProductPage({
         ← Volver a la galería
       </Link>
       <section className="grid gap-6 rounded-[2rem] border border-[var(--pf-border)] bg-[var(--pf-surface)] p-5 shadow-sm lg:grid-cols-[1.1fr_.9fr]">
-        <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] bg-[rgba(248,242,232,0.82)]">
+        <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] bg-[rgba(245,243,239,0.82)]">
           <Image
             src={publicAsset(product.image)}
             alt={product.name}
@@ -48,7 +48,7 @@ export default async function ProductPage({
             <p className="mt-3 text-base leading-7 text-[var(--pf-muted)]">{product.description || product.detail}</p>
           </div>
 
-          <div className="rounded-[1.75rem] border border-[var(--pf-border)] bg-[rgba(237,220,195,0.55)] p-5">
+          <div className="rounded-[1.75rem] border border-[var(--pf-border)] bg-[rgba(245,239,228,0.55)] p-5">
             <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Precio</p>
             <p className="mt-2 text-4xl font-extrabold text-[var(--pf-text)]">
               {formatCurrency(resolveProductUnitPrice(product, viewer))}
@@ -56,11 +56,11 @@ export default async function ProductPage({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-4">
+            <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-4">
               <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Marca</p>
               <p className="mt-1 text-lg font-semibold text-[var(--pf-text)]">{product.brand}</p>
             </div>
-            <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-4">
+            <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-4">
               <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Categoría</p>
               <p className="mt-1 text-lg font-semibold text-[var(--pf-text)]">{product.categoryName}</p>
             </div>

@@ -44,11 +44,11 @@ export function FloatingCartButton() {
         variant="primary"
         size="lg"
         onClick={toggleCart}
-        className="relative h-16 w-16 rounded-full px-0 shadow-[0_16px_36px_rgba(74,57,38,0.24)] transition-transform duration-200 hover:-translate-y-1 hover:scale-105 active:scale-95"
+        className="relative h-16 w-16 rounded-full px-0 shadow-[0_16px_36px_rgba(29,24,20,0.24)] transition-transform duration-200 hover:-translate-y-1 hover:scale-105 active:scale-95"
         aria-label="Abrir carrito"
       >
         <ShoppingCart className="size-7 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.18)]" />
-        <span className="absolute -right-1 -top-1 inline-flex min-w-6 items-center justify-center rounded-full border border-white bg-[var(--pf-primary-darker)] px-1.5 py-0.5 text-[11px] font-black leading-none text-white shadow-[0_8px_18px_rgba(74,57,38,0.18)] animate-pulse">
+        <span className="absolute -right-1 -top-1 inline-flex min-w-6 items-center justify-center rounded-full border border-white bg-[var(--pf-primary-darker)] px-1.5 py-0.5 text-[11px] font-black leading-none text-white shadow-[0_8px_18px_rgba(29,24,20,0.18)] animate-pulse">
           {totalItems}
         </span>
       </Button>

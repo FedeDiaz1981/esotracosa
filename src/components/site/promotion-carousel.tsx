@@ -37,15 +37,15 @@ function MobilePromotionRail({ promotions }: { promotions: PackItem[] }) {
                   transition={{ duration: 0.35, delay: index * 0.03 }}
                   className="group block h-full w-full text-left"
                 >
-                  <article className="flex h-full min-h-[21rem] flex-col overflow-hidden rounded-[1.6rem] border border-[rgba(74,57,38,0.14)] bg-white shadow-[0_10px_28px_rgba(74,57,38,0.08)]">
-                    <div className="relative flex-[1.12] overflow-hidden bg-[linear-gradient(180deg,rgba(252,249,243,1),rgba(246,240,230,1))]">
+                  <article className="flex h-full min-h-[21rem] flex-col overflow-hidden rounded-[1.6rem] border border-[rgba(29,24,20,0.14)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)]">
+                    <div className="relative flex-[1.12] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,247,244,1))]">
                       <div className="absolute left-3 top-3 z-10">
-                        <span className="inline-flex items-center justify-center rounded-full border border-[rgba(168,109,69,0.2)] bg-[rgba(129,84,44,0.96)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(74,57,38,0.18)]">
+                        <span className="inline-flex items-center justify-center rounded-full border border-[rgba(200,154,21,0.2)] bg-[rgba(29,24,20,0.96)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
                           Promoción
                         </span>
                       </div>
 
-                      <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(168,109,69,0.16)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(74,57,38,0.08)]">
+                      <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(200,154,21,0.16)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
                         {pack.items.length} productos
                       </div>
 
@@ -60,7 +60,7 @@ function MobilePromotionRail({ promotions }: { promotions: PackItem[] }) {
                       </div>
                     </div>
 
-                    <div className="flex h-[5.6rem] flex-col justify-center border-t border-[rgba(74,57,38,0.08)] px-3 py-2 text-center">
+                    <div className="flex h-[5.6rem] flex-col justify-center border-t border-[rgba(29,24,20,0.08)] px-3 py-2 text-center">
                       <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">{pack.category}</p>
                       <h3 className="line-clamp-2 text-[0.92rem] font-medium leading-5 text-[var(--pf-text)]">{pack.title}</h3>
                       <p className="mt-1 text-[0.8rem] font-semibold text-[var(--pf-primary-darker)]">
@@ -148,16 +148,16 @@ export function PromotionCarousel({ promotions }: { promotions: PackItem[] }) {
               >
                 <article
                   data-promotion-card
-                  className="flex h-full min-h-[24.5rem] flex-col overflow-hidden rounded-[1.5rem] border border-[rgba(74,57,38,0.16)] bg-white shadow-[0_10px_28px_rgba(74,57,38,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(74,57,38,0.14)]"
+                  className="flex h-full min-h-[24.5rem] flex-col overflow-hidden rounded-[1.5rem] border border-[rgba(29,24,20,0.16)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]"
                 >
-                  <div className="relative flex-[1.08] overflow-hidden bg-[linear-gradient(180deg,rgba(252,249,243,1),rgba(246,240,230,1))]">
+                  <div className="relative flex-[1.08] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,247,244,1))]">
                     <div className="absolute left-3 top-3 z-10">
-                      <span className="inline-flex items-center justify-center rounded-full border border-[rgba(168,109,69,0.2)] bg-[rgba(129,84,44,0.96)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(74,57,38,0.18)]">
+                      <span className="inline-flex items-center justify-center rounded-full border border-[rgba(200,154,21,0.2)] bg-[rgba(29,24,20,0.96)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
                         Promoción
                       </span>
                     </div>
 
-                    <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(168,109,69,0.16)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(74,57,38,0.08)]">
+                    <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(200,154,21,0.16)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
                       {pack.items.length} productos
                     </div>
 
@@ -172,7 +172,7 @@ export function PromotionCarousel({ promotions }: { promotions: PackItem[] }) {
                     </div>
                   </div>
 
-                  <div className="flex h-[7rem] flex-col justify-center border-t border-[rgba(74,57,38,0.08)] px-4 py-3 text-center">
+                  <div className="flex h-[7rem] flex-col justify-center border-t border-[rgba(29,24,20,0.08)] px-4 py-3 text-center">
                     <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">{pack.category}</p>
                     <h3 className="line-clamp-2 text-[0.98rem] font-medium leading-6 text-[var(--pf-text)]">{pack.title}</h3>
                     <p className="mt-1 text-sm font-semibold text-[var(--pf-primary-darker)]">

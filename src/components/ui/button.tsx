@@ -6,15 +6,15 @@ type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] text-white shadow-[0_14px_28px_rgba(111,69,40,0.18)] hover:brightness-105",
+    "border border-[rgba(200,154,21,0.28)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] text-white shadow-[0_14px_28px_rgba(29,24,20,0.16)] hover:brightness-105",
   secondary:
-    "border border-[rgba(168,109,69,0.15)] bg-[rgba(255,255,255,0.9)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(74,57,38,0.08)] hover:bg-[rgba(248,242,232,0.9)]",
+    "border border-[rgba(29,24,20,0.12)] bg-[rgba(255,255,255,0.92)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(29,24,20,0.08)] hover:bg-[rgba(245,243,239,0.96)]",
   outline:
-    "border border-[var(--pf-border)] bg-transparent text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.62)]",
+    "border border-[var(--pf-border)] bg-transparent text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.7)]",
   ghost:
-    "border border-transparent bg-transparent text-[var(--pf-text)] hover:bg-[rgba(248,242,232,0.62)]",
+    "border border-transparent bg-transparent text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.7)]",
   surface:
-    "border border-[rgba(212,189,156,0.6)] bg-[rgba(255,255,255,0.88)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(74,57,38,0.08)] hover:bg-[rgba(251,248,241,0.96)]",
+    "border border-[rgba(224,208,180,0.7)] bg-[rgba(255,255,255,0.94)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(29,24,20,0.08)] hover:bg-[rgba(255,255,255,0.98)]",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -32,7 +32,7 @@ export function buttonVariants({
   size?: ButtonSize;
 } = {}) {
   return [
-    "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(168,109,69,0.35)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pf-surface)] disabled:pointer-events-none disabled:opacity-60",
+    "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(200,154,21,0.38)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pf-surface)] disabled:pointer-events-none disabled:opacity-60",
     variantClasses[variant],
     sizeClasses[size],
   ].join(" ");

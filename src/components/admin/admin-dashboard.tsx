@@ -4,7 +4,7 @@ import type { AdminOverview } from "@/application/admin";
 
 function AdminMetric({ label, value }: { label: string; value: number }) {
   return (
-    <div className="min-w-[132px] overflow-hidden rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.9)] p-4 shadow-[0_10px_22px_rgba(58,44,25,0.06)]">
+    <div className="min-w-[132px] overflow-hidden rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] p-4 shadow-[0_10px_22px_rgba(58,44,25,0.06)]">
       <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">{label}</p>
       <p className="mt-1 text-3xl font-black text-[var(--pf-text)]">{value}</p>
     </div>
@@ -49,7 +49,7 @@ export function AdminDashboard({ admin }: { admin: AdminOverview }) {
           </div>
 
           <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[var(--pf-border)] bg-white">
-            <div className="grid grid-cols-[1.5fr_.8fr_.8fr] bg-[rgba(248,242,232,0.88)] px-4 py-3 text-xs font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">
+            <div className="grid grid-cols-[1.5fr_.8fr_.8fr] bg-[rgba(245,243,239,0.88)] px-4 py-3 text-xs font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">
               <span>Producto</span>
               <span>Precio</span>
               <span>Stock</span>

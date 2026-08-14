@@ -47,18 +47,18 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-[10010] hidden lg:block">
-        <div className="border-b border-[var(--pf-border)] bg-[rgba(248,242,232,0.96)] shadow-[0_14px_32px_rgba(74,57,38,0.08)] backdrop-blur">
+        <div className="border-b border-[var(--pf-border)] bg-[rgba(245,243,239,0.96)] shadow-[0_14px_32px_rgba(29,24,20,0.08)] backdrop-blur">
           <div className="pf-shell grid gap-4 px-4 py-4 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-6 lg:px-12">
             <Link
               href="/"
-              className="mx-auto flex items-center justify-center rounded-full border-2 border-[rgba(168,109,69,0.32)] bg-[linear-gradient(90deg,rgba(168,109,69,0.20),rgba(200,176,137,0.28),rgba(246,240,230,0.6))] px-4 py-2 shadow-[0_8px_18px_rgba(74,57,38,0.10),inset_0_0_0_1px_rgba(255,255,255,0.10)] lg:mx-0"
+              className="flex items-center justify-center justify-self-start"
             >
               <Image
-                src={publicAsset("/assets/images/logo/logo-Pintofruta.png")}
+                src={publicAsset("/assets/images/logo/logo_v2.png")}
                 alt="Pintofruta"
-                width={255}
-                height={64}
-                className="h-auto w-[180px] max-w-full drop-shadow-[0_1px_1px_rgba(0,0,0,0.08)] sm:w-[220px] lg:w-[255px]"
+                width={97}
+                height={24}
+                className="h-auto w-[63px] max-w-full sm:w-[77px] lg:w-[97px]"
                 priority
               />
             </Link>
@@ -121,7 +121,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                   }}
                 >
                   <summary
-                    className={`${buttonVariants({ variant: "secondary", size: "md" })} flex min-h-[64px] cursor-pointer list-none justify-center rounded-none border-y border-[var(--pf-border-soft)] bg-white px-4 text-sm font-medium uppercase tracking-[0.18em] hover:bg-[rgba(248,242,232,0.7)] [&::-webkit-details-marker]:hidden`}
+                    className={`${buttonVariants({ variant: "secondary", size: "md" })} flex min-h-[64px] cursor-pointer list-none justify-center rounded-none border-y border-[var(--pf-border-soft)] bg-white px-4 text-sm font-medium uppercase tracking-[0.18em] hover:bg-[rgba(245,243,239,0.7)] [&::-webkit-details-marker]:hidden`}
                     onClick={(event) => {
                       event.preventDefault();
                       setOpenMenuKey((current) => (current === menu.key ? null : menu.key));
@@ -129,7 +129,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                   >
                     {menu.label}
                   </summary>
-                  <div className="dropdown-content z-[10060] mt-3 w-[min(92vw,1100px)] rounded-[1.75rem] border border-[var(--pf-border)] bg-[var(--pf-surface)] p-4 shadow-[0_24px_60px_rgba(74,57,38,0.16)]">
+                  <div className="dropdown-content z-[10060] mt-3 w-[min(92vw,1100px)] rounded-[1.75rem] border border-[var(--pf-border)] bg-[var(--pf-surface)] p-4 shadow-[0_24px_60px_rgba(29,24,20,0.16)]">
                     <div className="flex items-center justify-between gap-3 border-b border-[var(--pf-border-soft)] pb-4">
                       <div>
                         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--pf-muted)]">{menu.label}</p>
@@ -154,7 +154,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                                       <Link
                                         href={item.href}
                                         onClick={closeAllMenus}
-                                        className="block rounded-xl px-3 py-2 text-sm text-[var(--pf-text)] transition hover:bg-[rgba(168,109,69,0.08)] hover:text-[var(--pf-primary-darker)]"
+                                        className="block rounded-xl px-3 py-2 text-sm text-[var(--pf-text)] transition hover:bg-[rgba(200,154,21,0.08)] hover:text-[var(--pf-primary-darker)]"
                                       >
                                         {item.label}
                                       </Link>

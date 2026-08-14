@@ -23,22 +23,22 @@ export function SpotlightBanner({ slide }: { slide: HeroSlide | null }) {
           />
         </picture>
 
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,242,232,0.96)_0%,rgba(248,242,232,0.88)_24%,rgba(248,242,232,0.50)_46%,rgba(248,242,232,0.16)_64%,rgba(248,242,232,0.02)_100%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_right_center,rgba(74,57,38,0.16),transparent_38%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(248,242,232,0.82)_80%,rgba(248,242,232,0.96))]" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(29,24,20,0.76)_0%,rgba(29,24,20,0.54)_24%,rgba(29,24,20,0.18)_46%,rgba(29,24,20,0.04)_64%,rgba(29,24,20,0)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_right_center,rgba(200,154,21,0.16),transparent_38%)]" />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(29,24,20,0.72)_80%,rgba(29,24,20,0.92))]" />
 
         <div className="absolute inset-0 z-10 flex items-end sm:items-center sm:justify-start">
           <div className="pf-shell w-full px-4 pb-8 pt-12 sm:px-6 lg:px-12 lg:py-16">
             <div className="max-w-[16rem] rounded-[1.5rem] bg-transparent px-4 py-4 shadow-none sm:max-w-xl md:max-w-2xl md:rounded-none md:px-0 md:py-0">
-              <span className="inline-flex rounded-full bg-secondary/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-secondary shadow-none">
+              <span className="inline-flex rounded-full bg-[rgba(200,154,21,0.16)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white shadow-none">
                 {slide.badge}
               </span>
 
-              <h2 className="mt-4 max-w-[11ch] text-[2rem] font-extrabold leading-[0.95] tracking-[-0.05em] text-[var(--pf-text)] sm:mt-5 sm:max-w-xl sm:text-4xl sm:leading-none sm:tracking-tight md:text-6xl">
+              <h2 className="mt-4 max-w-[11ch] text-[2rem] font-extrabold leading-[0.95] tracking-[-0.05em] text-white sm:mt-5 sm:max-w-xl sm:text-4xl sm:leading-none sm:tracking-tight md:text-6xl">
                 {slide.title}
               </h2>
 
-              <p className="mt-3 max-w-[18ch] text-[0.95rem] leading-6 text-[var(--pf-text-soft)]/82 sm:mt-4 sm:max-w-xl sm:text-lg sm:leading-8 sm:text-[var(--pf-text-soft)]/78">
+              <p className="mt-3 max-w-[18ch] text-[0.95rem] leading-6 text-white/84 sm:mt-4 sm:max-w-xl sm:text-lg sm:leading-8">
                 {slide.subtitle}
               </p>
 

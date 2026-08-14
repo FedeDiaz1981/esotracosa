@@ -39,8 +39,8 @@ function MobileSearchModal({
 
   return (
     <div className="modal modal-open !z-[12050] items-start pt-[96px] lg:pt-[136px] lg:hidden">
-      <div className="modal-box w-[min(92vw,26rem)] max-w-none overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
-        <div className="flex items-center justify-between border-b border-[rgba(168,109,69,0.12)] px-5 py-4">
+      <div className="modal-box w-[min(92vw,26rem)] max-w-none overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(29,24,20,0.26)]">
+        <div className="flex items-center justify-between border-b border-[rgba(200,154,21,0.12)] px-5 py-4">
           <div>
             <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">Búsqueda</p>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-[var(--pf-text)]">Buscar productos</h2>
@@ -128,18 +128,18 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
 
   return (
     <>
-      <div className="fixed inset-x-0 top-0 z-[10020] border-b border-[var(--pf-border)] bg-[rgba(248,242,232,0.96)] shadow-[0_14px_32px_rgba(74,57,38,0.08)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 top-0 z-[10020] border-b border-[var(--pf-border)] bg-[rgba(245,243,239,0.96)] shadow-[0_14px_32px_rgba(29,24,20,0.08)] backdrop-blur lg:hidden">
         <div className="pf-shell flex h-[78px] items-center justify-between gap-3 px-4">
           <Link
             href="/"
-            className="flex items-center justify-center rounded-full border-2 border-[rgba(168,109,69,0.28)] bg-[linear-gradient(90deg,rgba(168,109,69,0.18),rgba(200,176,137,0.24),rgba(246,240,230,0.6))] px-3 py-2 shadow-[0_8px_18px_rgba(74,57,38,0.08),inset_0_0_0_1px_rgba(255,255,255,0.12)]"
+            className="flex items-center justify-center"
           >
             <Image
-              src={publicAsset("/assets/images/logo/logo-Pintofruta.png")}
+              src={publicAsset("/assets/images/logo/logo_v2.png")}
               alt="Pintofruta"
-              width={210}
-              height={56}
-              className="h-auto w-[132px] max-w-full"
+              width={83}
+              height={22}
+              className="h-auto w-[56px] max-w-full"
               priority
             />
           </Link>
@@ -150,12 +150,12 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-[10020] border-t border-[var(--pf-border)] bg-[rgba(248,242,232,0.98)] shadow-[0_-14px_32px_rgba(74,57,38,0.08)] backdrop-blur lg:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-[10020] border-t border-[var(--pf-border)] bg-[rgba(245,243,239,0.98)] shadow-[0_-14px_32px_rgba(29,24,20,0.08)] backdrop-blur lg:hidden">
         <div className="pf-shell grid h-[72px] items-center px-3" style={{ gridTemplateColumns: navColumns }}>
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event("pf-auth-modal:open"))}
-            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(200,154,21,0.08)]"
             aria-label="Login"
           >
             <UserRound className="size-5" />
@@ -163,7 +163,7 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
 
           <Link
             href="/"
-            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(200,154,21,0.08)]"
             aria-label="Home"
           >
             <House className="size-5" />
@@ -172,7 +172,7 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
           <button
             ref={searchButtonRef}
             type="button"
-            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+            className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(200,154,21,0.08)]"
             aria-label="Buscar"
           >
             <Search className="size-5" />
@@ -181,7 +181,7 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
           {viewer?.isAdmin ? (
             <Link
               href="/admin"
-              className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(168,109,69,0.08)]"
+              className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(200,154,21,0.08)]"
               aria-label="Administración"
             >
               <Menu className="size-5" />

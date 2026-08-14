@@ -13,7 +13,7 @@ export function CartButton() {
       htmlFor={CART_TOGGLE_ID}
       role="button"
       aria-label="Carrito"
-      className="relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[rgba(168,109,69,0.15)] bg-[rgba(255,255,255,0.9)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(74,57,38,0.08)] transition hover:bg-[rgba(248,242,232,0.9)]"
+      className="relative inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[rgba(200,154,21,0.15)] bg-[rgba(255,255,255,0.94)] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(29,24,20,0.08)] transition hover:bg-[rgba(245,243,239,0.9)]"
     >
       <ShoppingCart className="size-4" />
       {totalItems > 0 ? (

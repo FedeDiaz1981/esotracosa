@@ -8,74 +8,76 @@
 }
 
 :root {
-  --pf-primary: #a86d45;
-  --pf-primary-dark: #8f5a35;
-  --pf-primary-darker: #6f4528;
-  --pf-primary-soft: #bc875c;
-  --pf-primary-faint: #dcb492;
+  --pf-primary: #c89a15;
+  --pf-primary-dark: #9b7511;
+  --pf-primary-darker: #1d1814;
+  --pf-primary-soft: #dfb93d;
+  --pf-primary-faint: #f4e3a9;
 
-  --pf-secondary: #c8b089;
-  --pf-secondary-dark: #ae966d;
-  --pf-secondary-light: #d8c19f;
-  --pf-secondary-faint: #eadcc1;
+  --pf-secondary: #312b26;
+  --pf-secondary-dark: #191512;
+  --pf-secondary-light: #5c544c;
+  --pf-secondary-faint: #ddd5ca;
 
-  --pf-wood: #a86d45;
-  --pf-wood-soft: #bc875c;
-  --pf-wood-muted: #8f5a35;
+  --pf-wood: #c89a15;
+  --pf-wood-soft: #dfb93d;
+  --pf-wood-muted: #9b7511;
 
-  --pf-lino: #c8b089;
-  --pf-lino-soft: #d8c19f;
-  --pf-lino-muted: #ae966d;
+  --pf-lino: #5c544c;
+  --pf-lino-soft: #ddd5ca;
+  --pf-lino-muted: #91887e;
 
-  --pf-sand: #e6dcc8;
-  --pf-sand-soft: #efe5d4;
-  --pf-sand-muted: #d6c4a5;
+  --pf-sand: #e7e1d8;
+  --pf-sand-soft: #f3eee6;
+  --pf-sand-muted: #d5cec4;
+  --pf-sand-light: #ede7de;
 
-  --pf-cream: #fcfaf6;
-  --pf-cream-soft: #f5efe5;
-  --pf-cream-muted: #ece3d3;
-  --pf-porcelain: #f9f6ef;
+  --pf-cream: #fffdfb;
+  --pf-cream-soft: #faf7f2;
+  --pf-cream-muted: #f1ece4;
+  --pf-porcelain: #ffffff;
 
-  --pf-clay: #b87f54;
-  --pf-clay-soft: #c9956b;
-  --pf-clay-faint: #dcb492;
+  --pf-clay: #b08a1f;
+  --pf-clay-soft: #d0a92b;
+  --pf-clay-faint: #e7cf77;
 
-  --pf-sage: #b89267;
-  --pf-sage-light: #dfcdb2;
-  --pf-olive: #8f7552;
-  --pf-moss: #6f563a;
-  --pf-moss-soft: #9f8360;
+  --pf-sage: #5c544c;
+  --pf-sage-light: #e5ddd2;
+  --pf-olive: #3a342f;
+  --pf-moss: #1d1814;
+  --pf-moss-soft: #676059;
 
-  --pf-bg: #ece3d3;
-  --pf-surface: #fcfaf6;
-  --pf-surface-alt: #f4ebdd;
-  --pf-surface-warm: #f7f1e7;
-  --pf-surface-strong: #efe4d0;
+  --pf-bg: #efece6;
+  --pf-surface: #fffdfb;
+  --pf-surface-alt: #f3eee6;
+  --pf-surface-warm: #fbf8f3;
+  --pf-surface-strong: #ebe6dd;
 
-  --pf-border: rgba(168, 109, 69, 0.16);
-  --pf-border-strong: rgba(168, 109, 69, 0.3);
-  --pf-border-warm: rgba(168, 109, 69, 0.18);
-  --pf-border-soft: rgba(168, 109, 69, 0.1);
+  --pf-border: rgba(29, 24, 20, 0.12);
+  --pf-border-strong: rgba(29, 24, 20, 0.2);
+  --pf-border-warm: rgba(200, 154, 21, 0.18);
+  --pf-border-soft: rgba(29, 24, 20, 0.08);
 
-  --pf-text: #6f4528;
-  --pf-text-soft: #8f5a35;
-  --pf-muted: #8a745c;
-  --pf-muted-soft: #a18d78;
+  --pf-text: #1d1814;
+  --pf-text-soft: #3a342f;
+  --pf-muted: #655d56;
+  --pf-muted-soft: #8a8178;
 
-  --pf-shadow: 0 18px 40px rgba(74, 57, 38, 0.14);
-  --pf-shadow-soft: 0 10px 24px rgba(74, 57, 38, 0.1);
-  --pf-shadow-warm: 0 18px 42px rgba(168, 109, 69, 0.12);
+  --pf-accent: #e33026;
+  --pf-shadow: 0 18px 40px rgba(29, 24, 20, 0.12);
+  --pf-shadow-soft: 0 10px 24px rgba(29, 24, 20, 0.08);
+  --pf-shadow-warm: 0 18px 42px rgba(200, 154, 21, 0.14);
   --pf-radius: 22px;
 }
 
 html[data-theme="caramellatte"] {
   color-scheme: light;
   --color-primary: var(--pf-primary);
-  --color-primary-content: #fff9f1;
+  --color-primary-content: #ffffff;
   --color-secondary: var(--pf-secondary);
   --color-secondary-content: var(--pf-text);
-  --color-accent: var(--pf-sage);
-  --color-accent-content: #f8fbf5;
+  --color-accent: var(--pf-accent);
+  --color-accent-content: #fff7f6;
   --color-neutral: var(--pf-text);
   --color-neutral-content: var(--pf-cream);
   --color-base-100: var(--pf-cream);
@@ -83,13 +85,13 @@ html[data-theme="caramellatte"] {
   --color-base-300: var(--pf-sand-light);
   --color-base-content: var(--pf-text);
   --color-info: var(--pf-lino-muted);
-  --color-info-content: #fffaf2;
-  --color-success: var(--pf-primary);
-  --color-success-content: #f4fbf7;
-  --color-warning: var(--pf-secondary-dark);
-  --color-warning-content: #fff8ec;
-  --color-error: var(--pf-wood-muted);
-  --color-error-content: #fff4ef;
+  --color-info-content: #fffdf9;
+  --color-success: #5f6a4f;
+  --color-success-content: #f7faf2;
+  --color-warning: var(--pf-primary-dark);
+  --color-warning-content: #fffaf0;
+  --color-error: var(--pf-accent);
+  --color-error-content: #fff6f5;
 }
 
 html {
@@ -100,10 +102,10 @@ body {
   position: relative;
   color: var(--pf-text);
   background:
-    radial-gradient(circle at top left, rgba(168, 109, 69, 0.2), transparent 32%),
-    radial-gradient(circle at top center, rgba(200, 176, 137, 0.18), transparent 28%),
-    radial-gradient(circle at top right, rgba(232, 220, 200, 0.12), transparent 30%),
-    linear-gradient(180deg, var(--pf-cream) 0%, var(--pf-sand-soft) 26%, var(--pf-bg) 58%, var(--pf-cream-soft) 100%);
+    radial-gradient(circle at top left, rgba(200, 154, 21, 0.12), transparent 30%),
+    radial-gradient(circle at top center, rgba(255, 255, 255, 0.72), transparent 28%),
+    radial-gradient(circle at top right, rgba(29, 24, 20, 0.08), transparent 30%),
+    linear-gradient(180deg, #fcfbf8 0%, var(--pf-sand-soft) 30%, var(--pf-bg) 62%, var(--pf-cream-soft) 100%);
   font-family: var(--font-sans), "Segoe UI", sans-serif;
 }
 
@@ -112,10 +114,10 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
   background-size: 36px 36px;
-  opacity: 0.14;
+  opacity: 0.1;
   mix-blend-mode: soft-light;
   z-index: 0;
 }

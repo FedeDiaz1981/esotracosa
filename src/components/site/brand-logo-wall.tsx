@@ -35,7 +35,7 @@ function MobileBrandRail({ brands }: { brands: BrandItem[] }) {
                     <Link
                       key={brand.id}
                       href={`/galeria?brand=${encodeURIComponent(brand.name)}`}
-                      className="relative flex aspect-square overflow-hidden rounded-[1.6rem] border border-[rgba(168,109,69,0.12)] bg-[rgba(255,255,255,0.78)] shadow-[0_10px_24px_rgba(74,57,38,0.06)]"
+                      className="relative flex aspect-square overflow-hidden rounded-[1.6rem] border border-[rgba(200,154,21,0.14)] bg-white shadow-[0_10px_24px_rgba(29,24,20,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(200,154,21,0.26)] hover:shadow-[0_16px_34px_rgba(29,24,20,0.12)]"
                     >
                       {hasImage ? (
                         <Image
@@ -87,7 +87,7 @@ export function BrandLogoWall({ brands }: { brands: BrandItem[] }) {
             <Link
               key={brand.id}
               href={`/galeria?brand=${encodeURIComponent(brand.name)}`}
-              className="group relative flex min-h-[160px] overflow-hidden rounded-[1.5rem] border border-transparent bg-[rgba(255,255,255,0.18)] p-0 transition duration-300 hover:-translate-y-1 hover:bg-[rgba(255,255,255,0.26)]"
+              className="group relative flex min-h-[160px] overflow-hidden rounded-[1.5rem] border border-[rgba(200,154,21,0.14)] bg-white p-0 shadow-[0_10px_24px_rgba(29,24,20,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[rgba(200,154,21,0.26)] hover:shadow-[0_16px_34px_rgba(29,24,20,0.12)]"
             >
               {hasImage ? (
                 <Image

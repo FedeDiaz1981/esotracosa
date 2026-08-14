@@ -18,8 +18,8 @@ export function MobileHeaderDrawer({ menus, open, onOpenChange }: MobileHeaderDr
     <Drawer.Root open={open} onOpenChange={onOpenChange} shouldScaleBackground={false}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-[11040] bg-[rgba(35,28,20,0.42)] backdrop-blur-[2px]" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[11050] max-h-[86dvh] overflow-hidden rounded-t-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] shadow-[0_-24px_70px_rgba(74,57,38,0.28)]">
-          <div className="flex items-center justify-between border-b border-[rgba(168,109,69,0.12)] px-4 py-4">
+        <Drawer.Content className="fixed inset-x-0 bottom-0 z-[11050] max-h-[86dvh] overflow-hidden rounded-t-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] shadow-[0_-24px_70px_rgba(29,24,20,0.28)]">
+          <div className="flex items-center justify-between border-b border-[rgba(200,154,21,0.12)] px-4 py-4">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">Navegación</p>
               <p className="mt-1 text-lg font-extrabold text-[var(--pf-text)]">Pintofruta</p>
@@ -36,19 +36,19 @@ export function MobileHeaderDrawer({ menus, open, onOpenChange }: MobileHeaderDr
           </div>
 
           <div className="max-h-[calc(86dvh-73px)] overflow-y-auto px-4 py-4">
-            <div className="rounded-[1.4rem] border border-[var(--pf-border)] bg-[rgba(248,242,232,0.75)] p-4">
+            <div className="rounded-[1.4rem] border border-[var(--pf-border)] bg-[rgba(245,243,239,0.75)] p-4">
               <p className="mb-2 text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">Admin</p>
               <Link
                 href="/admin"
                 onClick={() => onOpenChange(false)}
-                className="flex items-center justify-between rounded-[1rem] border border-[rgba(168,109,69,0.16)] bg-white px-4 py-3 text-sm font-semibold text-[var(--pf-text)] shadow-[0_6px_14px_rgba(74,57,38,0.06)]"
+                className="flex items-center justify-between rounded-[1rem] border border-[rgba(200,154,21,0.16)] bg-white px-4 py-3 text-sm font-semibold text-[var(--pf-text)] shadow-[0_6px_14px_rgba(29,24,20,0.06)]"
               >
                 <span>Panel de listas</span>
                 <span className="text-[var(--pf-primary-darker)]">Abrir</span>
               </Link>
             </div>
 
-            <div className="rounded-[1.4rem] border border-[var(--pf-border)] bg-[rgba(248,242,232,0.75)] p-4">
+            <div className="rounded-[1.4rem] border border-[var(--pf-border)] bg-[rgba(245,243,239,0.75)] p-4">
               <Link
                 href="/busqueda"
                 onClick={() => onOpenChange(false)}
@@ -74,7 +74,7 @@ export function MobileHeaderDrawer({ menus, open, onOpenChange }: MobileHeaderDr
 
                   <div className="mt-4 space-y-3">
                     {menu.groups.map((group) => (
-                      <div key={group.label} className="rounded-[1.1rem] bg-[rgba(248,242,232,0.7)] p-3">
+                      <div key={group.label} className="rounded-[1.1rem] bg-[rgba(245,243,239,0.7)] p-3">
                         <p className="mb-2 text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-primary-darker)]">
                           {group.label}
                         </p>
@@ -85,7 +85,7 @@ export function MobileHeaderDrawer({ menus, open, onOpenChange }: MobileHeaderDr
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => onOpenChange(false)}
-                                className="inline-flex shrink-0 rounded-full border border-[rgba(168,109,69,0.16)] bg-white px-3 py-2 text-sm font-medium text-[var(--pf-text)] shadow-[0_6px_14px_rgba(74,57,38,0.06)]"
+                                className="inline-flex shrink-0 rounded-full border border-[rgba(200,154,21,0.16)] bg-white px-3 py-2 text-sm font-medium text-[var(--pf-text)] shadow-[0_6px_14px_rgba(29,24,20,0.06)]"
                               >
                                 {item.label}
                               </Link>

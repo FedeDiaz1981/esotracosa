@@ -146,7 +146,7 @@ export function ProductDetailModal({
         }
       }}
     >
-      <div className="modal-box max-h-[calc(100dvh-1rem)] max-w-6xl overflow-y-auto overscroll-contain rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)] sm:max-h-[calc(100dvh-2rem)]">
+      <div className="modal-box max-h-[calc(100dvh-1rem)] max-w-6xl overflow-y-auto overscroll-contain rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(29,24,20,0.26)] sm:max-h-[calc(100dvh-2rem)]">
         {product ? (
           <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
             <div className="relative min-h-[280px] bg-[linear-gradient(180deg,rgba(238,230,214,0.95),rgba(248,244,236,0.98))] p-3 sm:min-h-[480px] sm:p-6 lg:p-8">
@@ -180,7 +180,7 @@ export function ProductDetailModal({
                   {shouldTruncateDescription ? (
                     <button
                       type="button"
-                      className="mt-2 inline-flex items-center text-sm font-semibold text-[var(--pf-accent)] underline decoration-[rgba(168,109,69,0.45)] underline-offset-4 transition hover:opacity-80"
+                      className="mt-2 inline-flex items-center text-sm font-semibold text-[var(--pf-accent)] underline decoration-[rgba(200,154,21,0.45)] underline-offset-4 transition hover:opacity-80"
                       onClick={() => setShowFullDetails(true)}
                     >
                       Ver más
@@ -189,7 +189,7 @@ export function ProductDetailModal({
                 </div>
               ) : null}
 
-              <div className="rounded-[1.5rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-4">
+              <div className="rounded-[1.5rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Cantidad</p>
@@ -235,7 +235,7 @@ export function ProductDetailModal({
                 </div>
               </div>
 
-              <div className="rounded-[1.75rem] border border-[rgba(212,189,156,0.55)] bg-[rgba(237,220,195,0.55)] p-5">
+              <div className="rounded-[1.75rem] border border-[rgba(224,208,180,0.55)] bg-[rgba(245,239,228,0.55)] p-5">
                 <p className="text-xs uppercase tracking-[0.32em] text-[var(--pf-muted)]">Total</p>
                 <p className="mt-2 text-4xl font-extrabold tracking-tight text-[var(--pf-text)]">{formatCurrency(totalPrice)}</p>
                 <p className="mt-1 text-sm text-[var(--pf-muted)]">
@@ -244,10 +244,10 @@ export function ProductDetailModal({
               </div>
 
               <div className="flex flex-wrap gap-2 pb-1">
-                <Badge variant="outline" className="border-[rgba(168,109,69,0.22)] text-[var(--pf-text)]">
+                <Badge variant="outline" className="border-[rgba(200,154,21,0.22)] text-[var(--pf-text)]">
                   {product.brand}
                 </Badge>
-                <Badge variant="outline" className="border-[rgba(168,109,69,0.22)] text-[var(--pf-text)]">
+                <Badge variant="outline" className="border-[rgba(200,154,21,0.22)] text-[var(--pf-text)]">
                   {product.categoryName}
                 </Badge>
                 {product.vegano ? <Badge variant="outline" className="border-success/40 text-success">Vegano</Badge> : null}
@@ -293,8 +293,8 @@ export function ProductDetailModal({
           }
         }}
       >
-        <div className="modal-box max-h-[calc(100dvh-1rem)] max-w-3xl overflow-y-auto overscroll-contain rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)] sm:max-h-[calc(100dvh-2rem)]">
-          <div className="flex items-start justify-between gap-4 border-b border-[rgba(168,109,69,0.12)] p-4 sm:p-8">
+        <div className="modal-box max-h-[calc(100dvh-1rem)] max-w-3xl overflow-y-auto overscroll-contain rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(29,24,20,0.26)] sm:max-h-[calc(100dvh-2rem)]">
+          <div className="flex items-start justify-between gap-4 border-b border-[rgba(200,154,21,0.12)] p-4 sm:p-8">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-[var(--pf-muted)]">Detalle completo</p>
               <h3 className="mt-2 text-xl font-extrabold tracking-tight sm:text-4xl">{product?.name}</h3>

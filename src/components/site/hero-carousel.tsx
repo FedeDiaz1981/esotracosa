@@ -28,7 +28,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
   }, [emblaApi, slides.length]);
 
   return (
-    <section className="w-full overflow-hidden bg-[var(--pf-surface)] md:hidden">
+      <section className="w-full overflow-hidden bg-[var(--pf-surface)] md:hidden">
       <div className="relative h-[min(25svh,260px)] w-full overflow-hidden">
         <div ref={emblaRef} className="h-full overflow-hidden">
           <div className="flex h-full touch-pan-y">
@@ -38,7 +38,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
               return (
                 <div key={slide.id} className="flex h-full min-w-0 flex-[0_0_100%] px-3 py-3">
                   <article
-                    className={`relative flex h-full w-full overflow-hidden rounded-[1.9rem] border border-[rgba(168,109,69,0.18)] bg-[var(--pf-surface)] shadow-[0_18px_40px_rgba(74,57,38,0.16)] transition-opacity duration-350 ease-out ${active ? "opacity-100" : "opacity-82"}`}
+                    className={`relative flex h-full w-full overflow-hidden rounded-[1.9rem] border border-[rgba(200,154,21,0.18)] bg-[var(--pf-surface)] shadow-[0_18px_40px_rgba(29,24,20,0.16)] transition-opacity duration-350 ease-out ${active ? "opacity-100" : "opacity-82"}`}
                   >
                     <picture className="absolute inset-0 block h-full w-full">
                       {slide.imageMobile ? <source media="(max-width: 767px)" srcSet={publicAsset(slide.imageMobile)} /> : null}
@@ -51,12 +51,12 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                       />
                     </picture>
 
-                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(248,242,232,0.08)_0%,rgba(248,242,232,0.24)_26%,rgba(248,242,232,0.64)_74%,rgba(248,242,232,0.92)_100%)]" />
-                    <div className="absolute inset-x-0 top-0 h-36 bg-[linear-gradient(180deg,rgba(248,242,232,0.54),transparent)]" />
+                    <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(29,24,20,0.06)_0%,rgba(29,24,20,0.14)_26%,rgba(29,24,20,0.56)_74%,rgba(29,24,20,0.84)_100%)]" />
+                    <div className="absolute inset-x-0 top-0 h-36 bg-[linear-gradient(180deg,rgba(29,24,20,0.42),transparent)]" />
 
                     <div className="relative z-10 flex h-full w-full items-start">
-                      <div className="w-full px-4 pb-4 pt-8 text-[var(--pf-text)]">
-                        <span className="inline-flex rounded-full bg-[rgba(168,109,69,0.14)] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(74,57,38,0.08)]">
+                      <div className="w-full px-4 pb-4 pt-8 text-white">
+                        <span className="inline-flex rounded-full bg-[rgba(200,154,21,0.18)] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.3em] text-white shadow-[0_8px_18px_rgba(29,24,20,0.16)]">
                           {slide.badge}
                         </span>
                         <div className="mt-4">
@@ -84,7 +84,7 @@ function MobileHeroCarousel({ slides, visibleIndex }: { slides: HeroSlide[]; vis
                 type="button"
                 onClick={() => emblaApi?.scrollTo(index)}
                 aria-label={`Ir al banner ${index + 1}`}
-                className={`h-2.5 rounded-full transition-all ${index === visibleIndex ? "w-8 bg-[var(--pf-primary-darker)]" : "w-2.5 bg-[rgba(74,57,38,0.28)]"}`}
+                className={`h-2.5 rounded-full transition-all ${index === visibleIndex ? "w-8 bg-[var(--pf-primary-darker)]" : "w-2.5 bg-[rgba(29,24,20,0.28)]"}`}
               />
             ))}
           </div>
@@ -192,17 +192,17 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   />
                 </picture>
 
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(248,242,232,0.96)_0%,rgba(248,242,232,0.84)_28%,rgba(248,242,232,0.30)_52%,rgba(248,242,232,0.08)_100%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_right_center,rgba(74,57,38,0.18),transparent_40%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(29,24,20,0.78)_0%,rgba(29,24,20,0.50)_28%,rgba(29,24,20,0.16)_52%,rgba(29,24,20,0.02)_100%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_right_center,rgba(200,154,21,0.18),transparent_40%)]" />
 
                 <div className="relative z-10 flex h-full items-center">
                   <div className="pf-shell px-4 sm:px-6 lg:px-12">
                     <div className="max-w-2xl py-10 sm:py-14 lg:py-16">
-                      <span className="inline-flex rounded-full bg-secondary/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-secondary">
+                      <span className="inline-flex rounded-full bg-[rgba(200,154,21,0.16)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white">
                         {slide.badge}
                       </span>
-                      <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-base-content sm:text-6xl">{slide.title}</h1>
-                      <p className="mt-4 max-w-xl text-lg leading-8 text-base-content/78">{slide.subtitle}</p>
+                      <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-white sm:text-6xl">{slide.title}</h1>
+                      <p className="mt-4 max-w-xl text-lg leading-8 text-white/82">{slide.subtitle}</p>
                       <div className="mt-8 flex flex-wrap gap-3">
                         <Link href={resolveHref(slide.link)} className={`${buttonVariants({ variant: "primary", size: "lg" })} !text-white`}>
                           Ir a la galería
@@ -221,7 +221,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 type="button"
                 variant="secondary"
                 size="icon"
-                className="absolute left-4 top-1/2 z-20 -translate-y-1/2 shadow-[0_12px_24px_rgba(74,57,38,0.16)]"
+                className="absolute left-4 top-1/2 z-20 -translate-y-1/2 shadow-[0_12px_24px_rgba(29,24,20,0.16)]"
                 aria-label="Banner anterior"
               >
                 <ChevronLeft className="size-6" />
@@ -230,7 +230,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                 type="button"
                 variant="secondary"
                 size="icon"
-                className="absolute right-4 top-1/2 z-20 -translate-y-1/2 shadow-[0_12px_24px_rgba(74,57,38,0.16)]"
+                className="absolute right-4 top-1/2 z-20 -translate-y-1/2 shadow-[0_12px_24px_rgba(29,24,20,0.16)]"
                 aria-label="Banner siguiente"
               >
                 <ChevronRight className="size-6" />
@@ -246,7 +246,7 @@ export function HeroCarousel({ slides }: { slides: HeroSlide[] }) {
                   type="button"
                   data-hero-slide-index={index}
                   aria-label={`Ir al banner ${index + 1}`}
-                  className={`h-2.5 rounded-full transition-all ${index === visibleIndex ? "w-8 bg-[var(--pf-primary-darker)]" : "w-2.5 bg-[rgba(74,57,38,0.28)]"}`}
+                  className={`h-2.5 rounded-full transition-all ${index === visibleIndex ? "w-8 bg-[var(--pf-primary-darker)]" : "w-2.5 bg-[rgba(29,24,20,0.28)]"}`}
                 />
               ))}
             </div>

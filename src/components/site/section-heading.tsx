@@ -12,14 +12,16 @@ export function SectionHeading({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-[rgba(168,109,69,0.16)] pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:pb-5">
+    <div className="flex flex-col gap-4 border-b border-[rgba(200,154,21,0.14)] pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:pb-5">
       <div className="max-w-2xl">
         <div className="flex items-center gap-3">
-          <span className="h-[1px] w-8 bg-[rgba(168,109,69,0.48)]" />
-          <p className="text-[11px] font-black uppercase tracking-[0.38em] text-[var(--pf-secondary)]">{eyebrow}</p>
+          <span className="h-[1px] w-8 bg-[rgba(200,154,21,0.52)]" />
+          <p className="text-[10px] font-black uppercase tracking-[0.42em] text-[var(--pf-primary-dark)]">{eyebrow}</p>
         </div>
-        <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.05em] text-[var(--pf-text)] sm:text-5xl">{title}</h2>
-        {description ? <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--pf-muted)]">{description}</p> : null}
+        <h2 className="mt-3 text-[2rem] font-extrabold tracking-[-0.06em] text-[var(--pf-text)] sm:text-[2.75rem] lg:text-[3.1rem]">
+          {title}
+        </h2>
+        {description ? <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--pf-muted)] sm:text-[0.98rem]">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>

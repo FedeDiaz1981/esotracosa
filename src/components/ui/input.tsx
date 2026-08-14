@@ -11,7 +11,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     <input
       ref={ref}
       className={[
-        "h-11 w-full rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] px-4 text-[15px] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(74,57,38,0.08)] outline-none placeholder:text-[var(--pf-muted)] focus:border-[rgba(168,109,69,0.35)] focus:ring-2 focus:ring-[rgba(168,109,69,0.14)]",
+        "h-11 w-full rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] px-4 text-[15px] text-[var(--pf-text)] shadow-[0_10px_24px_rgba(29,24,20,0.08)] outline-none placeholder:text-[var(--pf-muted)] focus:border-[rgba(200,154,21,0.38)] focus:ring-2 focus:ring-[rgba(200,154,21,0.14)]",
         className,
       ]
         .filter(Boolean)

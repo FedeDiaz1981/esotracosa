@@ -86,7 +86,7 @@ export function PackDetailModal({
           }
         }}
       >
-        <div className="modal-box max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
+        <div className="modal-box max-w-6xl overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(29,24,20,0.26)]">
           {pack ? (
             <div className="grid gap-0 lg:grid-cols-[1fr_1.05fr]">
               <div className="relative min-h-[320px] bg-[linear-gradient(180deg,rgba(238,230,214,0.95),rgba(248,244,236,0.98))] p-6 sm:min-h-[420px] sm:p-8">
@@ -117,7 +117,7 @@ export function PackDetailModal({
 
                 <p className="max-w-2xl text-base leading-7 text-[var(--pf-muted)]">{pack.description}</p>
 
-                <div className="rounded-[1.5rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.8)] p-4">
+                <div className="rounded-[1.5rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Cantidad</p>
@@ -150,7 +150,7 @@ export function PackDetailModal({
                   </div>
                 </div>
 
-                <div className="rounded-[1.75rem] border border-[rgba(212,189,156,0.55)] bg-[rgba(237,220,195,0.55)] p-5">
+                <div className="rounded-[1.75rem] border border-[rgba(224,208,180,0.55)] bg-[rgba(245,239,228,0.55)] p-5">
                   <p className="text-xs uppercase tracking-[0.32em] text-[var(--pf-muted)]">Total</p>
                   <p className="mt-2 text-4xl font-extrabold tracking-tight text-[var(--pf-text)]">{formatCurrency(totalPrice)}</p>
                   <p className="mt-1 text-sm text-[var(--pf-muted)]">
@@ -161,7 +161,7 @@ export function PackDetailModal({
                   ) : null}
                 </div>
 
-                <div className="rounded-[1.5rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.82)] p-4">
+                <div className="rounded-[1.5rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] p-4">
                   <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Incluye</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {pack.items.map((item) => (
@@ -169,7 +169,7 @@ export function PackDetailModal({
                         key={item.productId}
                         type="button"
                         onClick={() => setSelectedProduct(item.product)}
-                        className="inline-flex items-center gap-2 rounded-full border border-[rgba(168,109,69,0.18)] bg-[rgba(248,242,232,0.88)] px-3 py-2 text-left text-sm font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(238,230,214,0.95)]"
+                        className="inline-flex items-center gap-2 rounded-full border border-[rgba(200,154,21,0.18)] bg-[rgba(245,243,239,0.88)] px-3 py-2 text-left text-sm font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(238,230,214,0.95)]"
                       >
                         <span className="max-w-[14rem] truncate">{item.product.name}</span>
                         <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[var(--pf-primary-darker)]">

@@ -1116,7 +1116,7 @@ export async function buildOrderExcelFile({
       const workbook = new ExcelJS.Workbook();
       console.info("[pedido/excel] build:workbook-load:start");
       traceExcel("build:workbook-load:start");
-      await workbook.xlsx.load(templateFile.buffer as any);
+      await workbook.xlsx.load(templateFile.buffer as Buffer);
       console.info("[pedido/excel] build:workbook-load:done");
       traceExcel("build:workbook-load:done");
       console.info("[pedido/excel] build:populate:start", { templateId: template.id });

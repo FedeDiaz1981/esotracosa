@@ -130,7 +130,7 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
         type="button"
         onClick={openDialog}
         disabled={disabled}
-        className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(111,69,40,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+        className="inline-flex h-14 items-center justify-center rounded-full border border-[rgba(29,24,20,0.18)] bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(200,154,21,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
       >
         Subir template Excel
       </button>
@@ -144,8 +144,8 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
           }
         }}
       >
-        <div className="modal-box max-w-3xl overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(74,57,38,0.26)]">
-          <div className="flex items-start justify-between gap-4 border-b border-[rgba(74,57,38,0.08)] px-6 py-5">
+        <div className="modal-box max-w-3xl overflow-hidden rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-0 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(29,24,20,0.26)]">
+          <div className="flex items-start justify-between gap-4 border-b border-[rgba(29,24,20,0.08)] px-6 py-5">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[var(--pf-secondary-dark)]">Plantilla de pedido</p>
               <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--pf-text)]">Subir template Excel</h3>
@@ -157,7 +157,7 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
             <button
               type="button"
               onClick={closeDialog}
-              className="rounded-full border border-[rgba(74,57,38,0.12)] bg-white px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[var(--pf-surface-warm)]"
+              className="rounded-full border border-[rgba(29,24,20,0.12)] bg-white px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)] transition hover:bg-[var(--pf-surface-warm)]"
             >
               Cerrar
             </button>
@@ -165,7 +165,7 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
 
           <div className="px-6 py-6">
             <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-              <label className="rounded-[1.5rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
+              <label className="rounded-[1.5rem] border border-[rgba(29,24,20,0.12)] bg-white p-4">
                 <span className="text-xs font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">Archivo</span>
                 <input
                   ref={fileInputRef}
@@ -177,14 +177,14 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="mt-3 block w-full rounded-[1rem] border border-[rgba(74,57,38,0.12)] bg-[rgba(255,255,255,0.9)] px-4 py-3 text-sm text-[var(--pf-text)] file:mr-4 file:rounded-full file:border-0 file:bg-[var(--pf-primary)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
+                  className="mt-3 block w-full rounded-[1rem] border border-[rgba(29,24,20,0.12)] bg-[rgba(255,255,255,0.94)] px-4 py-3 text-sm text-[var(--pf-text)] file:mr-4 file:rounded-full file:border-0 file:bg-[var(--pf-primary)] file:px-4 file:py-2 file:text-sm file:font-bold file:text-white"
                 />
                 <p className="mt-2 text-xs text-[var(--pf-muted)]">
                   {file ? `Seleccionado: ${file.name}` : "Subi el template Excel que quieras usar como base."}
                 </p>
               </label>
 
-              <div className="rounded-[1.5rem] border border-[rgba(74,57,38,0.12)] bg-white p-4">
+              <div className="rounded-[1.5rem] border border-[rgba(29,24,20,0.12)] bg-white p-4">
                 <span className="text-xs font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">Destino</span>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
@@ -193,7 +193,7 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
                     className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                       audience === "guest"
                         ? "bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] text-white"
-                        : "border border-[rgba(74,57,38,0.12)] bg-white text-[var(--pf-primary-darker)] hover:bg-[var(--pf-surface-warm)]"
+                        : "border border-[rgba(29,24,20,0.12)] bg-white text-[var(--pf-primary-darker)] hover:bg-[var(--pf-surface-warm)]"
                     }`}
                   >
                     I - Publico / invitados
@@ -204,7 +204,7 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
                     className={`rounded-full px-4 py-2 text-sm font-bold transition ${
                       audience === "member"
                         ? "bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] text-white"
-                        : "border border-[rgba(74,57,38,0.12)] bg-white text-[var(--pf-primary-darker)] hover:bg-[var(--pf-surface-warm)]"
+                        : "border border-[rgba(29,24,20,0.12)] bg-white text-[var(--pf-primary-darker)] hover:bg-[var(--pf-surface-warm)]"
                     }`}
                   >
                     D - Logueados / miembros
@@ -223,7 +223,7 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
             ) : null}
 
             {success ? (
-              <div className="mt-4 rounded-[1.25rem] border border-[rgba(74,57,38,0.14)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm text-[var(--pf-text)]">
+              <div className="mt-4 rounded-[1.25rem] border border-[rgba(29,24,20,0.14)] bg-[rgba(255,255,255,0.88)] px-4 py-3 text-sm text-[var(--pf-text)]">
                 {success}
               </div>
             ) : null}
@@ -233,7 +233,7 @@ export function OrderExcelTemplateButton({ disabled = false }: { disabled?: bool
                 type="button"
                 onClick={handleUpload}
                 disabled={loading}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(168,109,69,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-5 text-sm font-black text-white shadow-[0_14px_30px_rgba(200,154,21,0.22)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Subiendo..." : "Guardar plantilla"}
               </button>
