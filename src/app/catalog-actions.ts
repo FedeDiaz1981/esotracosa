@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { ensureSiteContentSchema } from "@/infrastructure/db/ensure-site-content-schema";
+import { postgresPool } from "@/infrastructure/db/postgres";
 
 async function ensureDatabase() {
   await ensureSiteContentSchema();

@@ -1,7 +1,7 @@
 import siteContent from "@/data/site-content.json";
 import type { HeaderNavigation, SiteContentDocument } from "@/domain/site-content";
 
-export const fallbackSiteContent = siteContent as SiteContentDocument;
+export const fallbackSiteContent = siteContent as unknown as SiteContentDocument;
 export const seedLockKey = 9_142_501;
 
 export type SeedHeaderSearchScope = {

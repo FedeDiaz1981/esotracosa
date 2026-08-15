@@ -182,7 +182,7 @@ export function CartPanel({
                       <div className="text-right">
                         <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--pf-muted)]">Subtotal</p>
                         <p className="text-base font-black text-[var(--pf-text)]">
-                          {formatCurrency(resolveCartLineUnitPrice(item, viewer) * item.quantity)}
+                          {formatCurrency(resolveCartLineUnitPrice(item) * item.quantity)}
                         </p>
                       </div>
                     </div>

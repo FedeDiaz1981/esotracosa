@@ -212,7 +212,7 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
   const sortedProducts = [...gallery.products].sort((left, right) => {
     if (sort === "price") {
       return (
-        resolveProductUnitPrice(left, viewer) - resolveProductUnitPrice(right, viewer) ||
+        resolveProductUnitPrice(left) - resolveProductUnitPrice(right) ||
         left.name.localeCompare(right.name, "es", { sensitivity: "base" })
       );
     }

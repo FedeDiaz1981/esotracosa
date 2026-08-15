@@ -84,7 +84,7 @@ export default async function ProductPage({
 
   const imageList = product.images?.length ? product.images : product.image ? [product.image] : [];
   const heroImages = imageList.length > 0 ? imageList : [product.image ?? ""];
-  const heroPrice = resolveProductUnitPrice(product, viewer);
+  const heroPrice = resolveProductUnitPrice(product);
   const fabricCount = product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
   const mainImage = heroImages[0] ?? "";
   const secondaryImages = heroImages.slice(1, 5);
@@ -328,7 +328,7 @@ export default async function ProductPage({
                     <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.brand}</p>
                     <h3 className="mt-2 text-[1.05rem] font-medium text-[var(--pf-text)]">{item.name}</h3>
                     <p className="mt-2 text-sm font-semibold text-[var(--pf-primary-darker)]">
-                      {formatCurrency(resolveProductUnitPrice(item, viewer))}
+                      {formatCurrency(resolveProductUnitPrice(item))}
                     </p>
                   </div>
                 </Link>

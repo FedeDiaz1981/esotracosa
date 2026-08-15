@@ -133,7 +133,7 @@ export function ProductDetailModal({
     : fullDescription;
 
   const safeQuantity = Math.min(Math.max(quantity, 1), maxQuantity);
-  const unitPrice = product ? resolveProductUnitPrice(product, viewer) : 0;
+  const unitPrice = product ? resolveProductUnitPrice(product) : 0;
   const totalPrice = product ? unitPrice * safeQuantity : 0;
 
   return (

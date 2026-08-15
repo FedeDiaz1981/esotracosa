@@ -8,6 +8,8 @@
 }
 
 :root {
+  --font-inter: ui-sans-serif, system-ui, sans-serif;
+  --font-manrope: ui-sans-serif, system-ui, sans-serif;
   --pf-primary: #d4a81a;
   --pf-primary-dark: #a57d10;
   --pf-primary-darker: #1d1814;

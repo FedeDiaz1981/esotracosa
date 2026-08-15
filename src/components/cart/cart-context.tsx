@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { useViewer } from "@/components/auth/viewer-provider";
 import type { PackItem, ProductItem } from "@/domain/site-content";
 
 export type CartLine = {
@@ -75,7 +74,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const viewer = useViewer();
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -96,7 +94,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<CartContextValue>(() => {
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-    const totalPrice = items.reduce((sum, item) => sum + item.quantity * resolveCartLineUnitPrice(item, viewer), 0);
+    const totalPrice = items.reduce((sum, item) => sum + item.quantity * resolveCartLineUnitPrice(item), 0);
 
     return {
       items,
@@ -174,7 +172,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       totalItems,
       totalPrice,
     };
-  }, [hydrated, isOpen, items, viewer]);
+  }, [hydrated, isOpen, items]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
