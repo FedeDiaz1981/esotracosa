@@ -132,6 +132,48 @@ export default async function ProductPage({
           title="Todas las imagenes del producto en loop infinito"
         />
 
+        <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
+          <SectionTitle
+            eyebrow="Medidas personalizables"
+            title="Medidas y configuraciones"
+            description="Un bloque visual simple para mostrar las proporciones y opciones del modelo."
+          />
+
+          <div className="mt-10 flex justify-center">
+            <div className="relative w-full max-w-5xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-white px-6 py-8 sm:px-10 sm:py-12">
+              <Image
+                src={publicAsset("/assets/images/medidas/01.svg")}
+                alt="Medidas del producto"
+                width={1200}
+                height={700}
+                className="h-auto w-full object-contain"
+                priority={false}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
+          <SectionTitle
+            eyebrow="Sistema de apertura"
+            title="Sistema de apertura"
+            description="Dibujos de ejemplo meramente ilustrativos."
+          />
+
+          <div className="mt-10 flex justify-center">
+            <div className="relative w-full max-w-5xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-white px-6 py-8 sm:px-10 sm:py-12">
+              <Image
+                src={publicAsset("/assets/images/medidas/02.svg")}
+                alt="Sistema de apertura"
+                width={1200}
+                height={900}
+                className="h-auto w-full object-contain"
+                priority={false}
+              />
+            </div>
+          </div>
+        </section>
+
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
             eyebrow="Informacion general"
