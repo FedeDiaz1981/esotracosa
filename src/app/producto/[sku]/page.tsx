@@ -4,20 +4,49 @@ import { notFound } from "next/navigation";
 import { recordProductView } from "@/app/catalog-actions";
 import { getProductBySku } from "@/application/catalog";
 import { CartAddButton } from "@/components/cart/cart-add-button";
-import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { SectionHeading } from "@/components/site/section-heading";
 import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { getSiteContent } from "@/infrastructure/site-content.repository";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 
-function isVisibleProduct(product: {
-  status: string;
-  onlyMembers?: boolean;
-}, authenticated: boolean) {
+function isVisibleProduct(
+  product: {
+    status: string;
+    onlyMembers?: boolean;
+  },
+  authenticated: boolean,
+) {
   return product.status === "published" && (!product.onlyMembers || authenticated);
+}
+
+function SectionTitle({
+  eyebrow,
+  title,
+  description,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+}) {
+  return (
+    <div className="mx-auto max-w-4xl text-center">
+      <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">{eyebrow}</p>
+      <h2 className="mt-4 font-serif text-[clamp(1.8rem,3vw,3rem)] leading-tight tracking-[-0.03em] text-[var(--pf-text)]">
+        {title}
+      </h2>
+      {description ? <p className="mt-4 text-sm leading-7 text-[var(--pf-muted)]">{description}</p> : null}
+    </div>
+  );
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[170px_1fr] gap-4 border-b border-[rgba(0,0,0,0.08)] py-4 text-sm last:border-b-0">
+      <div className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{label}</div>
+      <div className="text-[0.98rem] text-[var(--pf-text)]">{value}</div>
+    </div>
+  );
 }
 
 export default async function ProductPage({
@@ -41,7 +70,6 @@ export default async function ProductPage({
       const relatedById = (product.relatedProductIds ?? []).includes(item.id);
       const relatedByCategory = item.categoryId === product.categoryId || item.categoryNames?.includes(product.categoryName);
       const relatedByBrand = item.brand === product.brand;
-
       return relatedById || relatedByCategory || relatedByBrand;
     })
     .sort((left, right) => {
@@ -57,6 +85,8 @@ export default async function ProductPage({
   const heroImages = imageList.length > 0 ? imageList : [product.image ?? ""];
   const heroPrice = resolveProductUnitPrice(product, viewer);
   const fabricCount = product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
+  const mainImage = heroImages[0] ?? "";
+  const secondaryImages = heroImages.slice(1, 5);
 
   const infoRows = [
     { label: "Marca", value: product.brand },
@@ -67,196 +97,215 @@ export default async function ProductPage({
     { label: "Stock", value: product.stock == null ? "A pedido" : product.stock <= 0 ? "Agotado" : `${product.stock} unidades` },
   ];
 
-  const highlights = [
-    { title: "Precio unificado", text: "Un solo precio para todos los usuarios, con compra simple y directa." },
-    { title: "Telas configurables", text: "Cada tela puede tener su propia foto del sillon para mostrar el acabado real." },
-    { title: "Visibilidad flexible", text: "Si es solo miembros, la ficha respeta el acceso del usuario." },
-    { title: "Carga rapida", text: "La ficha trae solo lo necesario y deja el resto listo para seguir navegando." },
+  const summaryLines = [
+    product.featured ? "Producto destacado" : "Producto en catalogo",
+    product.onlyMembers ? "Visible solo para usuarios logueados" : "Visible para todo el publico",
+    product.vegano ? "Sello vegano disponible" : "Sin sello vegano",
+    product.kosher ? "Sello kosher disponible" : "Sin sello kosher",
   ];
 
   return (
-    <main className="pf-shell flex w-full flex-1 flex-col gap-10 px-4 py-5 sm:px-6 lg:px-12 lg:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <Link href="/galeria" className="text-sm font-semibold text-[var(--pf-primary-dark)] hover:underline">
-          ← Volver a la galeria
-        </Link>
-        <span className="rounded-full border border-[rgba(200,154,21,0.18)] bg-white px-4 py-2 text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-primary-darker)] shadow-[0_10px_24px_rgba(29,24,20,0.06)]">
-          Ficha de producto
-        </span>
-      </div>
-
-      <section className="overflow-hidden rounded-[2.5rem] border border-[var(--pf-border)] bg-[var(--pf-surface)] shadow-[0_18px_42px_rgba(29,24,20,0.10)]">
-        <div className="border-b border-[rgba(200,154,21,0.12)] bg-[linear-gradient(180deg,rgba(249,245,238,0.98),rgba(255,255,255,0.96))] px-5 py-5 sm:px-8">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="border-[rgba(200,154,21,0.28)] text-[var(--pf-text)]">
-              {product.brand}
-            </Badge>
-            <Badge variant="outline" className="border-[rgba(200,154,21,0.28)] text-[var(--pf-text)]">
-              {product.categoryName}
-            </Badge>
-            {product.onlyMembers ? (
-              <Badge variant="outline" className="border-[rgba(185,79,54,0.22)] text-[var(--pf-wood-muted)]">
-                Solo miembros
-              </Badge>
-            ) : null}
-            {product.featured ? (
-              <Badge variant="outline" className="border-[rgba(200,154,21,0.22)] text-[var(--pf-primary-darker)]">
-                Destacado
-              </Badge>
-            ) : null}
-          </div>
-          <div className="mt-5 max-w-3xl">
-            <p className="text-[11px] font-black uppercase tracking-[0.32em] text-[var(--pf-secondary-dark)]">Sillon / {product.sku}</p>
-            <h1 className="mt-3 text-[2.3rem] font-black tracking-[-0.06em] text-[var(--pf-text)] sm:text-[3.8rem]">
-              {product.name}
-            </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--pf-muted)] sm:text-[1rem] sm:leading-8">
-              {product.description || product.detail}
-            </p>
-          </div>
+    <main className="bg-[#fbf8f2] text-[var(--pf-text)]">
+      <div className="mx-auto flex w-full max-w-[1220px] flex-col px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
+        <div className="flex items-center justify-between border-b border-[rgba(0,0,0,0.08)] pb-4 text-[11px] font-black uppercase tracking-[0.35em] text-[var(--pf-muted)]">
+          <Link href="/galeria" className="transition hover:text-[var(--pf-primary-darker)]">
+            Volver a la galeria
+          </Link>
+          <span>{product.sku}</span>
         </div>
 
-        <div className="grid gap-0 lg:grid-cols-[1.12fr_.88fr]">
-          <ProductFabricGallery product={product} />
+        <section className="border-b border-[rgba(0,0,0,0.08)] px-2 py-12 text-center sm:px-6 lg:py-14">
+          <p className="text-[11px] font-black uppercase tracking-[0.5em] text-[var(--pf-secondary-dark)]">{product.brand}</p>
+          <p className="mt-4 text-[0.8rem] font-medium uppercase tracking-[0.38em] text-[var(--pf-muted)]">
+            {product.categoryName}
+          </p>
+          <h1 className="mt-6 font-serif text-[clamp(3rem,8vw,7rem)] leading-[0.9] tracking-[-0.06em] text-[var(--pf-text)]">
+            {product.name}
+          </h1>
+          <div className="mx-auto mt-8 max-w-[34rem] bg-[#111111] px-6 py-5 text-white sm:px-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">Precio</p>
+            <p className="mt-2 font-serif text-[clamp(2.4rem,5vw,4rem)] leading-none">{formatCurrency(heroPrice)}</p>
+            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.28em] text-white/60">Un solo precio para todos</p>
+          </div>
+          <p className="mx-auto mt-6 max-w-3xl text-sm leading-7 text-[var(--pf-muted)]">
+            {product.description || product.detail}
+          </p>
+        </section>
 
-          <div className="flex min-h-0 flex-col gap-5 p-5 sm:p-8">
-            <div className="rounded-[2rem] border border-[rgba(224,208,180,0.7)] bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,243,234,0.96))] p-5 shadow-[0_14px_28px_rgba(29,24,20,0.08)]">
-              <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">Precio</p>
-              <p className="mt-3 text-4xl font-black tracking-[-0.05em] text-[var(--pf-text)] sm:text-5xl">
-                {formatCurrency(heroPrice)}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[var(--pf-muted)]">
-                Un solo precio para todo el sitio. Si despues queres agregar financiamiento o promos, esta ficha ya queda lista.
+        <section className="grid gap-10 py-12 lg:grid-cols-[1.08fr_.92fr]">
+          <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
+            <ProductFabricGallery product={product} />
+          </div>
+
+          <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
+            <div className="max-w-xl">
+              <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Detalle</p>
+              <h2 className="mt-4 font-serif text-[clamp(1.9rem,3vw,3.2rem)] leading-tight tracking-[-0.04em] text-[var(--pf-text)]">
+                Una ficha limpia, directa y sin distracciones
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-[var(--pf-muted)]">
+                La idea es que la experiencia se parezca a la referencia: mucho aire, imagen protagonista y secciones
+                claras para telas, medidas y contenido comercial.
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="mt-8 border-y border-[rgba(0,0,0,0.08)] py-1">
               {infoRows.map((item) => (
-                <div key={item.label} className="rounded-[1.5rem] border border-[var(--pf-border)] bg-white p-4 shadow-[0_10px_22px_rgba(29,24,20,0.05)]">
-                  <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">{item.label}</p>
-                  <p className="mt-1 text-base font-semibold text-[var(--pf-text)]">{item.value}</p>
-                </div>
+                <DetailRow key={item.label} label={item.label} value={item.value} />
               ))}
             </div>
 
-            <div className="rounded-[2rem] border border-[var(--pf-border)] bg-[rgba(255,255,255,0.92)] p-5">
-              <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-secondary-dark)]">Resumen</p>
-              <div className="mt-4 grid gap-3">
-                {highlights.map((highlight) => (
-                  <div key={highlight.title} className="rounded-[1.25rem] border border-[rgba(200,154,21,0.14)] bg-[rgba(245,239,228,0.5)] px-4 py-3">
-                    <p className="text-sm font-bold text-[var(--pf-text)]">{highlight.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-[var(--pf-muted)]">{highlight.text}</p>
+            <div className="mt-8">
+              <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Estado</p>
+              <div className="mt-4 border-t border-[rgba(0,0,0,0.08)]">
+                {summaryLines.map((line) => (
+                  <div key={line} className="border-b border-[rgba(0,0,0,0.08)] py-4 text-sm leading-7 text-[var(--pf-text)] last:border-b-0">
+                    {line}
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="mt-auto flex flex-wrap gap-3">
-              <CartAddButton product={product} className={buttonVariants({ variant: "primary", size: "lg" })}>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <CartAddButton product={product} className="rounded-none bg-[var(--pf-primary-darker)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-white hover:bg-[var(--pf-primary-dark)]">
                 Agregar al pedido
               </CartAddButton>
-              <Link href="/busqueda" className={buttonVariants({ variant: "secondary", size: "lg" })}>
+              <Link
+                href="/busqueda"
+                className="inline-flex items-center justify-center border border-[rgba(0,0,0,0.14)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-[var(--pf-text)] transition hover:border-[rgba(0,0,0,0.3)]"
+              >
                 Seguir buscando
               </Link>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
-        <div className="rounded-[2.25rem] border border-[var(--pf-border)] bg-white p-5 shadow-[0_14px_30px_rgba(29,24,20,0.06)]">
-          <SectionHeading
-            eyebrow="Selección"
-            title="Elegí la tela y mirá el acabado real"
-            description="La galeria te permite cambiar la tela y ver la foto correspondiente del sillon sin salir de la ficha."
+        <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
+          <SectionTitle
+            eyebrow="Seleccion de tela"
+            title="Elegi una tela y mirala aplicada al sillon"
+            description="Cada variante puede mostrar su propia foto, para que la visualizacion sea rapida y consistente."
           />
-          <div className="mt-6 overflow-hidden rounded-[2rem] bg-[linear-gradient(180deg,rgba(249,245,238,0.92),rgba(255,255,255,1))] p-4">
-            <ProductFabricGallery product={product} />
-          </div>
-        </div>
-
-        <div className="rounded-[2.25rem] border border-[var(--pf-border)] bg-[linear-gradient(180deg,rgba(44,35,27,1),rgba(75,58,44,1))] p-5 text-white shadow-[0_14px_30px_rgba(29,24,20,0.12)]">
-          <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[rgba(255,255,255,0.68)]">Vista del modelo</p>
-          <h2 className="mt-3 text-2xl font-black tracking-[-0.04em]">Presentacion amplia y limpia</h2>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-white/76">
-            Esta seccion replica el estilo de showroom de la referencia, pero con la paleta del sitio y la fotografia del producto.
-          </p>
-
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            {heroImages.slice(0, 2).map((image, index) => (
-              <div key={`${product.id}-hero-${index}`} className="relative min-h-[240px] overflow-hidden rounded-[1.75rem] bg-[rgba(255,255,255,0.96)]">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            <div className="border border-[rgba(0,0,0,0.08)] bg-white">
+              <div className="relative min-h-[420px]">
                 <Image
-                  src={publicAsset(image)}
-                  alt={`${product.name} vista ${index + 1}`}
+                  src={publicAsset(mainImage)}
+                  alt={product.name}
                   fill
-                  className="object-contain p-4"
-                  sizes="(max-width: 1024px) 100vw, 40vw"
+                  className="object-contain p-6"
+                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  priority
                 />
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-between border border-[rgba(0,0,0,0.08)] bg-white px-5 py-5 sm:px-6">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Telas</p>
+                <div className="mt-4">
+                  <ProductFabricGallery product={product} />
+                </div>
+              </div>
+              <p className="mt-6 text-[11px] leading-6 text-[var(--pf-muted)]">
+                Si la tela tiene foto propia, queda asociada a este producto para mostrar la configuracion correcta.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
+          <SectionTitle
+            eyebrow="Vista del modelo"
+            title="Galeria amplia de imagenes"
+            description="Una composicion simple, con dos o mas vistas grandes para transmitir escala y terminacion."
+          />
+
+          <div className="mt-10 grid gap-4 lg:grid-cols-2">
+            {secondaryImages.length > 0 ? (
+              secondaryImages.slice(0, 2).map((image, index) => (
+                <div key={`${product.id}-hero-${index}`} className="relative min-h-[360px] border border-[rgba(0,0,0,0.08)] bg-white">
+                  <Image
+                    src={publicAsset(image)}
+                    alt={`${product.name} vista ${index + 1}`}
+                    fill
+                    className="object-contain p-6"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="relative min-h-[360px] border border-[rgba(0,0,0,0.08)] bg-white">
+                  <Image
+                    src={publicAsset(mainImage)}
+                    alt={product.name}
+                    fill
+                    className="object-contain p-6"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                </div>
+                <div className="relative min-h-[360px] border border-[rgba(0,0,0,0.08)] bg-white">
+                  <Image
+                    src={publicAsset(mainImage)}
+                    alt={product.name}
+                    fill
+                    className="object-contain p-6"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+
+        <section className="py-12">
+          <SectionTitle
+            eyebrow="Medidas personalizables"
+            title="Medidas y configuraciones"
+            description="Un bloque limpio para mostrar la informacion dimensional sin cargar la pagina con decoracion extra."
+          />
+
+          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              { label: "Ancho", value: "A medida", detail: "Segun el modulo o la composicion elegida." },
+              { label: "Profundidad", value: "A medida", detail: "Listo para ajustar al espacio disponible." },
+              { label: "Altura", value: "Estandar", detail: "Se puede adaptar segun el modelo cargado." },
+              { label: "Tapizado", value: "A eleccion", detail: "La tela define la foto y la variante visible." },
+            ].map((item) => (
+              <div key={item.label} className="border-t border-[rgba(0,0,0,0.08)] pt-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.label}</p>
+                <p className="mt-3 font-serif text-[2rem] leading-none tracking-[-0.05em] text-[var(--pf-text)]">{item.value}</p>
+                <p className="mt-3 text-sm leading-7 text-[var(--pf-muted)]">{item.detail}</p>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="rounded-[2.25rem] border border-[var(--pf-border)] bg-[var(--pf-surface)] p-5 shadow-[0_14px_30px_rgba(29,24,20,0.06)] sm:p-6">
-        <SectionHeading
-          eyebrow="Medidas"
-          title="Medidas personalizables"
-          description="Si el modelo admite variantes de tamaño o configuracion, este bloque queda listo para mostrarlo."
-        />
+        <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
+          <SectionTitle
+            eyebrow="Informacion general"
+            title="Datos claros para la compra"
+            description="La tabla queda simple y legible, sin bloques pesados ni bordes gruesos."
+          />
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: "Ancho", value: "A medida", detail: "Definilo segun el modulo o la composicion." },
-            { label: "Profundidad", value: "A medida", detail: "Ideal para dejar armado el encastre." },
-            { label: "Altura", value: "Estándar", detail: "El respaldo puede ajustarse segun el tapizado." },
-            { label: "Tapizado", value: "A elección", detail: "La tela seleccionada define la imagen de la variante." },
-          ].map((item) => (
-            <div key={item.label} className="rounded-[1.75rem] border border-[var(--pf-border-soft)] bg-white p-5 shadow-[0_10px_22px_rgba(29,24,20,0.05)]">
-              <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">{item.label}</p>
-              <p className="mt-2 text-2xl font-black tracking-[-0.04em] text-[var(--pf-text)]">{item.value}</p>
-              <p className="mt-2 text-sm leading-6 text-[var(--pf-muted)]">{item.detail}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-[2.25rem] border border-[var(--pf-border)] bg-white p-5 shadow-[0_14px_30px_rgba(29,24,20,0.06)] sm:p-6">
-        <SectionHeading
-          eyebrow="Informacion"
-          title="Informacion general"
-          description="Datos rapidos para ver la ficha completa sin abrir modales ni pantallas extra."
-        />
-
-        <div className="mt-6 overflow-hidden rounded-[1.75rem] border border-[var(--pf-border-soft)]">
-          <div className="grid md:grid-cols-[260px_1fr]">
-            {[
-              ["Garantia", "Consultanos la cobertura segun la linea y el tapizado."],
-              ["Financiacion", "Tenemos opciones para compras de monto alto."],
-              ["Envios", "Coordinamos entrega y retiro segun la zona."],
-              ["Fabricante", product.brand],
-            ].map(([label, value]) => (
-              <>
-                <div className="border-b border-r border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.82)] px-4 py-4 text-xs font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
-                  {label}
-                </div>
-                <div className="border-b border-[var(--pf-border-soft)] px-4 py-4 text-sm leading-6 text-[var(--pf-text)]">{value}</div>
-              </>
-            ))}
+          <div className="mx-auto mt-10 max-w-4xl border-t border-[rgba(0,0,0,0.08)]">
+            <DetailRow label="Garantia" value="Consultanos la cobertura segun la linea y el tapizado." />
+            <DetailRow label="Financiacion" value="Tenemos opciones para compras de monto alto." />
+            <DetailRow label="Envios" value="Coordinamos entrega y retiro segun la zona." />
+            <DetailRow label="Fabricante" value={product.brand} />
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="rounded-[2.25rem] border border-[var(--pf-border)] bg-white p-5 shadow-[0_14px_30px_rgba(29,24,20,0.06)] sm:p-6">
-        <SectionHeading
-          eyebrow="Caracteristicas"
-          title="Características generales"
-          description="Un resumen corto para transmitir la personalidad del sillon y su estado comercial."
-        />
+        <section className="py-12">
+          <SectionTitle
+            eyebrow="Caracteristicas generales"
+            title="Lo importante, en una sola mirada"
+            description="Resumen comercial y de visibilidad para que la ficha funcione bien tanto en catalogo como en detalle."
+          />
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr]">
-          <div className="rounded-[1.75rem] border border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] p-5">
-            <div className="grid gap-3 sm:grid-cols-2">
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+            <div className="border-t border-[rgba(0,0,0,0.08)] pt-4">
               {[
                 ["Marca", product.brand],
                 ["Categoria", product.categoryName],
@@ -265,94 +314,76 @@ export default async function ProductPage({
                 ["Solo miembros", product.onlyMembers ? "Si" : "No"],
                 ["Stock", product.stock == null ? "A pedido" : product.stock <= 0 ? "Agotado" : `${product.stock} unidades`],
               ].map(([label, value]) => (
-                <div key={label} className="rounded-[1.25rem] border border-white bg-white px-4 py-3">
-                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">{label}</p>
-                  <p className="mt-1 text-sm font-semibold text-[var(--pf-text)]">{value}</p>
+                <DetailRow key={label} label={label} value={value} />
+              ))}
+            </div>
+
+            <div className="border-t border-[rgba(0,0,0,0.08)] pt-4">
+              {summaryLines.map((line) => (
+                <div key={line} className="border-b border-[rgba(0,0,0,0.08)] py-4 text-sm leading-7 text-[var(--pf-text)] last:border-b-0">
+                  {line}
                 </div>
               ))}
             </div>
           </div>
+        </section>
 
-          <div className="rounded-[1.75rem] border border-[var(--pf-border-soft)] bg-[linear-gradient(180deg,rgba(44,35,27,1),rgba(75,58,44,1))] p-5 text-white">
-            <p className="text-[11px] font-black uppercase tracking-[0.34em] text-white/60">Caracteristicas especiales</p>
-            <div className="mt-4 grid gap-3">
-              {[
-                product.featured ? "Producto destacado en la web" : "Producto disponible en catalogo",
-                product.onlyMembers ? "Visible solo para usuarios logueados" : "Visible para todo el publico",
-                product.vegano ? "Aplica sello vegano" : "Sin sello vegano",
-                product.kosher ? "Aplica sello kosher" : "Sin sello kosher",
-              ].map((item) => (
-                <div key={item} className="rounded-[1.25rem] border border-white/10 bg-white/6 px-4 py-3 text-sm leading-6 text-white/88">
-                  {item}
-                </div>
+        {relatedProducts.length > 0 ? (
+          <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
+            <SectionTitle
+              eyebrow="Relacionados"
+              title="Mas sofas"
+              description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
+            />
+
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {relatedProducts.map((item) => (
+                <Link key={item.id} href={`/producto/${item.sku}`} className="group block">
+                  <div className="relative min-h-[240px] border border-[rgba(0,0,0,0.08)] bg-white">
+                    <Image
+                      src={publicAsset(item.image)}
+                      alt={item.name}
+                      fill
+                      className="object-contain p-6 transition duration-500 group-hover:scale-[1.03]"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.brand}</p>
+                    <h3 className="mt-2 text-[1.05rem] font-medium text-[var(--pf-text)]">{item.name}</h3>
+                    <p className="mt-2 text-sm font-semibold text-[var(--pf-primary-darker)]">
+                      {formatCurrency(resolveProductUnitPrice(item, viewer))}
+                    </p>
+                  </div>
+                </Link>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        ) : null}
 
-      {relatedProducts.length > 0 ? (
-        <section className="rounded-[2.25rem] border border-[var(--pf-border)] bg-[var(--pf-surface)] p-5 shadow-[0_14px_30px_rgba(29,24,20,0.06)] sm:p-6">
-          <SectionHeading
-            eyebrow="Relacionados"
-            title="Más sofás"
-            description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
-            action={
-              <Link href="/galeria" className={buttonVariants({ variant: "secondary", size: "sm" })}>
-                Ver galeria
-              </Link>
-            }
+        <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
+          <SectionTitle
+            eyebrow="Clientes"
+            title="Clientes nos recomiendan"
+            description="Un cierre simple para completar la experiencia sin romper la estética editorial."
           />
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {relatedProducts.map((item) => (
-              <Link
-                key={item.id}
-                href={`/producto/${item.sku}`}
-                className="group overflow-hidden rounded-[1.75rem] border border-[var(--pf-border-soft)] bg-white shadow-[0_10px_22px_rgba(29,24,20,0.06)] transition hover:-translate-y-1 hover:shadow-[0_18px_34px_rgba(29,24,20,0.12)]"
-              >
-                <div className="relative h-56 overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,247,244,1))]">
-                  <Image
-                    src={publicAsset(item.image)}
-                    alt={item.name}
-                    fill
-                    className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="border-t border-[rgba(29,24,20,0.08)] p-4">
-                  <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">{item.brand}</p>
-                  <h3 className="mt-2 line-clamp-2 text-base font-semibold text-[var(--pf-text)]">{item.name}</h3>
-                  <p className="mt-3 text-sm font-semibold text-[var(--pf-primary-darker)]">{formatCurrency(resolveProductUnitPrice(item, viewer))}</p>
-                </div>
-              </Link>
+          <div className="mt-10 grid gap-4 lg:grid-cols-4">
+            {[
+              ["Excelente terminacion y muy buen tapizado.", "Silvia F."],
+              ["La foto de la tela ayuda muchisimo para elegir.", "Victoria G."],
+              ["La compra fue simple y la atencion fue muy clara.", "Lucia M."],
+              ["Nos asesoraron bien con medidas y entrega.", "Matias L."],
+            ].map(([quote, name]) => (
+              <article key={name} className="border-t border-[rgba(0,0,0,0.08)] pt-4">
+                <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-primary-darker)]">★★★★★</p>
+                <p className="mt-4 text-sm leading-7 text-[var(--pf-muted)]">{quote}</p>
+                <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-text)]">{name}</p>
+              </article>
             ))}
           </div>
         </section>
-      ) : null}
-
-      <section className="rounded-[2.25rem] border border-[var(--pf-border)] bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,244,236,1))] p-5 shadow-[0_14px_30px_rgba(29,24,20,0.06)] sm:p-6">
-        <SectionHeading
-          eyebrow="Opiniones"
-          title="Clientes nos recomiendan"
-          description="Una franja social simple para dar contexto comercial y completar la ficha con un tono mas editorial."
-        />
-
-        <div className="mt-6 grid gap-4 lg:grid-cols-4">
-          {[
-            ["Excelente terminacion y muy buen tapizado.", "Silvia F."],
-            ["La foto de la tela ayuda muchisimo para elegir.", "Victoria G."],
-            ["La compra fue simple y la atencion fue muy clara.", "Lucia M."],
-            ["Nos asesoraron bien con medidas y entrega.", "Matias L."],
-          ].map(([quote, name]) => (
-            <article key={name} className="rounded-[1.75rem] border border-[var(--pf-border-soft)] bg-white p-5 shadow-[0_10px_22px_rgba(29,24,20,0.05)]">
-              <p className="text-amber-500">★★★★★</p>
-              <p className="mt-4 text-sm leading-7 text-[var(--pf-muted)]">{quote}</p>
-              <p className="mt-4 text-xs font-black uppercase tracking-[0.28em] text-[var(--pf-primary-darker)]">{name}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+      </div>
     </main>
   );
 }
