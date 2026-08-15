@@ -5,6 +5,7 @@ import { recordProductView } from "@/app/catalog-actions";
 import { getProductBySku } from "@/application/catalog";
 import { CartAddButton } from "@/components/cart/cart-add-button";
 import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
+import { ProductImageCarousel } from "@/components/site/product-image-carousel";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { getSiteContent } from "@/infrastructure/site-content.repository";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
@@ -135,6 +136,13 @@ export default async function ProductPage({
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
           <ProductFabricGallery product={product} />
         </section>
+
+        <ProductImageCarousel
+          images={heroImages}
+          alt={product.name}
+          eyebrow="Mas vistas"
+          title="Todas las imagenes del producto en loop infinito"
+        />
 
         <section className="py-12">
           <div className="grid gap-10 lg:grid-cols-[1.08fr_.92fr]">
