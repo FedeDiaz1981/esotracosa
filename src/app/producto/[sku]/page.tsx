@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { recordProductView } from "@/app/catalog-actions";
 import { getProductBySku } from "@/application/catalog";
-import { CartAddButton } from "@/components/cart/cart-add-button";
 import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
 import { ProductImageCarousel } from "@/components/site/product-image-carousel";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
@@ -86,17 +85,6 @@ export default async function ProductPage({
   const heroImages = imageList.length > 0 ? imageList : [product.image ?? ""];
   const heroPrice = resolveProductUnitPrice(product);
   const fabricCount = product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
-  const mainImage = heroImages[0] ?? "";
-  const secondaryImages = heroImages.slice(1, 5);
-
-  const infoRows = [
-    { label: "Marca", value: product.brand },
-    { label: "Categoria", value: product.categoryName },
-    { label: "SKU", value: product.sku },
-    { label: "Telas", value: fabricCount > 0 ? `${fabricCount} disponibles` : "Sin definir" },
-    { label: "Solo miembros", value: product.onlyMembers ? "Si" : "No" },
-    { label: "Stock", value: product.stock == null ? "A pedido" : product.stock <= 0 ? "Agotado" : `${product.stock} unidades` },
-  ];
 
   const summaryLines = [
     product.featured ? "Producto destacado" : "Producto en catalogo",
@@ -143,120 +131,6 @@ export default async function ProductPage({
           eyebrow="Mas vistas"
           title="Todas las imagenes del producto en loop infinito"
         />
-
-        <section className="py-12">
-          <div className="grid gap-10 lg:grid-cols-[1.08fr_.92fr]">
-            <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
-              <div className="max-w-xl">
-                <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Detalle</p>
-                <h2 className="mt-4 font-serif text-[clamp(1.9rem,3vw,3.2rem)] leading-tight tracking-[-0.04em] text-[var(--pf-text)]">
-                  Una ficha limpia, directa y sin distracciones
-                </h2>
-                <p className="mt-4 text-sm leading-7 text-[var(--pf-muted)]">
-                  La idea es que la experiencia se parezca a la referencia: mucho aire, imagen protagonista y secciones
-                  claras para telas, medidas y contenido comercial.
-                </p>
-              </div>
-
-              <div className="mt-8 border-y border-[rgba(0,0,0,0.08)] py-1">
-                {infoRows.map((item) => (
-                  <DetailRow key={item.label} label={item.label} value={item.value} />
-                ))}
-              </div>
-            </div>
-
-            <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
-              <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Estado</p>
-              <div className="mt-4 border-t border-[rgba(0,0,0,0.08)]">
-                {summaryLines.map((line) => (
-                  <div key={line} className="border-b border-[rgba(0,0,0,0.08)] py-4 text-sm leading-7 text-[var(--pf-text)] last:border-b-0">
-                    {line}
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                <CartAddButton product={product} className="rounded-none bg-[var(--pf-primary-darker)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-white hover:bg-[var(--pf-primary-dark)]">
-                  Agregar al pedido
-                </CartAddButton>
-                <Link
-                  href="/busqueda"
-                  className="inline-flex items-center justify-center border border-[rgba(0,0,0,0.14)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-[var(--pf-text)] transition hover:border-[rgba(0,0,0,0.3)]"
-                >
-                  Seguir buscando
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
-          <SectionTitle
-            eyebrow="Vista del modelo"
-            title="Galeria amplia de imagenes"
-            description="Una composicion simple, con dos o mas vistas grandes para transmitir escala y terminacion."
-          />
-
-          <div className="mt-10 grid gap-4 lg:grid-cols-2">
-            {secondaryImages.length > 0 ? (
-              secondaryImages.slice(0, 2).map((image, index) => (
-                <div key={`${product.id}-hero-${index}`} className="relative min-h-[360px] border border-[rgba(0,0,0,0.08)] bg-white">
-                  <Image
-                    src={publicAsset(image)}
-                    alt={`${product.name} vista ${index + 1}`}
-                    fill
-                    className="object-contain p-6"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                </div>
-              ))
-            ) : (
-              <>
-                <div className="relative min-h-[360px] border border-[rgba(0,0,0,0.08)] bg-white">
-                  <Image
-                    src={publicAsset(mainImage)}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-6"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                </div>
-                <div className="relative min-h-[360px] border border-[rgba(0,0,0,0.08)] bg-white">
-                  <Image
-                    src={publicAsset(mainImage)}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-6"
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                  />
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-
-        <section className="py-12">
-          <SectionTitle
-            eyebrow="Medidas personalizables"
-            title="Medidas y configuraciones"
-            description="Un bloque limpio para mostrar la informacion dimensional sin cargar la pagina con decoracion extra."
-          />
-
-          <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {[
-              { label: "Ancho", value: "A medida", detail: "Segun el modulo o la composicion elegida." },
-              { label: "Profundidad", value: "A medida", detail: "Listo para ajustar al espacio disponible." },
-              { label: "Altura", value: "Estandar", detail: "Se puede adaptar segun el modelo cargado." },
-              { label: "Tapizado", value: "A eleccion", detail: "La tela define la foto y la variante visible." },
-            ].map((item) => (
-              <div key={item.label} className="border-t border-[rgba(0,0,0,0.08)] pt-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.label}</p>
-                <p className="mt-3 font-serif text-[2rem] leading-none tracking-[-0.05em] text-[var(--pf-text)]">{item.value}</p>
-                <p className="mt-3 text-sm leading-7 text-[var(--pf-muted)]">{item.detail}</p>
-              </div>
-            ))}
-          </div>
-        </section>
 
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
