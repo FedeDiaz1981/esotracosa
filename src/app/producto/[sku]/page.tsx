@@ -132,30 +132,32 @@ export default async function ProductPage({
           </p>
         </section>
 
-        <section className="grid gap-10 py-12 lg:grid-cols-[1.08fr_.92fr]">
-          <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
-            <ProductFabricGallery product={product} />
-          </div>
+        <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
+          <ProductFabricGallery product={product} />
+        </section>
 
-          <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
-            <div className="max-w-xl">
-              <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Detalle</p>
-              <h2 className="mt-4 font-serif text-[clamp(1.9rem,3vw,3.2rem)] leading-tight tracking-[-0.04em] text-[var(--pf-text)]">
-                Una ficha limpia, directa y sin distracciones
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-[var(--pf-muted)]">
-                La idea es que la experiencia se parezca a la referencia: mucho aire, imagen protagonista y secciones
-                claras para telas, medidas y contenido comercial.
-              </p>
+        <section className="py-12">
+          <div className="grid gap-10 lg:grid-cols-[1.08fr_.92fr]">
+            <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
+              <div className="max-w-xl">
+                <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Detalle</p>
+                <h2 className="mt-4 font-serif text-[clamp(1.9rem,3vw,3.2rem)] leading-tight tracking-[-0.04em] text-[var(--pf-text)]">
+                  Una ficha limpia, directa y sin distracciones
+                </h2>
+                <p className="mt-4 text-sm leading-7 text-[var(--pf-muted)]">
+                  La idea es que la experiencia se parezca a la referencia: mucho aire, imagen protagonista y secciones
+                  claras para telas, medidas y contenido comercial.
+                </p>
+              </div>
+
+              <div className="mt-8 border-y border-[rgba(0,0,0,0.08)] py-1">
+                {infoRows.map((item) => (
+                  <DetailRow key={item.label} label={item.label} value={item.value} />
+                ))}
+              </div>
             </div>
 
-            <div className="mt-8 border-y border-[rgba(0,0,0,0.08)] py-1">
-              {infoRows.map((item) => (
-                <DetailRow key={item.label} label={item.label} value={item.value} />
-              ))}
-            </div>
-
-            <div className="mt-8">
+            <div className="border-t border-[rgba(0,0,0,0.08)] pt-8">
               <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Estado</p>
               <div className="mt-4 border-t border-[rgba(0,0,0,0.08)]">
                 {summaryLines.map((line) => (
@@ -164,52 +166,18 @@ export default async function ProductPage({
                   </div>
                 ))}
               </div>
-            </div>
 
-            <div className="mt-8 flex flex-wrap gap-3">
-              <CartAddButton product={product} className="rounded-none bg-[var(--pf-primary-darker)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-white hover:bg-[var(--pf-primary-dark)]">
-                Agregar al pedido
-              </CartAddButton>
-              <Link
-                href="/busqueda"
-                className="inline-flex items-center justify-center border border-[rgba(0,0,0,0.14)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-[var(--pf-text)] transition hover:border-[rgba(0,0,0,0.3)]"
-              >
-                Seguir buscando
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
-          <SectionTitle
-            eyebrow="Seleccion de tela"
-            title="Elegi una tela y mirala aplicada al sillon"
-            description="Cada variante puede mostrar su propia foto, para que la visualizacion sea rapida y consistente."
-          />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
-            <div className="border border-[rgba(0,0,0,0.08)] bg-white">
-              <div className="relative min-h-[420px]">
-                <Image
-                  src={publicAsset(mainImage)}
-                  alt={product.name}
-                  fill
-                  className="object-contain p-6"
-                  sizes="(max-width: 1024px) 100vw, 60vw"
-                  priority
-                />
+              <div className="mt-8 flex flex-wrap gap-3">
+                <CartAddButton product={product} className="rounded-none bg-[var(--pf-primary-darker)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-white hover:bg-[var(--pf-primary-dark)]">
+                  Agregar al pedido
+                </CartAddButton>
+                <Link
+                  href="/busqueda"
+                  className="inline-flex items-center justify-center border border-[rgba(0,0,0,0.14)] px-8 py-3 text-sm font-black uppercase tracking-[0.18em] text-[var(--pf-text)] transition hover:border-[rgba(0,0,0,0.3)]"
+                >
+                  Seguir buscando
+                </Link>
               </div>
-            </div>
-
-            <div className="flex flex-col justify-between border border-[rgba(0,0,0,0.08)] bg-white px-5 py-5 sm:px-6">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">Telas</p>
-                <div className="mt-4">
-                  <ProductFabricGallery product={product} />
-                </div>
-              </div>
-              <p className="mt-6 text-[11px] leading-6 text-[var(--pf-muted)]">
-                Si la tela tiene foto propia, queda asociada a este producto para mostrar la configuracion correcta.
-              </p>
             </div>
           </div>
         </section>
