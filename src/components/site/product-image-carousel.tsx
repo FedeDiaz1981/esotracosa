@@ -13,7 +13,6 @@ type ProductImageCarouselProps = {
 
 export function ProductImageCarousel({ images, alt, eyebrow = "Galeria", title = "Todas las vistas del producto" }: ProductImageCarouselProps) {
   const galleryImages = images.length > 0 ? images : [""];
-  const loopImages = [...galleryImages, ...galleryImages];
 
   return (
     <section className="py-12">
@@ -26,19 +25,23 @@ export function ProductImageCarousel({ images, alt, eyebrow = "Galeria", title =
         </div>
 
         <div className="product-carousel-mask mt-10 overflow-hidden">
-          <div className="product-carousel-track flex w-max gap-2 pr-2">
-            {loopImages.map((image, index) => (
-              <div
-                key={`${image || "empty"}-${index}`}
-                className="product-carousel-item relative h-[260px] w-[min(32vw,520px)] min-w-[320px] flex-none bg-[#e7e7e7] sm:h-[320px] lg:h-[380px] lg:w-[min(30vw,560px)]"
-              >
-                <Image
-                  src={publicAsset(image)}
-                  alt={`${alt} ${index + 1}`}
-                  fill
-                  className="object-contain p-4"
-                  sizes="(max-width: 768px) 82vw, 33vw"
-                />
+          <div className="product-carousel-track flex w-max">
+            {[0, 1].map((groupIndex) => (
+              <div key={groupIndex} className="product-carousel-group flex gap-2 pr-2">
+                {galleryImages.map((image, index) => (
+                  <div
+                    key={`${groupIndex}-${image || "empty"}-${index}`}
+                    className="product-carousel-item relative h-[260px] w-[min(34vw,560px)] min-w-[320px] flex-none bg-[#e7e7e7] sm:h-[320px] lg:h-[380px] lg:w-[min(30vw,560px)]"
+                  >
+                    <Image
+                      src={publicAsset(image)}
+                      alt={`${alt} ${index + 1}`}
+                      fill
+                      className="object-contain p-4"
+                      sizes="(max-width: 768px) 82vw, 33vw"
+                    />
+                  </div>
+                ))}
               </div>
             ))}
           </div>
@@ -51,7 +54,7 @@ export function ProductImageCarousel({ images, alt, eyebrow = "Galeria", title =
         }
 
         .product-carousel-track {
-          animation: product-carousel-scroll 42s linear infinite;
+          animation: product-carousel-scroll 36s linear infinite;
           will-change: transform;
         }
 
