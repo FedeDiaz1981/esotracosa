@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { ProductDetailModal } from "@/components/site/product-detail-modal";
 import { ProductCard } from "@/components/site/product-card";
 import type { ProductItem } from "@/domain/site-content";
 
@@ -18,21 +16,11 @@ function getColumnClass(columns: number) {
 }
 
 export function CatalogGrid({ products, columns = 3 }: { products: ProductItem[]; columns?: number }) {
-  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
-
   return (
-    <>
-      <div className={`grid gap-4 ${getColumnClass(columns)}`}>
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} onSelect={setSelectedProduct} />
-        ))}
-      </div>
-
-      <ProductDetailModal
-        key={selectedProduct?.id ?? "empty"}
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
-    </>
+    <div className={`grid gap-4 ${getColumnClass(columns)}`}>
+      {products.map((product) => (
+        <ProductCard key={product.id} product={product} href={`/producto/${product.sku}`} />
+      ))}
+    </div>
   );
 }

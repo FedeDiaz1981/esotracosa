@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { ProductItem } from "@/domain/site-content";
 import { isNewArrival, publicAsset } from "@/lib/catalog";
 
@@ -19,10 +20,13 @@ function getInventoryLabel(product: ProductItem) {
 export function ProductCard({
   product,
   onSelect,
+  href,
 }: {
   product: ProductItem;
   onSelect?: (product: ProductItem) => void;
+  href?: string;
 }) {
+  const router = useRouter();
   const isNew = isNewArrival({
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
@@ -33,7 +37,14 @@ export function ProductCard({
   return (
     <button
       type="button"
-      onClick={() => onSelect?.(product)}
+      onClick={() => {
+        if (href) {
+          router.push(href);
+          return;
+        }
+
+        onSelect?.(product);
+      }}
       className="group block h-full w-full text-left"
     >
       <article className="flex h-full min-h-[24.5rem] flex-col overflow-hidden rounded-[1.5rem] border border-[rgba(212,168,26,0.26)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]">

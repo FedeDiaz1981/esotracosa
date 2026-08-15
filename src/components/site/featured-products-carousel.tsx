@@ -1,13 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "motion/react";
 import type { ProductItem } from "@/domain/site-content";
 import { isNewArrival, publicAsset } from "@/lib/catalog";
-import { ProductDetailModal } from "@/components/site/product-detail-modal";
 import { Button } from "@/components/ui/button";
 
 function getInventoryLabel(product: ProductItem) {
@@ -41,7 +41,7 @@ function ProductSeal({ label }: { label: string }) {
 
 function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
   const [emblaRef] = useEmblaCarousel({ loop: products.length > 1, align: "start" });
-  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
+  const router = useRouter();
 
   return (
     <div className="relative md:hidden">
@@ -56,7 +56,7 @@ function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
               <div key={product.id} className="min-w-0 flex-[0_0_66vw] px-2 pb-3">
                 <motion.button
                   type="button"
-                  onClick={() => setSelectedProduct(product)}
+                  onClick={() => router.push(`/producto/${product.sku}`)}
                   initial={{ opacity: 0.6, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.35, delay: index * 0.03 }}
@@ -109,19 +109,13 @@ function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
           })}
         </div>
       </div>
-
-      <ProductDetailModal
-        key={selectedProduct?.id ?? "empty-mobile"}
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-      />
     </div>
   );
 }
 
 export function FeaturedProductsCarousel({ products }: { products: ProductItem[] }) {
   const trackRef = useRef<HTMLDivElement | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
+  const router = useRouter();
 
   const scrollByCards = (direction: number) => {
     const track = trackRef.current;
@@ -178,11 +172,12 @@ export function FeaturedProductsCarousel({ products }: { products: ProductItem[]
             const newLabel = getNewLabel(product);
             const inventoryLabel = getInventoryLabel(product);
             const isOutOfStock = product.stock != null ? product.stock <= 0 : product.status !== "published";
+
             return (
               <button
                 key={product.id}
                 type="button"
-                onClick={() => setSelectedProduct(product)}
+                onClick={() => router.push(`/producto/${product.sku}`)}
                 className="group block w-[min(78vw,16.75rem)] shrink-0 snap-start sm:w-[17rem] lg:w-[17.5rem]"
               >
                 <article
@@ -233,12 +228,6 @@ export function FeaturedProductsCarousel({ products }: { products: ProductItem[]
             );
           })}
         </div>
-
-        <ProductDetailModal
-          key={selectedProduct?.id ?? "empty"}
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-        />
       </div>
     </>
   );
