@@ -67,9 +67,9 @@ const supabaseUrl = requireEnv("SUPABASE_URL");
 const supabaseServiceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
 const databaseUrl = requireEnv("DATABASE_URL");
 
-const adminEmail = getArg("--email") || String(process.env.ADMIN_EMAIL ?? "laura@demo.com").trim();
-const adminName = getArg("--name") || String(process.env.ADMIN_NAME ?? "Laura Gomez").trim();
-const adminPassword = getArg("--password") || String(process.env.ADMIN_PASSWORD ?? "").trim() || generatePassword();
+const adminEmail = getArg("--email") || String(process.env.ADMIN_EMAIL ?? "admin@admin.com").trim();
+const adminName = getArg("--name") || String(process.env.ADMIN_NAME ?? "Admin").trim();
+const adminPassword = getArg("--password") || String(process.env.ADMIN_PASSWORD ?? "1q2w3e4r5t6y").trim() || generatePassword();
 
 if (!adminEmail) {
   throw new Error("Falta indicar el correo del administrador.");

@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import type { PoolClient } from "pg";
 import { postgresPool } from "@/infrastructure/db/postgres";
-import { siteContentSchemaSql } from "@/infrastructure/site-content/schema";
+import { ensureSiteContentSchema } from "@/infrastructure/db/ensure-site-content-schema";
 import { normalizeText } from "@/lib/catalog";
 
 export type ExcelImportMode = "guest" | "member";
@@ -446,7 +446,7 @@ async function ensureDatabase() {
     throw new Error("DATABASE_URL no está configurada.");
   }
 
-  await postgresPool.query(siteContentSchemaSql);
+  await ensureSiteContentSchema();
 }
 
 async function loadCatalogState(client: PoolClient) {

@@ -20,15 +20,15 @@ export function PackCard({
 
   return (
     <button type="button" onClick={() => onSelect?.(pack)} className="group block h-full w-full text-left">
-      <article className="flex h-full min-h-[22rem] flex-col overflow-hidden rounded-[1.4rem] border border-[rgba(200,154,21,0.18)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]">
-        <div className="relative flex-[1.18] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(245,243,239,1))]">
+      <article className="flex h-full min-h-[22rem] flex-col overflow-hidden rounded-[1.4rem] border border-[rgba(212,168,26,0.26)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]">
+        <div className="relative flex-[1.18] overflow-hidden bg-[linear-gradient(180deg,rgba(255,250,241,1),rgba(246,241,231,1))]">
           <div className="absolute left-3 top-3 z-10">
-            <span className="inline-flex items-center justify-center rounded-full border border-[rgba(200,154,21,0.24)] bg-[var(--pf-primary-darker)] px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
+            <span className="inline-flex items-center justify-center rounded-full border border-[rgba(217,43,34,0.26)] bg-[linear-gradient(135deg,var(--pf-accent),#b31f19)] px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
               Promoción
             </span>
           </div>
 
-          <div className="absolute left-3 bottom-3 z-10 rounded-full border border-[rgba(200,154,21,0.18)] bg-[rgba(255,255,255,0.96)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
+          <div className="absolute left-3 bottom-3 z-10 rounded-full border border-[rgba(212,168,26,0.24)] bg-[rgba(255,252,244,0.98)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-dark)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
             {pack.items.length} productos
           </div>
 
@@ -45,17 +45,17 @@ export function PackCard({
           </div>
         </div>
 
-        <div className="flex min-h-[8.2rem] flex-col justify-center gap-2 border-t border-[rgba(29,24,20,0.08)] px-4 py-4">
+        <div className="flex min-h-[8.2rem] flex-col justify-center gap-2 border-t border-[rgba(212,168,26,0.16)] px-4 py-4">
           <div className="flex items-center justify-between gap-3">
             <p className="truncate text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--pf-muted)]">{pack.category}</p>
             {savings > 0 ? (
-              <span className="rounded-full bg-[rgba(200,154,21,0.12)] px-2.5 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)]">
+              <span className="rounded-full bg-[rgba(212,168,26,0.14)] px-2.5 py-1 text-[11px] font-semibold text-[var(--pf-primary-dark)]">
                 Ahorrás {formatCurrency(savings)}
               </span>
             ) : null}
           </div>
           <h3 className="line-clamp-2 text-[1rem] font-medium leading-6 text-[var(--pf-text)]">{pack.title}</h3>
-          <p className="text-sm font-semibold text-[var(--pf-primary-darker)]">Desde {formatCurrency(pack.publicPrice)}</p>
+          <p className="text-sm font-semibold text-[var(--pf-primary-dark)]">Desde {formatCurrency(pack.publicPrice)}</p>
         </div>
       </article>
     </button>

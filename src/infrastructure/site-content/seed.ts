@@ -83,6 +83,14 @@ export type SeedBrand = {
   active: boolean | null;
 };
 
+export type SeedFabric = {
+  id: number;
+  name: string;
+  image: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 export type SeedUser = {
   id: number;
   auth_user_id?: string | null;
@@ -110,6 +118,10 @@ export type SeedProduct = {
   public_price: number;
   member_price: number;
   image: string | null;
+  images?: string[] | null;
+  fabric_ids?: number[] | null;
+  related_product_ids?: number[] | null;
+  only_members?: boolean | null;
   status: string;
   featured: boolean;
   featured_priority: number | null;
@@ -237,4 +249,14 @@ export function toSeedBrandRows() {
     image: brand.image ?? null,
     active: brand.active ?? true,
   })) satisfies SeedBrand[];
+}
+
+export function toSeedFabricRows() {
+  return (fallbackSiteContent.fabrics ?? []).map((fabric) => ({
+    id: fabric.id,
+    name: fabric.name,
+    image: fabric.image ?? null,
+    created_at: fabric.createdAt ?? null,
+    updated_at: fabric.updatedAt ?? null,
+  })) satisfies SeedFabric[];
 }

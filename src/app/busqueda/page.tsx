@@ -4,6 +4,7 @@ import { CatalogGrid } from "@/components/site/catalog-grid";
 import { SectionHeading } from "@/components/site/section-heading";
 import { searchCatalog } from "@/application/catalog";
 import { buttonVariants } from "@/components/ui/button";
+import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 
 export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
@@ -24,11 +25,12 @@ async function SearchPageContent({
 }) {
   await connection();
   const params = await searchParams;
+  const viewer = await getCurrentViewer();
   const products = await searchCatalog({
     query: params.q,
     brand: params.brand,
     category: params.category,
-  });
+  }, viewer);
 
   return (
     <main className="pf-shell flex w-full flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-12 lg:py-10">

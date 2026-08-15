@@ -12,6 +12,7 @@ export type AdminTableKey =
   | "packs"
   | "categories"
   | "brands"
+  | "fabrics"
   | "users"
   | "products";
 
@@ -23,9 +24,11 @@ export type AdminFieldKind =
   | "pack_products"
   | "multiselect"
   | "file"
+  | "image_gallery"
   | "select"
   | "password"
-  | "template_rows";
+  | "template_rows"
+  | "fabric_variants";
 
 export interface AdminFieldOption {
   value: string;
@@ -76,6 +79,7 @@ const tableOrder: AdminTableKey[] = [
   "products",
   "packs",
   "brands",
+  "fabrics",
   "categories",
   "users",
   "hero_slides",
@@ -127,6 +131,15 @@ function fileField(key: string, label: string, required = false, helper?: string
   return { key, label, kind: "file", required, helper, hidden };
 }
 
+function imageGalleryField(
+  key: string,
+  label: string,
+  helper?: string,
+  hidden = false,
+): AdminFieldDefinition {
+  return { key, label, kind: "image_gallery", helper, hidden };
+}
+
 function selectField(
   key: string,
   label: string,
@@ -145,6 +158,15 @@ function packProductsField(key: string, label: string, helper?: string): AdminFi
 
 function templateRowsField(key: string, label: string, helper?: string): AdminFieldDefinition {
   return { key, label, kind: "template_rows", helper };
+}
+
+function fabricVariantsField(
+  key: string,
+  label: string,
+  options: AdminFieldOption[],
+  helper?: string,
+): AdminFieldDefinition {
+  return { key, label, kind: "fabric_variants", helper, options };
 }
 
 function multiselectField(
@@ -176,12 +198,19 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
       value: String(category.id),
       label: category.name,
     }));
-  const brandOptions = (content.brands ?? [])
+  const fabricOptions = (content.fabrics ?? [])
     .slice()
     .sort((left, right) => left.name.localeCompare(right.name, "es", { sensitivity: "base" }))
-    .map((brand) => ({
-      value: brand.name,
-      label: brand.name,
+    .map((fabric) => ({
+      value: String(fabric.id),
+      label: fabric.name,
+    }));
+  const productOptions = (content.products ?? [])
+    .slice()
+    .sort((left, right) => left.name.localeCompare(right.name, "es", { sensitivity: "base" }))
+    .map((product) => ({
+      value: String(product.id),
+      label: `${product.sku} · ${product.name}`,
     }));
 
   return [
@@ -213,10 +242,22 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         textField("name", "Nombre", true),
         textareaField("detail", "Detalle", true),
         multiselectField("categoryIds", "Categorias", visibleCategoryOptions, "Elegi una o mas categorias visibles."),
-        selectField("brand", "Marca", brandOptions, true, "Elegí una marca registrada."),
-        numberField("publicPrice", "Precio publico", true),
-        numberField("memberPrice", "Precio miembro", true),
-        fileField("image", "Imagen", false, "Subí una imagen de portada para la promoción."),
+        numberField("price", "Precio", true),
+        fabricVariantsField(
+          "fabricVariants",
+          "Telas",
+          fabricOptions,
+          "Marcá en qué telas está disponible este producto y cargá una foto para cada una.",
+        ),
+        multiselectField(
+          "relatedProductIds",
+          "Productos relacionados",
+          productOptions,
+          "Elegí otros productos que se mostrarán como relacionados.",
+        ),
+        booleanField("onlyMembers", "Sólo miembros", "Si está activo, sólo lo verán usuarios logueados."),
+        imageGalleryField("images", "Imagenes", "Subí hasta 5 fotos del producto."),
+        textField("brand", "Marca", false, "Uso interno", true, true),
         textField("presentation", "Presentacion", true, "Uso interno", true, true),
         textField("status", "Estado", true, "Uso interno", true, true),
         booleanField("featured", "Destacado"),
@@ -255,6 +296,23 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         textField("name", "Nombre", true),
         fileField("image", "Imagen", false, "Subí el logo o imagen de la marca."),
         booleanField("active", "Activa"),
+      ],
+    },
+    {
+      key: "fabrics",
+      label: "Telas",
+      description: "Catálogo de telas con imagen de referencia.",
+      idField: "id",
+      rowLabelField: "name",
+      rows: content.fabrics ?? [],
+      columns: [
+        { key: "id", label: "ID" },
+        { key: "name", label: "Nombre" },
+      ],
+      fields: [
+        numberField("id", "ID", true, "Se genera automaticamente.", true, true),
+        textField("name", "Nombre", true),
+        fileField("image", "Imagen", false, "Subí la imagen de referencia de la tela."),
       ],
     },
     {

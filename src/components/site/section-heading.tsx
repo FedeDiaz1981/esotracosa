@@ -12,10 +12,11 @@ export function SectionHeading({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4 border-b border-[rgba(200,154,21,0.14)] pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:pb-5">
+    <div className="flex flex-col gap-4 border-b border-[rgba(212,168,26,0.24)] pb-4 sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:pb-5">
       <div className="max-w-2xl">
         <div className="flex items-center gap-3">
-          <span className="h-[1px] w-8 bg-[rgba(200,154,21,0.52)]" />
+          <span className="h-[1px] w-8 bg-[linear-gradient(90deg,var(--pf-accent),var(--pf-primary))]" />
+          <span className="h-2 w-2 rounded-full bg-[var(--pf-accent)] shadow-[0_0_10px_rgba(217,43,34,0.5)]" />
           <p className="text-[10px] font-black uppercase tracking-[0.42em] text-[var(--pf-primary-dark)]">{eyebrow}</p>
         </div>
         <h2 className="mt-3 text-[2rem] font-extrabold tracking-[-0.06em] text-[var(--pf-text)] sm:text-[2.75rem] lg:text-[3.1rem]">

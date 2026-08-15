@@ -1474,6 +1474,7 @@
       "visible": true
     }
   ],
+  "fabrics": [],
   "users": [
     {
       "id": 1,
@@ -1506,15 +1507,24 @@
       "role": "customer",
       "canSeePrices": true,
       "active": false
+    },
+    {
+      "id": 5,
+      "name": "Admin",
+      "email": "admin@admin.com",
+      "role": "admin",
+      "canSeePrices": true,
+      "active": true
     }
   ],
   "nextIds": {
     "product": 21,
     "pack": 3,
     "category": 21,
-    "user": 5,
+    "user": 6,
     "heroSlide": 6,
-    "banner": 4
+    "banner": 4,
+    "fabric": 1
   },
   "ping": true
 }

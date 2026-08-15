@@ -1,6 +1,6 @@
 import { createSupabaseServiceClient } from "@/infrastructure/auth/pintofruta-auth";
 import { postgresPool } from "@/infrastructure/db/postgres";
-import { siteContentSchemaSql } from "@/infrastructure/site-content/schema";
+import { ensureSiteContentSchema } from "@/infrastructure/db/ensure-site-content-schema";
 import { storeFileOnSupabase } from "@/infrastructure/storage/supabase-storage";
 
 export type OrderTemplateAudience = "guest" | "member";
@@ -39,7 +39,7 @@ async function ensureSchema() {
   }
 
   if (!schemaReadyPromise) {
-    schemaReadyPromise = postgresPool.query(siteContentSchemaSql).then(() => undefined);
+    schemaReadyPromise = ensureSiteContentSchema();
   }
 
   await schemaReadyPromise;

@@ -23,10 +23,11 @@ export function AdminDashboard({ admin }: { admin: AdminOverview }) {
           Este tablero ya está leyendo la base local. Sirve como primer puente entre la maqueta y el futuro panel de
           mantenimiento.
         </p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-6 2xl:w-[960px]">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-3 2xl:w-[960px] 2xl:grid-cols-7">
           <AdminMetric label="Productos" value={admin.counts.products} />
           <AdminMetric label="Promociones" value={admin.counts.packs} />
           <AdminMetric label="Marcas" value={admin.counts.brands} />
+          <AdminMetric label="Telas" value={admin.counts.fabrics} />
           <AdminMetric label="Categorías" value={admin.counts.categories} />
           <AdminMetric label="Usuarios" value={admin.counts.users} />
           <AdminMetric label="Carrusel" value={admin.counts.heroSlides} />

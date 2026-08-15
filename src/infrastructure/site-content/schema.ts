@@ -89,6 +89,17 @@ export const siteContentSchemaSql = `
 
   alter table brands add column if not exists active boolean not null default true;
 
+  create table if not exists fabrics (
+    id integer primary key,
+    name text not null,
+    image text,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  );
+
+  alter table fabrics add column if not exists created_at timestamptz not null default now();
+  alter table fabrics add column if not exists updated_at timestamptz not null default now();
+
   create table if not exists users (
     id integer primary key,
     auth_user_id uuid unique,
@@ -119,6 +130,10 @@ export const siteContentSchemaSql = `
     public_price integer not null,
     member_price integer not null,
     image text,
+    images jsonb not null default '[]'::jsonb,
+    fabric_ids jsonb not null default '[]'::jsonb,
+    related_product_ids jsonb not null default '[]'::jsonb,
+    only_members boolean not null default false,
     status text not null,
     featured boolean not null,
     featured_priority integer,
@@ -141,8 +156,27 @@ export const siteContentSchemaSql = `
   alter table products add column if not exists sales_count integer not null default 0;
   alter table products add column if not exists category_ids jsonb not null default '[]'::jsonb;
   alter table products add column if not exists category_names jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists images jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists fabric_ids jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists related_product_ids jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists only_members boolean not null default false;
   alter table products add column if not exists template_row_map jsonb not null default '{}'::jsonb;
   alter table products add column if not exists deleted_at timestamptz;
+
+  create table if not exists product_fabric_variants (
+    product_id integer not null references products(id) on delete cascade,
+    fabric_id integer not null references fabrics(id),
+    image text not null,
+    sort_order integer not null default 1,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    primary key (product_id, fabric_id)
+  );
+
+  alter table product_fabric_variants add column if not exists image text not null default '';
+  alter table product_fabric_variants add column if not exists sort_order integer not null default 1;
+  alter table product_fabric_variants add column if not exists created_at timestamptz not null default now();
+  alter table product_fabric_variants add column if not exists updated_at timestamptz not null default now();
 
   create table if not exists promotion_packs (
     id integer primary key,

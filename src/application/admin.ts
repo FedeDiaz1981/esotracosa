@@ -11,6 +11,7 @@ export interface AdminOverview {
   counts: {
     products: number;
     brands: number;
+    fabrics: number;
     categories: number;
     users: number;
     heroSlides: number;
@@ -27,6 +28,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
   const content = await getSiteContent();
   const activeProducts = content.products.filter((product) => product.status === "published");
   const activeBrands = content.brands.filter((brand) => brand.active !== false);
+  const fabrics = content.fabrics ?? [];
   const visibleCategories = (content.categories ?? []).filter((category) => category.visible);
   const activeUsers = (content.users ?? []).filter((user) => user.active);
   const activeHeroSlides = content.heroSlides.filter((slide) => slide.active);
@@ -36,6 +38,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
     counts: {
       products: activeProducts.length,
       brands: activeBrands.length,
+      fabrics: fabrics.length,
       categories: visibleCategories.length,
       users: activeUsers.length,
       heroSlides: activeHeroSlides.length,
@@ -54,6 +57,7 @@ export async function getAdminPanelViewModel(): Promise<AdminCrudViewModel> {
   const orderExcelTemplates = await listOrderExcelTemplates();
   const activeProducts = content.products.filter((product) => product.status === "published");
   const activeBrands = content.brands.filter((brand) => brand.active !== false);
+  const fabrics = content.fabrics ?? [];
   const visibleCategories = (content.categories ?? []).filter((category) => category.visible);
   const activeUsers = (content.users ?? []).filter((user) => user.active);
   const activeHeroSlides = content.heroSlides.filter((slide) => slide.active);
@@ -62,6 +66,7 @@ export async function getAdminPanelViewModel(): Promise<AdminCrudViewModel> {
     counts: {
       products: activeProducts.length,
       brands: activeBrands.length,
+      fabrics: fabrics.length,
       categories: visibleCategories.length,
       users: activeUsers.length,
       heroSlides: activeHeroSlides.length,

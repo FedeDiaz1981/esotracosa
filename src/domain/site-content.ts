@@ -65,6 +65,11 @@ export interface ProductItem {
   publicPrice: number;
   memberPrice: number;
   image?: string;
+  images?: string[];
+  fabricIds?: number[];
+  relatedProductIds?: number[];
+  fabricVariants?: ProductFabricVariant[];
+  onlyMembers?: boolean;
   status: string;
   featured: boolean;
   featuredPriority?: number;
@@ -119,6 +124,22 @@ export interface BrandItem {
   active?: boolean;
 }
 
+export interface FabricItem {
+  id: number;
+  name: string;
+  image?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProductFabricVariant {
+  fabricId: number;
+  fabricName?: string;
+  image: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface UserItem {
   id: number;
   name: string;
@@ -141,6 +162,7 @@ export interface SiteContentDocument {
   products: ProductItem[];
   packs?: PackItem[];
   brands: BrandItem[];
+  fabrics?: FabricItem[];
   categories?: CategoryItem[];
   users?: UserItem[];
   ping?: boolean;
@@ -151,6 +173,7 @@ export interface SiteContentDocument {
     heroSlide?: number;
     banner?: number;
     pack?: number;
+    fabric?: number;
   };
 }
 

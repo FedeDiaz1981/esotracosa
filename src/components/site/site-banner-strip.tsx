@@ -10,9 +10,9 @@ type SiteBannerStripProps = {
 
 const ACCENTS = [
   "var(--pf-primary)",
+  "var(--pf-accent)",
   "var(--pf-secondary-dark)",
-  "var(--pf-olive)",
-  "var(--pf-clay)",
+  "var(--pf-primary-soft)",
 ];
 
 export function SiteBannerStrip({ banners }: SiteBannerStripProps) {
@@ -57,14 +57,14 @@ export function SiteBannerStrip({ banners }: SiteBannerStripProps) {
   const accent = ACCENTS[index % ACCENTS.length];
 
   return (
-    <div className="relative z-[10011] border-b border-[rgba(200,154,21,0.22)] bg-[linear-gradient(180deg,rgba(29,24,20,0.98),rgba(47,41,35,0.98))]">
+    <div className="relative z-[10011] border-b border-[rgba(212,168,26,0.3)] bg-[linear-gradient(180deg,rgba(29,24,20,0.98),rgba(57,38,18,0.98))]">
       <div
         className="pf-shell px-3 py-2 sm:px-4"
         aria-live="polite"
         aria-atomic="true"
       >
         <div
-          className="flex min-h-[38px] items-center justify-center rounded-full border border-[rgba(200,154,21,0.24)] bg-[rgba(255,255,255,0.96)] px-4 py-2 text-center shadow-[0_10px_24px_rgba(29,24,20,0.16),inset_0_0_0_1px_rgba(255,255,255,0.35)]"
+          className="flex min-h-[38px] items-center justify-center rounded-full border border-[rgba(212,168,26,0.3)] bg-[rgba(255,250,242,0.98)] px-4 py-2 text-center shadow-[0_10px_24px_rgba(29,24,20,0.16),inset_0_0_0_1px_rgba(255,255,255,0.35)]"
           style={{
             boxShadow: `0 10px 24px rgba(74, 57, 38, 0.08), 0 0 18px color-mix(in srgb, ${accent} 16%, transparent), inset 0 0 0 1px rgba(255, 255, 255, 0.35)`,
           }}

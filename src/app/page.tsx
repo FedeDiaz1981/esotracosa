@@ -10,10 +10,12 @@ import { PromotionCarousel } from "@/components/site/promotion-carousel";
 import { SectionHeading } from "@/components/site/section-heading";
 import { SpotlightBanner } from "@/components/site/spotlight-banner";
 import { buttonVariants } from "@/components/ui/button";
+import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { publicAsset } from "@/lib/catalog";
 
 export default async function HomePage() {
-  const content = await getHomePageViewModel();
+  const viewer = await getCurrentViewer();
+  const content = await getHomePageViewModel(viewer);
 
   return (
     <main className="flex w-full flex-1 flex-col gap-0 px-0 py-0">

@@ -1,7 +1,15 @@
-import type { HeaderNavigation, PackIncludedProduct, PackItem, ProductItem, SiteContentDocument } from "@/domain/site-content";
+import type {
+  HeaderNavigation,
+  PackIncludedProduct,
+  PackItem,
+  ProductFabricVariant,
+  ProductItem,
+  SiteContentDocument,
+} from "@/domain/site-content";
 import type {
   SeedBanner,
   SeedBrand,
+  SeedFabric,
   SeedCategory,
   SeedHeaderGroup,
   SeedHeaderGroupItem,
@@ -20,8 +28,22 @@ export type NavGroupRow = SeedHeaderGroup;
 export type NavItemRow = SeedHeaderGroupItem;
 export type HeroSlideRow = SeedHeroSlide;
 export type BannerRow = SeedBanner;
-export type ProductRow = SeedProduct;
+export type ProductRow = SeedProduct & {
+  images: unknown;
+  fabric_ids: unknown;
+  related_product_ids: unknown;
+  only_members: boolean | null;
+};
+export type ProductFabricVariantRow = {
+  product_id: number;
+  fabric_id: number;
+  image: string;
+  sort_order: number;
+  created_at: string | null;
+  updated_at: string | null;
+};
 export type BrandRow = SeedBrand;
+export type FabricRow = SeedFabric;
 export type CategoryRow = SeedCategory;
 export type UserRow = SeedUser;
 export type PackRow = {
@@ -61,6 +83,25 @@ function toStringArray(value: unknown) {
   }
 
   return value.map((item) => String(item).trim()).filter(Boolean);
+}
+
+function toStringArrayFromJson(value: unknown) {
+  if (Array.isArray(value)) {
+    return toStringArray(value);
+  }
+
+  if (typeof value === "string" && value.trim()) {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (Array.isArray(parsed)) {
+        return toStringArray(parsed);
+      }
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
 }
 
 export function mapHeaderNavigation(
@@ -110,20 +151,46 @@ export function mapSiteContentDocument(params: {
   heroSlides: HeroSlideRow[];
   banners: BannerRow[];
   products: ProductRow[];
+  productFabricVariants: ProductFabricVariantRow[];
   packs?: PackRow[];
   packItems?: PackItemRow[];
   brands: BrandRow[];
+  fabrics: FabricRow[];
   categories: CategoryRow[];
   users: UserRow[];
 }): SiteContentDocument {
-  const { metaRow, headerNavigation, heroSlides, banners, products, packs = [], packItems = [], brands, categories, users } = params;
+  const {
+    metaRow,
+    headerNavigation,
+    heroSlides,
+    banners,
+    products,
+    productFabricVariants,
+    packs = [],
+    packItems = [],
+    brands,
+    fabrics,
+    categories,
+    users,
+  } = params;
   const productMap = new Map<number, ProductItem>();
+  const fabricNameMap = new Map(fabrics.map((fabric) => [fabric.id, fabric.name] as const));
 
   const mappedProducts = products.map((product) => {
     const categoryIds = toNumberArray(product.category_ids);
     const categoryNames = toStringArray(product.category_names);
     const primaryCategoryId = categoryIds[0] ?? product.category_id;
     const primaryCategoryName = categoryNames[0] ?? product.category_name;
+    const mappedVariants = productFabricVariants
+      .filter((variant) => variant.product_id === product.id)
+      .sort((left, right) => left.sort_order - right.sort_order)
+      .map((variant) => ({
+        fabricId: variant.fabric_id,
+        fabricName: fabricNameMap.get(variant.fabric_id),
+        image: variant.image,
+        createdAt: variant.created_at ?? undefined,
+        updatedAt: variant.updated_at ?? undefined,
+      })) satisfies ProductFabricVariant[];
 
     const mapped: ProductItem = {
       id: product.id,
@@ -141,7 +208,12 @@ export function mapSiteContentDocument(params: {
       testeadoEnAnimales: product.testeado_en_animales ?? undefined,
       publicPrice: product.public_price,
       memberPrice: product.member_price,
-      image: product.image ?? undefined,
+      image: product.image ?? toStringArrayFromJson(product.images)[0] ?? undefined,
+      images: toStringArrayFromJson(product.images).length > 0 ? toStringArrayFromJson(product.images) : product.image ? [product.image] : undefined,
+      fabricIds: toNumberArray(product.fabric_ids),
+      relatedProductIds: toNumberArray(product.related_product_ids),
+      fabricVariants: mappedVariants,
+      onlyMembers: product.only_members ?? undefined,
       status: product.status,
       featured: product.featured,
       featuredPriority: product.featured_priority ?? undefined,
@@ -231,6 +303,13 @@ export function mapSiteContentDocument(params: {
       image: brand.image ?? undefined,
       featured: brand.featured,
       active: brand.active ?? undefined,
+    })),
+    fabrics: fabrics.map((fabric) => ({
+      id: fabric.id,
+      name: fabric.name,
+      image: fabric.image ?? undefined,
+      createdAt: fabric.created_at ?? undefined,
+      updatedAt: fabric.updated_at ?? undefined,
     })),
     categories: categories.map((category) => ({
       id: category.id,

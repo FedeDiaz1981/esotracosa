@@ -85,8 +85,19 @@ create table if not exists public.brands (
 create unique index if not exists brands_code_key on public.brands (code);
 create index if not exists brands_active_idx on public.brands (active);
 
+create table if not exists public.fabrics (
+  id integer primary key,
+  name text not null,
+  image text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists fabrics_name_idx on public.fabrics (name);
+
 create table if not exists public.users (
   id integer primary key,
+  auth_user_id uuid,
   name text not null,
   email text not null,
   role text not null,
@@ -94,6 +105,7 @@ create table if not exists public.users (
   active boolean not null
 );
 
+create unique index if not exists users_auth_user_id_key on public.users (auth_user_id);
 create unique index if not exists users_email_key on public.users (email);
 create index if not exists users_active_idx on public.users (active);
 
@@ -114,6 +126,10 @@ create table if not exists public.products (
   public_price integer not null,
   member_price integer not null,
   image text,
+  images jsonb not null default '[]'::jsonb,
+  fabric_ids jsonb not null default '[]'::jsonb,
+  related_product_ids jsonb not null default '[]'::jsonb,
+  only_members boolean not null default false,
   status text not null,
   featured boolean not null,
   featured_priority integer,

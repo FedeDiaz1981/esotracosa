@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { deleteAdminRecord, deleteAdminRecords, saveAdminRecord } from "@/app/admin/actions";
-import { ExcelImportButton } from "@/components/admin/excel-import-button";
-import { OrderExcelTemplateButton } from "@/components/admin/order-excel-template-button";
 import type {
   AdminCrudViewModel,
   AdminFieldDefinition,
@@ -50,7 +48,7 @@ type UploadState = {
 };
 
 const sidebarSections: { title: string; keys: AdminTableKey[] }[] = [
-  { title: "Listas", keys: ["products", "packs", "brands", "categories", "users"] },
+  { title: "Listas", keys: ["products", "packs", "brands", "fabrics", "categories", "users"] },
   { title: "Contenido", keys: ["hero_slides", "banners"] },
 ];
 
@@ -89,26 +87,17 @@ function toDraftValue(field: AdminFieldDefinition, value: unknown): string | num
     return "[]";
   }
 
-  if (field.kind === "template_rows") {
+  if (field.kind === "image_gallery") {
     if (typeof value === "string") {
       return value;
     }
 
-    if (value && typeof value === "object" && !Array.isArray(value)) {
+    if (Array.isArray(value)) {
       return JSON.stringify(value);
     }
 
-    return "{}";
+    return "[]";
   }
-
-  if (field.kind === "file") {
-    return value == null ? "" : String(value);
-  }
-
-  if (field.kind === "select") {
-    return value == null ? "" : String(value);
-  }
-
   if (field.kind === "password") {
     return value == null ? "" : String(value);
   }
@@ -137,7 +126,7 @@ function emptyDraftFor(table: AdminTableDefinition): DraftRecord {
       continue;
     }
 
-    if (field.kind === "pack_products" || field.kind === "multiselect") {
+    if (field.kind === "pack_products" || field.kind === "multiselect" || field.kind === "image_gallery") {
       draft[field.key] = "[]";
       continue;
     }
@@ -163,6 +152,45 @@ function draftFromRow(table: AdminTableDefinition, row: Record<string, unknown> 
   for (const field of table.fields) {
     if (table.key === "products" && field.kind === "template_rows") {
       draft[field.key] = toDraftValue(field, row.template_row_map ?? row.templateRowMap);
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "price") {
+      draft[field.key] = toDraftValue(field, row.publicPrice ?? row.memberPrice);
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "images") {
+      draft[field.key] = toDraftValue(field, row.images ?? (row.image ? [row.image] : []));
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "fabricIds") {
+      draft[field.key] = toDraftValue(field, row.fabricIds);
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "relatedProductIds") {
+      draft[field.key] = toDraftValue(field, row.relatedProductIds);
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "fabricVariants") {
+      const rowVariants = Array.isArray(row.fabricVariants) ? row.fabricVariants : [];
+      const fallbackVariants = Array.isArray(row.fabricIds)
+        ? row.fabricIds.map((fabricId, index) => ({
+            fabricId,
+            image: "",
+            order: index + 1,
+          }))
+        : [];
+
+      draft[field.key] = toDraftValue(field, rowVariants.length > 0 ? rowVariants : fallbackVariants);
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "onlyMembers") {
+      draft[field.key] = Boolean(row.onlyMembers);
       continue;
     }
 
@@ -239,6 +267,46 @@ function serializeMultiSelectValues(values: string[]) {
   return JSON.stringify(values);
 }
 
+function parseFabricVariants(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) {
+    return [] as { fabricId: number; image: string; order: number }[];
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown[];
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((item, index) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+
+        const candidate = item as Record<string, unknown>;
+        const fabricId = Number(candidate.fabricId);
+        const image = String(candidate.image ?? "").trim();
+        const order = Math.max(1, Number(candidate.order) || index + 1);
+
+        if (!Number.isFinite(fabricId) || fabricId <= 0) {
+          return null;
+        }
+
+        return { fabricId, image, order };
+      })
+      .filter((item): item is { fabricId: number; image: string; order: number } => Boolean(item))
+      .sort((left, right) => left.order - right.order);
+  } catch {
+    return [];
+  }
+}
+
+function serializeFabricVariants(values: { fabricId: number; image: string; order: number }[]) {
+  return JSON.stringify(values.map((item, index) => ({ ...item, order: index + 1 })));
+}
+
 function serializePackSelections(selections: PackSelection[]) {
   return JSON.stringify(selections.map((item, index) => ({ ...item, order: index + 1 })));
 }
@@ -312,6 +380,23 @@ function formatCellValue(field: AdminFieldDefinition | undefined, value: unknown
     }
   }
 
+  if (field?.kind === "image_gallery") {
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value) as unknown[];
+        if (Array.isArray(parsed)) {
+          return `${parsed.length} imÃ¡genes`;
+        }
+      } catch {
+        return value;
+      }
+    }
+
+    if (Array.isArray(value)) {
+      return `${value.length} imÃ¡genes`;
+    }
+  }
+
   if (field?.key === "role" && typeof value === "string") {
     const roles: Record<string, string> = {
       admin: "Administrador",
@@ -336,7 +421,7 @@ function formatCellValue(field: AdminFieldDefinition | undefined, value: unknown
 
   if (field?.kind === "number") {
     if (value == null || value === "") {
-      return "—";
+      return "â€”";
     }
 
     const numeric = Number(value);
@@ -352,7 +437,7 @@ function formatCellValue(field: AdminFieldDefinition | undefined, value: unknown
   }
 
   if (value == null || value === "") {
-    return "—";
+    return "â€”";
   }
 
   return String(value);
@@ -365,11 +450,13 @@ function getCreateLabel(table: AdminTableDefinition) {
     case "products":
       return "Nuevo producto";
     case "packs":
-      return "Nueva promoción";
+      return "Nueva promociÃ³n";
     case "brands":
       return "Nueva marca";
+    case "fabrics":
+      return "Nueva tela";
     case "categories":
-      return "Nueva categoría";
+      return "Nueva categorÃ­a";
     case "users":
       return "Nuevo usuario";
     default:
@@ -429,6 +516,10 @@ function getRowId(table: AdminTableDefinition, row: Record<string, unknown>) {
 function isVisibleAdminRow(tableKey: AdminTableKey, row: Record<string, unknown>) {
   if (tableKey === "brands") {
     return row.active !== false;
+  }
+
+  if (tableKey === "fabrics") {
+    return true;
   }
 
   if (tableKey === "categories") {
@@ -588,7 +679,7 @@ function PackProductsField({
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-[var(--pf-text)]">{product.name}</p>
                   <p className="text-sm text-[var(--pf-muted)]">
-                    {product.sku} · {product.brand}
+                    {product.sku} Â· {product.brand}
                   </p>
                 </div>
 
@@ -873,7 +964,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 </h1>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-6 2xl:w-[960px]">
+              <div className="grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-3 2xl:w-[960px] 2xl:grid-cols-7">
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
                   <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Productos</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.products}</p>
@@ -883,12 +974,16 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.packs}</p>
                 </div>
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Categorías</p>
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">CategorÃ­as</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.categories}</p>
                 </div>
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
                   <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Marcas</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.brands}</p>
+                </div>
+                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
+                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Telas</p>
+                  <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.fabrics}</p>
                 </div>
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
                   <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Usuarios</p>
@@ -923,10 +1018,6 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                     Borrar seleccionados ({selectedRowIds.length})
                   </button>
                 ) : null}
-
-                {selectedTable.key === "products" ? <ExcelImportButton /> : null}
-
-                {selectedTable.key === "products" ? <OrderExcelTemplateButton /> : null}
 
                 <button
                   type="button"
@@ -1160,12 +1251,12 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
         >
             <div className="flex items-start justify-between gap-4 border-b border-[var(--pf-border-soft)] px-6 py-5">
               <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-secondary)]">Edición</p>
+                <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-secondary)]">EdiciÃ³n</p>
                 <h3 className="mt-2 text-3xl font-black tracking-tight text-[var(--pf-text)]">
                   {editor.rowId ? "Editar registro" : "Nuevo registro"}
                 </h3>
                 <p className="mt-2 text-sm text-[var(--pf-primary-darker)]">
-                  {selectedTable.label} / {editor.rowId || "creación"}
+                  {selectedTable.label} / {editor.rowId || "creaciÃ³n"}
                 </p>
               </div>
 
@@ -1200,6 +1291,8 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
               const fullWidth =
                     field.kind === "textarea" ||
                     field.kind === "file" ||
+                    field.kind === "image_gallery" ||
+                    field.kind === "fabric_variants" ||
                     field.kind === "select" ||
                     field.kind === "password" ||
                     field.kind === "boolean" ||
@@ -1238,7 +1331,11 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
                   if (field.kind === "multiselect") {
                     const selectedValues = new Set(parseMultiSelectValues(value));
-                    const options = field.options ?? [];
+                    const currentProductId = Number(editor.rowId || editor.draft.id || 0);
+                    const options =
+                      field.key === "relatedProductIds" && currentProductId
+                        ? (field.options ?? []).filter((option) => Number(option.value) !== currentProductId)
+                        : field.options ?? [];
 
                     return (
                       <div key={field.key} className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
@@ -1251,7 +1348,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
                         {options.length === 0 ? (
                           <div className="rounded-[22px] border border-dashed border-[var(--pf-border-soft)] bg-white px-4 py-4 text-sm text-[var(--pf-muted)]">
-                            No hay categorias visibles para seleccionar.
+                            No hay opciones disponibles para seleccionar.
                           </div>
                         ) : (
                           <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
@@ -1462,7 +1559,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
 
                         {templates.length === 0 ? (
                           <div className="rounded-[22px] border border-dashed border-[var(--pf-border-soft)] bg-white px-4 py-4 text-sm text-[var(--pf-muted)]">
-                            Todavía no hay templates Excel cargados.
+                            TodavÃ­a no hay templates Excel cargados.
                           </div>
                         ) : (
                           <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
@@ -1479,7 +1576,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                     <div className="mb-2 flex items-start justify-between gap-3">
                                       <div>
                                         <p className="text-xs font-black uppercase tracking-[0.26em] text-[var(--pf-muted)]">
-                                          {template.audience === "member" ? "Logueado" : "Público"} · v{template.version}
+                                          {template.audience === "member" ? "Logueado" : "PÃºblico"} Â· v{template.version}
                                         </p>
                                         <p className="mt-1 text-sm font-bold text-[var(--pf-text)]">{template.file_name}</p>
                                       </div>
@@ -1490,7 +1587,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                             : "bg-[rgba(122,102,82,0.08)] text-[var(--pf-muted)]"
                                         }`}
                                       >
-                                        {template.active ? "Activo" : "Histórico"}
+                                        {template.active ? "Activo" : "HistÃ³rico"}
                                       </span>
                                     </div>
 
@@ -1542,10 +1639,395 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                             </div>
 
                             <div className="rounded-[18px] border border-dashed border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.06)] px-4 py-3 text-sm text-[var(--pf-primary-darker)]">
-                              Esta configuración sólo se usa para exportar el pedido Excel y marcar la fila exacta de este producto.
+                              Esta configuraciÃ³n sÃ³lo se usa para exportar el pedido Excel y marcar la fila exacta de este producto.
                             </div>
                           </div>
                         )}
+                      </div>
+                    );
+                  }
+
+                  if (field.kind === "image_gallery") {
+                    const images = parseMultiSelectValues(value).slice(0, 5);
+
+                    return (
+                      <div key={field.key} className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">
+                            {field.label}
+                          </span>
+                          {field.helper ? <span className="text-xs text-[var(--pf-muted)]">{field.helper}</span> : null}
+                        </div>
+
+                        <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
+                          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                            {Array.from({ length: 5 }).map((_, index) => {
+                              const imageValue = images[index] ?? "";
+                              const slotKey = `${field.key}:${index}`;
+                              const selectedFileName = fileNames[slotKey] ?? "";
+                              const uploadState = uploadStates[slotKey];
+
+                              return (
+                                <div
+                                  key={slotKey}
+                                  className="space-y-2 rounded-[18px] border border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.45)] p-3"
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
+                                      Foto {index + 1}
+                                    </span>
+                                    {imageValue ? (
+                                      <button
+                                        type="button"
+                                        className="rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-[var(--pf-primary-darker)]"
+                                        onClick={() =>
+                                          setEditor((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  draft: {
+                                                    ...current.draft,
+                                                    [field.key]: serializeMultiSelectValues(
+                                                      images.filter((_, currentIndex) => currentIndex !== index),
+                                                    ),
+                                                  },
+                                                }
+                                              : current,
+                                          )
+                                        }
+                                      >
+                                        Quitar
+                                      </button>
+                                    ) : null}
+                                  </div>
+
+                                  <label className="flex min-h-24 cursor-pointer flex-col justify-center gap-2 rounded-[16px] border border-dashed border-[rgba(200,154,21,0.22)] bg-white px-3 py-3 text-center transition hover:bg-[rgba(200,154,21,0.06)]">
+                                    <span className="text-sm font-bold text-[var(--pf-primary-darker)]">
+                                      {imageValue ? "Cambiar imagen" : "Subir imagen"}
+                                    </span>
+                                    <span className="text-[11px] text-[var(--pf-muted)]">
+                                      {selectedFileName || (imageValue ? "Imagen cargada" : "TodavÃƒÂ­a no hay foto")}
+                                    </span>
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      className="sr-only"
+                                      disabled={Boolean(uploadState?.loading)}
+                                      onChange={async (event) => {
+                                        const file = event.target.files?.[0];
+
+                                        if (!file) {
+                                          return;
+                                        }
+
+                                        const previousValue = images[index] ?? "";
+
+                                        setFileNames((current) => ({
+                                          ...current,
+                                          [slotKey]: file.name,
+                                        }));
+                                        setUploadStates((current) => ({
+                                          ...current,
+                                          [slotKey]: {
+                                            loading: true,
+                                            fileName: file.name,
+                                          },
+                                        }));
+
+                                        try {
+                                          const fallbackName = [
+                                            String(editor?.draft.title ?? "").trim(),
+                                            String(editor?.draft.name ?? "").trim(),
+                                            String(editor?.draft.sku ?? "").trim(),
+                                            selectedTable.label,
+                                            field.key,
+                                            String(index + 1),
+                                          ]
+                                            .filter(Boolean)
+                                            .join("-");
+
+                                          const publicUrl = await uploadAdminImage(file, selectedTable.key, fallbackName);
+                                          const nextImages = [...images];
+                                          nextImages[index] = publicUrl;
+
+                                          setEditor((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  draft: {
+                                                    ...current.draft,
+                                                    [field.key]: serializeMultiSelectValues(nextImages.filter(Boolean)),
+                                                  },
+                                                }
+                                              : current,
+                                          );
+                                          setUploadStates((current) => ({
+                                            ...current,
+                                            [slotKey]: {
+                                              loading: false,
+                                              fileName: file.name,
+                                            },
+                                          }));
+                                        } catch (error) {
+                                          setEditor((current) =>
+                                            current
+                                              ? {
+                                                  ...current,
+                                                  draft: {
+                                                    ...current.draft,
+                                                    [field.key]: serializeMultiSelectValues(
+                                                      images.map((image, currentIndex) =>
+                                                        currentIndex === index ? previousValue : image,
+                                                      ),
+                                                    ),
+                                                  },
+                                                }
+                                              : current,
+                                          );
+                                          setUploadStates((current) => ({
+                                            ...current,
+                                            [slotKey]: {
+                                              loading: false,
+                                              fileName: file.name,
+                                              error: error instanceof Error ? error.message : "No se pudo subir la imagen.",
+                                            },
+                                          }));
+                                        } finally {
+                                          event.target.value = "";
+                                        }
+                                      }}
+                                    />
+                                  </label>
+
+                                  {uploadState?.loading ? (
+                                    <div className="rounded-[14px] border border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.08)] px-3 py-2 text-xs text-[var(--pf-primary-darker)]">
+                                      Subiendo...
+                                    </div>
+                                  ) : null}
+
+                                  {uploadState?.error ? (
+                                    <div className="rounded-[14px] border border-[rgba(185,79,54,0.18)] bg-[rgba(185,79,54,0.08)] px-3 py-2 text-xs text-[var(--pf-wood-muted)]">
+                                      {uploadState.error}
+                                    </div>
+                                  ) : null}
+
+                                  {imageValue ? (
+                                    <div className="overflow-hidden rounded-[14px] border border-[var(--pf-border-soft)] bg-white">
+                                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                                      <img src={imageValue} alt={`${field.label} ${index + 1}`} className="h-32 w-full object-contain p-2" />
+                                    </div>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          <div className="rounded-[18px] border border-dashed border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.06)] px-4 py-3 text-sm text-[var(--pf-primary-darker)]">
+                            PodÃ©s cargar hasta 5 fotos. La primera se usa como imagen principal en el catÃ¡logo.
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  if (field.kind === "fabric_variants") {
+                    const variants = parseFabricVariants(value);
+                    const fabricOptions = field.options ?? [];
+                    const selectedFabricIds = new Set(variants.map((variant) => variant.fabricId));
+
+                    return (
+                      <div key={field.key} className="md:col-span-2">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">
+                            {field.label}
+                          </span>
+                          {field.helper ? <span className="text-xs text-[var(--pf-muted)]">{field.helper}</span> : null}
+                        </div>
+
+                        <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
+                          {fabricOptions.length === 0 ? (
+                            <div className="rounded-[18px] border border-dashed border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.55)] px-4 py-4 text-sm text-[var(--pf-muted)]">
+                              Primero cargÃ¡ telas en la secciÃ³n de telas para poder asociar fotos a este producto.
+                            </div>
+                          ) : null}
+
+                          <div className="grid gap-3">
+                            {fabricOptions.map((option) => {
+                              const fabricId = Number(option.value);
+                              const variant = variants.find((item) => item.fabricId === fabricId) ?? null;
+                              const checked = selectedFabricIds.has(fabricId);
+                              const slotKey = `${field.key}:${fabricId}`;
+                              const selectedFileName = fileNames[slotKey] ?? "";
+                              const uploadState = uploadStates[slotKey];
+
+                              return (
+                                <div
+                                  key={option.value}
+                                  className={`rounded-[18px] border px-4 py-4 ${
+                                    checked
+                                      ? "border-[rgba(200,154,21,0.28)] bg-[rgba(200,154,21,0.06)]"
+                                      : "border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.45)]"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-4">
+                                    <div>
+                                      <p className="text-sm font-bold text-[var(--pf-text)]">{option.label}</p>
+                                      <p className="mt-1 text-xs text-[var(--pf-muted)]">
+                                        {checked ? "Disponible para este producto" : "MarcÃ¡ esta tela para habilitarla"}
+                                      </p>
+                                    </div>
+
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={(event) =>
+                                        setEditor((current) =>
+                                          current
+                                            ? {
+                                                ...current,
+                                                draft: {
+                                                  ...current.draft,
+                                                  [field.key]: serializeFabricVariants(
+                                                    event.target.checked
+                                                      ? [
+                                                          ...variants.filter((item) => item.fabricId !== fabricId),
+                                                          { fabricId, image: variant?.image ?? "", order: variants.length + 1 },
+                                                        ]
+                                                      : variants.filter((item) => item.fabricId !== fabricId),
+                                                  ),
+                                                },
+                                              }
+                                            : current,
+                                        )
+                                      }
+                                      className="h-5 w-5 accent-[var(--pf-primary)]"
+                                    />
+                                  </div>
+
+                                  {checked ? (
+                                    <div className="mt-4 space-y-3 border-t border-[rgba(29,24,20,0.08)] pt-4">
+                                      <label className="flex min-h-24 cursor-pointer flex-col justify-center gap-2 rounded-[16px] border border-dashed border-[rgba(200,154,21,0.22)] bg-white px-3 py-3 text-center transition hover:bg-[rgba(200,154,21,0.06)]">
+                                        <span className="text-sm font-bold text-[var(--pf-primary-darker)]">
+                                          {variant?.image ? "Cambiar foto de esta tela" : "Agregar foto de esta tela"}
+                                        </span>
+                                        <span className="text-[11px] text-[var(--pf-muted)]">
+                                          {selectedFileName || (variant?.image ? "Imagen cargada" : "TodavÃ­a no hay foto")}
+                                        </span>
+                                        <input
+                                          type="file"
+                                          accept="image/*"
+                                          className="sr-only"
+                                          disabled={Boolean(uploadState?.loading)}
+                                          onChange={async (event) => {
+                                            const file = event.target.files?.[0];
+
+                                            if (!file) {
+                                              return;
+                                            }
+
+                                            const previousValue = variant?.image ?? "";
+
+                                            setFileNames((current) => ({
+                                              ...current,
+                                              [slotKey]: file.name,
+                                            }));
+                                            setUploadStates((current) => ({
+                                              ...current,
+                                              [slotKey]: {
+                                                loading: true,
+                                                fileName: file.name,
+                                              },
+                                            }));
+
+                                            try {
+                                              const fallbackName = [
+                                                String(editor?.draft.title ?? "").trim(),
+                                                String(editor?.draft.name ?? "").trim(),
+                                                String(editor?.draft.sku ?? "").trim(),
+                                                selectedTable.label,
+                                                option.label,
+                                              ]
+                                                .filter(Boolean)
+                                                .join("-");
+
+                                              const publicUrl = await uploadAdminImage(file, `${selectedTable.key}-fabric`, fallbackName);
+                                              const nextVariants = variants.some((item) => item.fabricId === fabricId)
+                                                ? variants.map((item) => (item.fabricId === fabricId ? { ...item, image: publicUrl } : item))
+                                                : [...variants, { fabricId, image: publicUrl, order: variants.length + 1 }];
+
+                                              setEditor((current) =>
+                                                current
+                                                  ? {
+                                                      ...current,
+                                                      draft: {
+                                                        ...current.draft,
+                                                        [field.key]: serializeFabricVariants(nextVariants),
+                                                      },
+                                                    }
+                                                  : current,
+                                              );
+                                              setUploadStates((current) => ({
+                                                ...current,
+                                                [slotKey]: {
+                                                  loading: false,
+                                                  fileName: file.name,
+                                                },
+                                              }));
+                                            } catch (error) {
+                                              setEditor((current) =>
+                                                current
+                                                  ? {
+                                                      ...current,
+                                                      draft: {
+                                                        ...current.draft,
+                                                        [field.key]: serializeFabricVariants(
+                                                          variants.map((item) =>
+                                                            item.fabricId === fabricId ? { ...item, image: previousValue } : item,
+                                                          ),
+                                                        ),
+                                                      },
+                                                    }
+                                                  : current,
+                                              );
+                                              setUploadStates((current) => ({
+                                                ...current,
+                                                [slotKey]: {
+                                                  loading: false,
+                                                  fileName: file.name,
+                                                  error: error instanceof Error ? error.message : "No se pudo subir la imagen.",
+                                                },
+                                              }));
+                                            } finally {
+                                              event.target.value = "";
+                                            }
+                                          }}
+                                        />
+                                      </label>
+
+                                      {uploadState?.loading ? (
+                                        <div className="rounded-[14px] border border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.08)] px-3 py-2 text-xs text-[var(--pf-primary-darker)]">
+                                          Subiendo...
+                                        </div>
+                                      ) : null}
+
+                                      {uploadState?.error ? (
+                                        <div className="rounded-[14px] border border-[rgba(185,79,54,0.18)] bg-[rgba(185,79,54,0.08)] px-3 py-2 text-xs text-[var(--pf-wood-muted)]">
+                                          {uploadState.error}
+                                        </div>
+                                      ) : null}
+
+                                      {variant?.image ? (
+                                        <div className="overflow-hidden rounded-[14px] border border-[var(--pf-border-soft)] bg-white">
+                                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                                          <img src={variant.image} alt={option.label} className="h-40 w-full object-contain p-2" />
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     );
                   }
@@ -1609,10 +2091,10 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                 Seleccionar imagen
                               </span>
                               <span className="mt-1 block text-xs text-[var(--pf-muted)]">
-                                Cargá un archivo para subirlo al sitio.
+                                CargÃ¡ un archivo para subirlo al sitio.
                               </span>
                               <span className="mt-2 block truncate text-xs font-semibold text-[var(--pf-primary-darker)]">
-                                {selectedFileName || "Ningún archivo seleccionado todavía"}
+                                {selectedFileName || "NingÃºn archivo seleccionado todavÃ­a"}
                               </span>
                             </div>
 
@@ -1729,7 +2211,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                             </div>
                           ) : (
                             <div className="rounded-[18px] border border-dashed border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 py-5 text-sm text-[var(--pf-muted)]">
-                              Todavía no se subió una imagen para esta promoción.
+                              TodavÃ­a no se subiÃ³ una imagen para esta promociÃ³n.
                             </div>
                           )}
                         </div>

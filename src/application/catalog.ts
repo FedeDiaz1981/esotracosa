@@ -1,4 +1,5 @@
 import { getSiteContent } from "@/infrastructure/site-content.repository";
+import type { ViewerSession } from "@/domain/viewer";
 import type {
   BrandItem,
   CatalogFilters,
@@ -9,6 +10,8 @@ import type {
   ProductItem,
 } from "@/domain/site-content";
 import { normalizeText } from "@/lib/catalog";
+
+type CatalogViewer = Pick<ViewerSession, "authenticated"> | null | undefined;
 
 export interface DynamicMenuItem {
   label: string;
@@ -144,6 +147,14 @@ function filterCatalogProducts(products: ProductItem[], filters: CatalogFilters 
 
     return matchesQuery && matchesBrand && matchesCategory;
   });
+}
+
+function isVisibleToViewer(product: ProductItem, viewer?: CatalogViewer) {
+  return !product.onlyMembers || Boolean(viewer?.authenticated);
+}
+
+function filterVisibleProducts(products: ProductItem[], viewer?: CatalogViewer) {
+  return products.filter((product) => isVisibleToViewer(product, viewer));
 }
 
 function filterCatalogPacks(packs: PackItem[], query = "") {
@@ -329,15 +340,16 @@ export async function getActiveSiteBanners(): Promise<BannerItem[]> {
     .sort((left, right) => left.order - right.order);
 }
 
-export async function getHomePageViewModel(): Promise<HomePageViewModel> {
+export async function getHomePageViewModel(viewer?: CatalogViewer): Promise<HomePageViewModel> {
   const content = await getSiteContent();
+  const visibleProducts = filterVisibleProducts(content.products, viewer);
   const banners = [...content.banners].filter((item) => item.active).sort((a, b) => a.order - b.order);
   const heroSlides = [...content.heroSlides]
     .filter((item) => item.active)
     .sort((a, b) => a.order - b.order);
   const spotlightSlide = heroSlides.find((item) => item.homeSpotlight) ?? heroSlides[0] ?? null;
-  const featuredProducts = buildFeaturedProducts(content.products, 12);
-  const trendingProducts = buildTrendingProducts(content.products, 8);
+  const featuredProducts = buildFeaturedProducts(visibleProducts, 12);
+  const trendingProducts = buildTrendingProducts(visibleProducts, 8);
   const activePromotions = [...(content.packs ?? [])]
     .filter((item) => item.active && item.items.length > 0)
     .sort((left, right) => (left.order ?? 0) - (right.order ?? 0) || left.title.localeCompare(right.title, "es", { sensitivity: "base" }));
@@ -363,28 +375,32 @@ export async function getHomePageViewModel(): Promise<HomePageViewModel> {
     featuredBrands,
     stats: [
       { label: "marcas", value: String(brands.length) },
-      { label: "productos", value: String(content.products.filter((product) => product.status === "published").length) },
+      { label: "productos", value: String(visibleProducts.filter((product) => product.status === "published").length) },
       { label: "destacados", value: String(featuredProducts.length) },
     ],
   };
 }
 
-export async function getProductBySku(sku: string): Promise<ProductItem | null> {
+export async function getProductBySku(sku: string, viewer?: CatalogViewer): Promise<ProductItem | null> {
   const normalizedSku = normalizeText(sku);
   const content = await getSiteContent();
   const product = content.products.find((item) => normalizeText(item.sku) === normalizedSku);
 
-  return product ?? null;
+  if (!product || product.status !== "published" || !isVisibleToViewer(product, viewer)) {
+    return null;
+  }
+
+  return product;
 }
 
-export async function searchCatalog(filters: CatalogFilters = {}) {
+export async function searchCatalog(filters: CatalogFilters = {}, viewer?: CatalogViewer) {
   const content = await getSiteContent();
-  return filterCatalogProducts(content.products, filters);
+  return filterCatalogProducts(filterVisibleProducts(content.products, viewer), filters);
 }
 
-export async function getGalleryPageViewModel(filters: CatalogFilters = {}): Promise<GalleryPageViewModel> {
+export async function getGalleryPageViewModel(filters: CatalogFilters = {}, viewer?: CatalogViewer): Promise<GalleryPageViewModel> {
   const content = await getSiteContent();
-  const baseProducts = content.products.filter((product) => product.status === "published");
+  const baseProducts = filterVisibleProducts(content.products, viewer).filter((product) => product.status === "published");
   const filteredProducts = filterCatalogProducts(baseProducts, {
     ...filters,
     trendingOnly: false,

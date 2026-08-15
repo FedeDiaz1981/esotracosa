@@ -36,11 +36,11 @@ export function ProductCard({
       onClick={() => onSelect?.(product)}
       className="group block h-full w-full text-left"
     >
-      <article className="flex h-full min-h-[24.5rem] flex-col overflow-hidden rounded-[1.5rem] border border-[rgba(200,154,21,0.18)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]">
-        <div className="relative flex-[1.08] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(245,243,239,1))]">
+      <article className="flex h-full min-h-[24.5rem] flex-col overflow-hidden rounded-[1.5rem] border border-[rgba(212,168,26,0.26)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]">
+        <div className="relative flex-[1.08] overflow-hidden bg-[linear-gradient(180deg,rgba(255,250,241,1),rgba(246,241,231,1))]">
           <div className="absolute left-3 top-3 z-10">
             {isNew ? (
-              <span className="inline-flex items-center justify-center rounded-full border border-[rgba(200,154,21,0.24)] bg-[var(--pf-primary-darker)] px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
+              <span className="inline-flex items-center justify-center rounded-full border border-[rgba(212,168,26,0.34)] bg-[linear-gradient(135deg,var(--pf-primary),var(--pf-primary-dark))] px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
                 Novedad
               </span>
             ) : null}
@@ -67,7 +67,7 @@ export function ProductCard({
           </div>
         </div>
 
-        <div className="flex h-[7rem] flex-col justify-center border-t border-[rgba(29,24,20,0.08)] px-4 py-3 text-center">
+        <div className="flex h-[7rem] flex-col justify-center border-t border-[rgba(212,168,26,0.16)] px-4 py-3 text-center">
           <h3 className="line-clamp-2 text-[0.98rem] font-medium leading-6 text-[var(--pf-text)]">{product.name}</h3>
         </div>
       </article>

@@ -2,15 +2,18 @@ import { cache } from "react";
 import type { PoolClient, QueryResultRow } from "pg";
 import type { SiteContentDocument } from "@/domain/site-content";
 import { postgresPool } from "@/infrastructure/db/postgres";
+import { ensureSiteContentSchema } from "@/infrastructure/db/ensure-site-content-schema";
 import {
   mapHeaderNavigation,
   mapSiteContentDocument,
   type BannerRow,
   type BrandRow,
+  type FabricRow,
   type CategoryRow,
   type PackItemRow,
   type PackRow,
   type HeroSlideRow,
+  type ProductFabricVariantRow,
   type NavGroupRow,
   type NavItemRow,
   type NavSectionRow,
@@ -19,16 +22,11 @@ import {
   type SiteMetaRow,
   type UserRow,
 } from "@/infrastructure/site-content/mappers";
-import { fallbackSiteContent, seedLockKey, toSeedBrandRows, toSeedNavigationRows, toSeedPackRows } from "@/infrastructure/site-content/seed";
-import { siteContentSchemaSql } from "@/infrastructure/site-content/schema";
+import { fallbackSiteContent, seedLockKey, toSeedBrandRows, toSeedFabricRows, toSeedNavigationRows, toSeedPackRows } from "@/infrastructure/site-content/seed";
 import { resolveCategoryIconKey } from "@/lib/category-icons";
 
 const ensureSchema = cache(async () => {
-  if (!postgresPool) {
-    return;
-  }
-
-  await postgresPool.query(siteContentSchemaSql);
+  await ensureSiteContentSchema();
 });
 
 async function countRows(client: PoolClient, table: string) {
@@ -99,13 +97,15 @@ async function seedIfNeeded(client: PoolClient) {
     const metaCount = await countRows(client, "site_content_meta");
     const productCount = await countRows(client, "products");
     const packCount = await countRows(client, "promotion_packs");
+    const fabricCount = await countRows(client, "fabrics");
+    const hasSeedFabrics = (fallbackSiteContent.fabrics ?? []).length > 0;
 
-    if (metaCount > 0 && productCount > 0 && packCount > 0) {
+    if (metaCount > 0 && productCount > 0 && packCount > 0 && (!hasSeedFabrics || fabricCount > 0)) {
       await client.query("commit");
       return;
     }
 
-    if (metaCount > 0 && productCount > 0 && packCount === 0) {
+    if (metaCount > 0 && productCount > 0 && packCount === 0 && (!hasSeedFabrics || fabricCount > 0)) {
       await seedPromotionPacks(client, await getExistingProductIds(client));
 
       await client.query("commit");
@@ -119,9 +119,11 @@ async function seedIfNeeded(client: PoolClient) {
     await client.query("delete from hero_slides");
     await client.query("delete from banners");
     await client.query("delete from products");
+    await client.query("delete from product_fabric_variants");
     await client.query("delete from promotion_pack_items");
     await client.query("delete from promotion_packs");
     await client.query("delete from brands");
+    await client.query("delete from fabrics");
     await client.query("delete from users");
     await client.query("delete from categories");
     await client.query("delete from site_content_meta");
@@ -226,6 +228,13 @@ async function seedIfNeeded(client: PoolClient) {
       );
     }
 
+    for (const fabric of toSeedFabricRows()) {
+      await client.query(
+        "insert into fabrics (id, name, image, created_at, updated_at) values ($1, $2, $3, $4, $5)",
+        [fabric.id, fabric.name, fabric.image ?? null, fabric.created_at ?? null, fabric.updated_at ?? null],
+      );
+    }
+
     for (const user of fallbackSiteContent.users ?? []) {
       await client.query(
         "insert into users (id, auth_user_id, name, email, role, can_see_prices, active) values ($1, $2, $3, $4, $5, $6, $7)",
@@ -238,13 +247,12 @@ async function seedIfNeeded(client: PoolClient) {
         `
           insert into products (
             id, sku, name, detail, presentation, category_id, category_name, brand,
-            vegano, kosher, testeado_en_animales, public_price, member_price, image,
+            vegano, kosher, testeado_en_animales, public_price, member_price, image, images, fabric_ids, related_product_ids, only_members,
             status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map
           ) values (
             $1, $2, $3, $4, $5, $6, $7, $8,
-            $9, $10, $11, $12, $13, $14,
-            $15, $16, $17, $18, $19, $20,
-            $21, $22, $23, $24
+            $9, $10, $11, $12, $13, $14::jsonb, $15::jsonb, $16::jsonb, $17,
+            $18, $19, $20, $21, $22, $23, $24, $25, $26, $27
           )
         `,
         [
@@ -262,6 +270,10 @@ async function seedIfNeeded(client: PoolClient) {
           product.publicPrice,
           product.memberPrice,
           product.image ?? null,
+          JSON.stringify(product.images ?? (product.image ? [product.image] : [])),
+          JSON.stringify(product.fabricIds ?? []),
+          JSON.stringify(product.relatedProductIds ?? []),
+          product.onlyMembers ?? false,
           product.status,
           Boolean(product.featured),
           product.featuredPriority ?? null,
@@ -334,7 +346,11 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
     );
     const productRows = await readRows<ProductRow>(
       client,
-      "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by id",
+      "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, images, fabric_ids, related_product_ids, only_members, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by id",
+    );
+    const productFabricVariantRows = await readRows<ProductFabricVariantRow>(
+      client,
+      "select product_id, fabric_id, image, sort_order, created_at, updated_at from product_fabric_variants order by product_id, sort_order, fabric_id",
     );
     const packRows = await readRows<PackRow>(
       client,
@@ -347,6 +363,10 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
     const brandRows = await readRows<BrandRow>(
       client,
       "select id, code, name, image, featured, active from brands order by featured desc, name",
+    );
+    const fabricRows = await readRows<FabricRow>(
+      client,
+      "select id, name, image, created_at, updated_at from fabrics order by id",
     );
     const categoryRows = await readRows<CategoryRow>(
       client,
@@ -365,9 +385,11 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
       heroSlides: heroSlidesRows,
       banners: bannerRows,
       products: productRows,
+      productFabricVariants: productFabricVariantRows,
       packs: packRows,
       packItems: packItemRows,
       brands: brandRows,
+      fabrics: fabricRows,
       categories: categoryRows,
       users: userRows,
     });

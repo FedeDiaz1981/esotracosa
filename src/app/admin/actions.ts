@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { postgresPool } from "@/infrastructure/db/postgres";
 import { createSupabaseServiceClient, requireAdminViewer } from "@/infrastructure/auth/pintofruta-auth";
-import { siteContentSchemaSql } from "@/infrastructure/site-content/schema";
+import { ensureSiteContentSchema } from "@/infrastructure/db/ensure-site-content-schema";
 import { normalizeText } from "@/lib/catalog";
 import { resolveCategoryIconKey } from "@/lib/category-icons";
 import type { AdminTableKey } from "@/application/admin-crud";
@@ -166,6 +166,12 @@ type PackItemDraft = {
   order: number;
 };
 
+type FabricVariantDraft = {
+  fabricId: number;
+  image: string;
+  order: number;
+};
+
 function getJsonPayload(formData: FormData): PayloadRecord {
   const raw = formData.get("payload_json");
 
@@ -185,7 +191,7 @@ async function ensureDatabase() {
     throw new Error("DATABASE_URL no está configurada.");
   }
 
-  await postgresPool.query(siteContentSchemaSql);
+  await ensureSiteContentSchema();
 }
 
 async function nextNumericId(table: string) {
@@ -206,151 +212,6 @@ async function resolveTextId(table: string, providedId: string, fallbackParts: s
 
   const nextId = await nextNumericId(table);
   return String(nextId);
-}
-
-async function saveProduct(record: PayloadRecord) {
-  const providedId = record.id == null || record.id === "" ? 0 : toNumber(record.id);
-  const existingResult = providedId
-    ? await postgresPool!.query<{
-        sku: string;
-        presentation: string;
-        category_id: number;
-        category_name: string;
-        category_ids: unknown;
-        category_names: unknown;
-        status: string;
-        image: string | null;
-        featured_priority: number | null;
-        trending: boolean | null;
-        stock: number | null;
-        views_count: number | null;
-        sales_count: number | null;
-        description: string | null;
-        source_section: string | null;
-        template_row_map: unknown;
-      }>(
-        `select sku, presentation, category_id, category_name, category_ids, category_names, status, image,
-                featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
-         from products
-         where id = $1
-         limit 1`,
-        [providedId],
-      )
-    : null;
-  const existing = existingResult?.rows[0];
-  const id = providedId || (await nextNumericId("products"));
-
-  const selectedCategoryIds = parseNumberArray(record.categoryIds);
-  const existingCategoryIds = parseNumberArray(existing?.category_ids);
-  const existingCategoryNames = parseStringArray(existing?.category_names);
-  const fallbackCategoryIds = existingCategoryIds.length > 0 ? existingCategoryIds : existing?.category_id ? [existing.category_id] : [];
-  const categoryIds = selectedCategoryIds.length > 0 ? selectedCategoryIds : fallbackCategoryIds;
-
-  if (categoryIds.length === 0) {
-    throw new Error("El producto necesita al menos una categoria.");
-  }
-
-  const categoryResult = await postgresPool!.query<{ id: number; name: string }>(
-    `select id, name from categories where id = any($1::int[]) and deleted_at is null order by id`,
-    [categoryIds],
-  );
-  const categoryMap = new Map(categoryResult.rows.map((row) => [row.id, row.name]));
-  const resolvedCategoryNames = categoryIds
-    .map((categoryId) => categoryMap.get(categoryId))
-    .filter((value): value is string => Boolean(value));
-  const categoryNames = resolvedCategoryNames.length > 0 ? resolvedCategoryNames : existingCategoryNames.length > 0 ? existingCategoryNames : [existing?.category_name || ""];
-  const primaryCategoryId = categoryIds[0];
-  const primaryCategoryName = categoryNames[0] || existing?.category_name || "";
-  const sku = toStringValue(record.sku) || existing?.sku || generateSku(id);
-  const name = toStringValue(record.name);
-  const detail = toStringValue(record.detail) || name || sku;
-  const presentation = toStringValue(record.presentation) || existing?.presentation || "";
-  const active =
-    record.active == null || record.active === ""
-      ? String(existing?.status ?? "").toLowerCase() !== "inactive"
-      : toBoolean(record.active);
-  const status = active ? "published" : "inactive";
-  const image = toStringValue(record.image) || existing?.image || null;
-  const featuredPriority =
-    record.featuredPriority == null || record.featuredPriority === ""
-      ? existing?.featured_priority ?? null
-      : toNumber(record.featuredPriority);
-  const stock = record.stock == null || record.stock === "" ? existing?.stock ?? null : toNumber(record.stock);
-  const viewsCount =
-    record.viewsCount == null || record.viewsCount === "" ? existing?.views_count ?? 0 : toNumber(record.viewsCount);
-  const salesCount =
-    record.salesCount == null || record.salesCount === "" ? existing?.sales_count ?? 0 : toNumber(record.salesCount);
-  const description = toStringValue(record.description) || existing?.description || null;
-  const sourceSection = toStringValue(record.sourceSection) || existing?.source_section || null;
-  const existingTemplateRowMap = parseTemplateRowMap(existing?.template_row_map);
-  const hasTemplateRowMap = Object.prototype.hasOwnProperty.call(record, "templateRowMap");
-  const templateRowMap = hasTemplateRowMap ? parseTemplateRowMap(record.templateRowMap) : existingTemplateRowMap;
-  const finalTemplateRowMap = hasTemplateRowMap ? templateRowMap : existingTemplateRowMap;
-
-  await postgresPool!.query(
-    `
-      insert into products (
-        id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand,
-        vegano, kosher, testeado_en_animales, public_price, member_price, image,
-        status, featured, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
-      ) values (
-        $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25
-      )
-      on conflict (id) do update set
-        sku = excluded.sku,
-        name = excluded.name,
-        detail = excluded.detail,
-        presentation = excluded.presentation,
-        category_id = excluded.category_id,
-        category_name = excluded.category_name,
-        category_ids = excluded.category_ids,
-        category_names = excluded.category_names,
-        brand = excluded.brand,
-        vegano = excluded.vegano,
-        kosher = excluded.kosher,
-        testeado_en_animales = excluded.testeado_en_animales,
-        public_price = excluded.public_price,
-        member_price = excluded.member_price,
-        image = excluded.image,
-        status = excluded.status,
-        featured = excluded.featured,
-        featured_priority = excluded.featured_priority,
-        stock = excluded.stock,
-        views_count = excluded.views_count,
-        sales_count = excluded.sales_count,
-        description = excluded.description,
-        source_section = excluded.source_section,
-        template_row_map = excluded.template_row_map,
-        updated_at = now()
-    `,
-    [
-      id,
-      sku,
-      name,
-      detail,
-      presentation,
-      primaryCategoryId,
-      primaryCategoryName,
-      JSON.stringify(categoryIds),
-      JSON.stringify(categoryNames),
-      toStringValue(record.brand),
-      toBoolean(record.vegano),
-      toBoolean(record.kosher),
-      record.testeadoEnAnimales == null ? null : toBoolean(record.testeadoEnAnimales),
-      toNumber(record.publicPrice),
-      toNumber(record.memberPrice),
-      image,
-      status,
-      toBoolean(record.featured),
-      featuredPriority,
-      stock,
-      viewsCount,
-      salesCount,
-      description,
-      sourceSection,
-      JSON.stringify(finalTemplateRowMap),
-    ],
-  );
 }
 
 async function saveBrand(record: PayloadRecord) {
@@ -374,6 +235,29 @@ async function saveBrand(record: PayloadRecord) {
         featured = excluded.featured
     `,
     [id, code || id, name, toStringValue(record.image) || null, featured],
+  );
+}
+
+async function saveFabric(record: PayloadRecord) {
+  const id = record.id ? toNumber(record.id) : await nextNumericId("fabrics");
+  const name = toStringValue(record.name);
+
+  if (!name) {
+    throw new Error("La tela necesita un nombre.");
+  }
+
+  const image = toStringValue(record.image) || null;
+
+  await postgresPool!.query(
+    `
+      insert into fabrics (id, name, image)
+      values ($1, $2, $3)
+      on conflict (id) do update set
+        name = excluded.name,
+        image = excluded.image,
+        updated_at = now()
+    `,
+    [id, name, image],
   );
 }
 
@@ -610,6 +494,42 @@ function parsePackItems(value: unknown): PackItemDraft[] {
   }
 }
 
+function parseFabricVariants(value: unknown): FabricVariantDraft[] {
+  if (typeof value !== "string" || !value.trim()) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown[];
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed
+      .map((item, index) => {
+        if (!item || typeof item !== "object") {
+          return null;
+        }
+
+        const candidate = item as Record<string, unknown>;
+        const fabricId = toNumber(candidate.fabricId);
+        const image = toStringValue(candidate.image);
+        const order = Math.max(1, toNumber(candidate.order) || index + 1);
+
+        if (!fabricId || !image) {
+          return null;
+        }
+
+        return { fabricId, image, order };
+      })
+      .filter((item): item is FabricVariantDraft => Boolean(item))
+      .sort((left, right) => left.order - right.order);
+  } catch {
+    return [];
+  }
+}
+
 async function savePack(record: PayloadRecord, formData: FormData) {
   const id = record.id ? toNumber(record.id) : await nextNumericId("promotion_packs");
   const title = toStringValue(record.title);
@@ -742,6 +662,226 @@ async function savePack(record: PayloadRecord, formData: FormData) {
   }
 }
 
+async function saveProduct(record: PayloadRecord) {
+  const providedId = record.id == null || record.id === "" ? 0 : toNumber(record.id);
+  const existingResult = providedId
+    ? await postgresPool!.query<{
+        sku: string;
+        presentation: string;
+        category_id: number;
+        category_name: string;
+        category_ids: unknown;
+        category_names: unknown;
+        brand: string;
+        status: string;
+        image: string | null;
+        images: unknown;
+        fabric_ids: unknown;
+        related_product_ids: unknown;
+        only_members: boolean | null;
+        featured_priority: number | null;
+        trending: boolean | null;
+        stock: number | null;
+        views_count: number | null;
+        sales_count: number | null;
+        description: string | null;
+        source_section: string | null;
+        template_row_map: unknown;
+      }>(
+        `select sku, presentation, category_id, category_name, category_ids, category_names, brand, status, image, images, fabric_ids, related_product_ids, only_members,
+                featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
+         from products
+         where id = $1
+         limit 1`,
+        [providedId],
+      )
+    : null;
+  const existing = existingResult?.rows[0];
+  const id = providedId || (await nextNumericId("products"));
+
+  const selectedCategoryIds = parseNumberArray(record.categoryIds);
+  const existingCategoryIds = parseNumberArray(existing?.category_ids);
+  const existingCategoryNames = parseStringArray(existing?.category_names);
+  const fallbackCategoryIds = existingCategoryIds.length > 0 ? existingCategoryIds : existing?.category_id ? [existing.category_id] : [];
+  const categoryIds = selectedCategoryIds.length > 0 ? selectedCategoryIds : fallbackCategoryIds;
+
+  if (categoryIds.length === 0) {
+    throw new Error("El producto necesita al menos una categoria.");
+  }
+
+  const categoryResult = await postgresPool!.query<{ id: number; name: string }>(
+    `select id, name from categories where id = any($1::int[]) and deleted_at is null order by id`,
+    [categoryIds],
+  );
+  const categoryMap = new Map(categoryResult.rows.map((row) => [row.id, row.name]));
+  const resolvedCategoryNames = categoryIds
+    .map((categoryId) => categoryMap.get(categoryId))
+    .filter((value): value is string => Boolean(value));
+  const categoryNames = resolvedCategoryNames.length > 0 ? resolvedCategoryNames : existingCategoryNames.length > 0 ? existingCategoryNames : [existing?.category_name || ""];
+  const primaryCategoryId = categoryIds[0];
+  const primaryCategoryName = categoryNames[0] || existing?.category_name || "";
+  const sku = toStringValue(record.sku) || existing?.sku || generateSku(id);
+  const name = toStringValue(record.name);
+  const detail = toStringValue(record.detail) || name || sku;
+  const presentation = toStringValue(record.presentation) || existing?.presentation || "";
+  const active =
+    record.active == null || record.active === ""
+      ? String(existing?.status ?? "").toLowerCase() !== "inactive"
+      : toBoolean(record.active);
+  const status = active ? "published" : "inactive";
+  const brand = toStringValue(record.brand) || existing?.brand || "";
+  const price = toNumber(record.price);
+  if (price <= 0) {
+    throw new Error("El producto necesita un precio válido.");
+  }
+  const images = parseStringArray(record.images);
+  const image = images[0] || toStringValue(record.image) || existing?.image || null;
+  const finalImages = images.length > 0 ? images : image ? [image] : [];
+  const relatedProductIds = parseNumberArray(record.relatedProductIds).filter((productId) => productId !== id);
+  const onlyMembers = toBoolean(record.onlyMembers);
+  const fabricVariants = parseFabricVariants(record.fabricVariants);
+  const fabricIds = fabricVariants.length > 0
+    ? [...new Set(fabricVariants.map((variant) => variant.fabricId))]
+    : parseNumberArray(record.fabricIds);
+  const featuredPriority =
+    record.featuredPriority == null || record.featuredPriority === ""
+      ? existing?.featured_priority ?? null
+      : toNumber(record.featuredPriority);
+  const stock = record.stock == null || record.stock === "" ? existing?.stock ?? null : toNumber(record.stock);
+  const viewsCount =
+    record.viewsCount == null || record.viewsCount === "" ? existing?.views_count ?? 0 : toNumber(record.viewsCount);
+  const salesCount =
+    record.salesCount == null || record.salesCount === "" ? existing?.sales_count ?? 0 : toNumber(record.salesCount);
+  const description = toStringValue(record.description) || existing?.description || null;
+  const sourceSection = toStringValue(record.sourceSection) || existing?.source_section || null;
+  const existingTemplateRowMap = parseTemplateRowMap(existing?.template_row_map);
+  const hasTemplateRowMap = Object.prototype.hasOwnProperty.call(record, "templateRowMap");
+  const templateRowMap = hasTemplateRowMap ? parseTemplateRowMap(record.templateRowMap) : existingTemplateRowMap;
+  const finalTemplateRowMap = hasTemplateRowMap ? templateRowMap : existingTemplateRowMap;
+
+  const runTransaction = async (client: PoolClient) => {
+    await client.query("begin");
+
+    try {
+      await client.query(
+        `
+          insert into products (
+            id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand,
+            vegano, kosher, testeado_en_animales, public_price, member_price, image, images, fabric_ids, related_product_ids, only_members,
+            status, featured, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
+          ) values (
+            $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27
+          )
+          on conflict (id) do update set
+            sku = excluded.sku,
+            name = excluded.name,
+            detail = excluded.detail,
+            presentation = excluded.presentation,
+            category_id = excluded.category_id,
+            category_name = excluded.category_name,
+            category_ids = excluded.category_ids,
+            category_names = excluded.category_names,
+            brand = excluded.brand,
+            vegano = excluded.vegano,
+            kosher = excluded.kosher,
+            testeado_en_animales = excluded.testeado_en_animales,
+            public_price = excluded.public_price,
+            member_price = excluded.member_price,
+            image = excluded.image,
+            images = excluded.images,
+            fabric_ids = excluded.fabric_ids,
+            related_product_ids = excluded.related_product_ids,
+            only_members = excluded.only_members,
+            status = excluded.status,
+            featured = excluded.featured,
+            featured_priority = excluded.featured_priority,
+            stock = excluded.stock,
+            views_count = excluded.views_count,
+            sales_count = excluded.sales_count,
+            description = excluded.description,
+            source_section = excluded.source_section,
+            template_row_map = excluded.template_row_map,
+            updated_at = now()
+        `,
+        [
+          id,
+          sku,
+          name,
+          detail,
+          presentation,
+          primaryCategoryId,
+          primaryCategoryName,
+          JSON.stringify(categoryIds),
+          JSON.stringify(categoryNames),
+          brand,
+          toBoolean(record.vegano),
+          toBoolean(record.kosher),
+          record.testeadoEnAnimales == null ? null : toBoolean(record.testeadoEnAnimales),
+          price,
+          price,
+          image,
+          JSON.stringify(finalImages),
+          JSON.stringify(fabricIds),
+          JSON.stringify(relatedProductIds),
+          onlyMembers,
+          status,
+          toBoolean(record.featured),
+          featuredPriority,
+          stock,
+          viewsCount,
+          salesCount,
+          description,
+          sourceSection,
+          JSON.stringify(finalTemplateRowMap),
+        ],
+      );
+
+      await client.query("delete from product_fabric_variants where product_id = $1", [id]);
+      for (const [index, variant] of fabricVariants.entries()) {
+        if (!variant.image) {
+          continue;
+        }
+
+        await client.query(
+          `
+            insert into product_fabric_variants (product_id, fabric_id, image, sort_order)
+            values ($1, $2, $3, $4)
+          `,
+          [id, variant.fabricId, variant.image, variant.order || index + 1],
+        );
+      }
+
+      await client.query("commit");
+    } catch (error) {
+      try {
+        await client.query("rollback");
+      } catch {
+        // Si la conexión ya murió, dejamos que el error original suba.
+      }
+
+      throw error;
+    }
+  };
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const client = await postgresPool!.connect();
+
+    try {
+      await runTransaction(client);
+      return;
+    } catch (error) {
+      if (!isTransientConnectionError(error) || attempt === 1) {
+        throw error;
+      }
+
+      await postgresPool!.end().catch(() => undefined);
+      continue;
+    } finally {
+      client.release();
+    }
+  }
+}
+
 async function saveSearchScope(record: PayloadRecord) {
   const id = await resolveTextId("header_search_scopes", toStringValue(record.id), [toStringValue(record.label), toStringValue(record.href)]);
   await postgresPool!.query(
@@ -846,6 +986,8 @@ async function saveRow(table: AdminTableKey, record: PayloadRecord, formData: Fo
       return saveProduct(record);
     case "brands":
       return saveBrand(record);
+    case "fabrics":
+      return saveFabric(record);
     case "categories":
       return saveCategory(record);
     case "users":
@@ -878,6 +1020,9 @@ async function deleteRow(table: AdminTableKey, id: string) {
       return;
     case "brands":
       await postgresPool!.query("delete from brands where id = $1", [toStringValue(id)]);
+      return;
+    case "fabrics":
+      await postgresPool!.query("delete from fabrics where id = $1", [toNumber(id)]);
       return;
     case "categories":
       await postgresPool!.query("delete from categories where id = $1", [toNumber(id)]);

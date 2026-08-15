@@ -17,11 +17,6 @@ export type CartLine = {
   quantity: number;
 };
 
-type PricingViewer = {
-  authenticated: boolean;
-  canSeePrices: boolean;
-} | null | undefined;
-
 type CartContextValue = {
   items: CartLine[];
   hydrated: boolean;
@@ -72,11 +67,7 @@ function safeParseCart(value: string | null): CartLine[] {
   }
 }
 
-export function resolveCartLineUnitPrice(item: CartLine, viewer: PricingViewer) {
-  if (item.kind === "product" && viewer?.authenticated && viewer.canSeePrices && Number.isFinite(item.memberPrice) && item.memberPrice > 0) {
-    return item.memberPrice;
-  }
-
+export function resolveCartLineUnitPrice(item: CartLine) {
   return item.publicPrice;
 }
 

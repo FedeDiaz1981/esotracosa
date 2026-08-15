@@ -1,15 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { postgresPool } from "@/infrastructure/db/postgres";
-import { siteContentSchemaSql } from "@/infrastructure/site-content/schema";
+import { ensureSiteContentSchema } from "@/infrastructure/db/ensure-site-content-schema";
 
 async function ensureDatabase() {
-  if (!postgresPool) {
-    throw new Error("DATABASE_URL no está configurada.");
-  }
-
-  await postgresPool.query(siteContentSchemaSql);
+  await ensureSiteContentSchema();
 }
 
 async function updateProductCounter(productId: number, column: "views_count" | "sales_count") {

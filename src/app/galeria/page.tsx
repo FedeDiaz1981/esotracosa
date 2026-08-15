@@ -207,7 +207,7 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
     category,
     featuredOnly,
     trendingOnly,
-  });
+  }, viewer);
 
   const sortedProducts = [...gallery.products].sort((left, right) => {
     if (sort === "price") {

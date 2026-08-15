@@ -40,12 +40,12 @@ function MobilePromotionRail({ promotions }: { promotions: PackItem[] }) {
                   <article className="flex h-full min-h-[21rem] flex-col overflow-hidden rounded-[1.6rem] border border-[rgba(29,24,20,0.14)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)]">
                     <div className="relative flex-[1.12] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,247,244,1))]">
                       <div className="absolute left-3 top-3 z-10">
-                        <span className="inline-flex items-center justify-center rounded-full border border-[rgba(200,154,21,0.2)] bg-[rgba(29,24,20,0.96)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
+                        <span className="inline-flex items-center justify-center rounded-full border border-[rgba(217,43,34,0.22)] bg-[var(--pf-accent)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
                           Promoción
                         </span>
                       </div>
 
-                      <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(200,154,21,0.16)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
+                      <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(212,168,26,0.2)] bg-[rgba(255,255,255,0.94)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
                         {pack.items.length} productos
                       </div>
 
@@ -152,12 +152,12 @@ export function PromotionCarousel({ promotions }: { promotions: PackItem[] }) {
                 >
                   <div className="relative flex-[1.08] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,247,244,1))]">
                     <div className="absolute left-3 top-3 z-10">
-                      <span className="inline-flex items-center justify-center rounded-full border border-[rgba(200,154,21,0.2)] bg-[rgba(29,24,20,0.96)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
+                      <span className="inline-flex items-center justify-center rounded-full border border-[rgba(217,43,34,0.22)] bg-[var(--pf-accent)] px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_10px_20px_rgba(29,24,20,0.18)]">
                         Promoción
                       </span>
                     </div>
 
-                    <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(200,154,21,0.16)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
+                    <div className="absolute bottom-3 left-3 z-10 rounded-full border border-[rgba(212,168,26,0.2)] bg-[rgba(255,255,255,0.94)] px-3 py-1 text-[11px] font-semibold text-[var(--pf-primary-darker)] shadow-[0_8px_18px_rgba(29,24,20,0.08)]">
                       {pack.items.length} productos
                     </div>
 

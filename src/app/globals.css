@@ -8,11 +8,11 @@
 }
 
 :root {
-  --pf-primary: #c89a15;
-  --pf-primary-dark: #9b7511;
+  --pf-primary: #d4a81a;
+  --pf-primary-dark: #a57d10;
   --pf-primary-darker: #1d1814;
-  --pf-primary-soft: #dfb93d;
-  --pf-primary-faint: #f4e3a9;
+  --pf-primary-soft: #e2bc46;
+  --pf-primary-faint: #f6e7ad;
 
   --pf-secondary: #312b26;
   --pf-secondary-dark: #191512;
@@ -55,7 +55,7 @@
 
   --pf-border: rgba(29, 24, 20, 0.12);
   --pf-border-strong: rgba(29, 24, 20, 0.2);
-  --pf-border-warm: rgba(200, 154, 21, 0.18);
+  --pf-border-warm: rgba(212, 168, 26, 0.24);
   --pf-border-soft: rgba(29, 24, 20, 0.08);
 
   --pf-text: #1d1814;
@@ -63,10 +63,10 @@
   --pf-muted: #655d56;
   --pf-muted-soft: #8a8178;
 
-  --pf-accent: #e33026;
+  --pf-accent: #d92b22;
   --pf-shadow: 0 18px 40px rgba(29, 24, 20, 0.12);
   --pf-shadow-soft: 0 10px 24px rgba(29, 24, 20, 0.08);
-  --pf-shadow-warm: 0 18px 42px rgba(200, 154, 21, 0.14);
+  --pf-shadow-warm: 0 18px 42px rgba(212, 168, 26, 0.18);
   --pf-radius: 22px;
 }
 
@@ -102,9 +102,9 @@ body {
   position: relative;
   color: var(--pf-text);
   background:
-    radial-gradient(circle at top left, rgba(200, 154, 21, 0.12), transparent 30%),
+    radial-gradient(circle at top left, rgba(212, 168, 26, 0.2), transparent 28%),
     radial-gradient(circle at top center, rgba(255, 255, 255, 0.72), transparent 28%),
-    radial-gradient(circle at top right, rgba(29, 24, 20, 0.08), transparent 30%),
+    radial-gradient(circle at top right, rgba(217, 43, 34, 0.08), transparent 26%),
     linear-gradient(180deg, #fcfbf8 0%, var(--pf-sand-soft) 30%, var(--pf-bg) 62%, var(--pf-cream-soft) 100%);
   font-family: var(--font-sans), "Segoe UI", sans-serif;
 }
@@ -212,8 +212,8 @@ button,
 }
 
 .pf-card {
-  background: rgba(248, 242, 232, 0.96);
-  border: 1px solid var(--pf-border);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--pf-border-warm);
   border-radius: var(--pf-radius);
   box-shadow: var(--pf-shadow);
 }
@@ -248,6 +248,6 @@ button,
   width: 112px;
   height: 5px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--pf-primary-darker), var(--pf-secondary));
+  background: linear-gradient(90deg, var(--pf-accent), var(--pf-primary), var(--pf-secondary));
   box-shadow: 0 6px 16px rgba(53, 72, 61, 0.12);
 }

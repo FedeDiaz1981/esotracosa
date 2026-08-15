@@ -1,3 +1,222 @@
+-- Consolidated bootstrap script for the current site schema and seed data.
+-- Generated from the existing Supabase migrations.
+create table if not exists public.site_content_meta (
+  id integer primary key,
+  session_role text,
+  view_mode text,
+  active_admin_panel text,
+  panel_search_query text,
+  active_modal_action text,
+  ping boolean,
+  next_ids jsonb,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.header_search_scopes (
+  id text primary key,
+  label text not null,
+  href text not null,
+  sort_order integer not null
+);
+
+create table if not exists public.header_sections (
+  id text primary key,
+  label text not null,
+  icon text not null,
+  href text not null,
+  sort_order integer not null
+);
+
+create table if not exists public.header_groups (
+  id text primary key,
+  section_id text not null references public.header_sections(id) on delete cascade,
+  label text not null,
+  href text not null,
+  sort_order integer not null
+);
+
+create table if not exists public.header_group_items (
+  id text primary key,
+  group_id text not null references public.header_groups(id) on delete cascade,
+  label text not null,
+  href text not null,
+  sort_order integer not null
+);
+
+create table if not exists public.hero_slides (
+  id integer primary key,
+  order_index integer not null,
+  title text not null,
+  subtitle text not null,
+  badge text not null,
+  image text not null,
+  image_mobile text,
+  link text not null,
+  active boolean not null,
+  home_spotlight boolean
+);
+
+create table if not exists public.banners (
+  id integer primary key,
+  text text not null,
+  order_index integer not null,
+  active boolean not null
+);
+
+create table if not exists public.categories (
+  id integer primary key,
+  name text not null,
+  slug text not null,
+  visible boolean not null,
+  deleted_at timestamptz
+);
+
+alter table public.categories add column if not exists home_menu boolean not null default true;
+alter table public.categories add column if not exists icon text not null default 'package';
+update public.categories set home_menu = coalesce(home_menu, true) where home_menu is null;
+update public.categories set icon = coalesce(nullif(icon, ''), 'package') where icon is null or trim(icon) = '';
+
+create unique index if not exists categories_slug_key on public.categories (slug);
+create index if not exists categories_visible_idx on public.categories (visible);
+create index if not exists categories_deleted_at_idx on public.categories (deleted_at);
+
+create table if not exists public.brands (
+  id text primary key,
+  code text not null,
+  name text not null,
+  image text,
+  featured boolean not null,
+  active boolean not null default true
+);
+
+create unique index if not exists brands_code_key on public.brands (code);
+create index if not exists brands_active_idx on public.brands (active);
+
+create table if not exists public.fabrics (
+  id integer primary key,
+  name text not null,
+  image text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists fabrics_name_idx on public.fabrics (name);
+
+create table if not exists public.users (
+  id integer primary key,
+  auth_user_id uuid,
+  name text not null,
+  email text not null,
+  role text not null,
+  can_see_prices boolean not null,
+  active boolean not null
+);
+
+create unique index if not exists users_auth_user_id_key on public.users (auth_user_id);
+create unique index if not exists users_email_key on public.users (email);
+create index if not exists users_active_idx on public.users (active);
+
+create table if not exists public.products (
+  id integer primary key,
+  sku text not null,
+  name text not null,
+  detail text not null,
+  presentation text not null,
+  category_id integer not null references public.categories(id),
+  category_name text not null,
+  category_ids jsonb not null default '[]'::jsonb,
+  category_names jsonb not null default '[]'::jsonb,
+  brand text not null,
+  vegano boolean not null,
+  kosher boolean not null,
+  testeado_en_animales boolean,
+  public_price integer not null,
+  member_price integer not null,
+  image text,
+  images jsonb not null default '[]'::jsonb,
+  fabric_ids jsonb not null default '[]'::jsonb,
+  related_product_ids jsonb not null default '[]'::jsonb,
+  only_members boolean not null default false,
+  status text not null,
+  featured boolean not null,
+  featured_priority integer,
+  trending boolean,
+  stock integer,
+  views_count integer not null default 0,
+  sales_count integer not null default 0,
+  description text,
+  source_section text,
+  deleted_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists products_sku_key on public.products (sku);
+create index if not exists products_status_idx on public.products (status);
+create index if not exists products_featured_priority_idx on public.products (featured_priority);
+create index if not exists products_featured_idx on public.products (featured);
+create index if not exists products_trending_idx on public.products (trending);
+create index if not exists products_deleted_at_idx on public.products (deleted_at);
+create index if not exists products_category_id_idx on public.products (category_id);
+create index if not exists products_brand_idx on public.products (brand);
+
+create table if not exists public.promotion_packs (
+  id integer primary key,
+  apodo text not null,
+  title text not null,
+  description text not null,
+  category text not null,
+  public_price integer not null,
+  image text,
+  active boolean not null,
+  featured boolean not null,
+  order_index integer not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists promotion_packs_apodo_key on public.promotion_packs (apodo);
+create index if not exists promotion_packs_active_idx on public.promotion_packs (active);
+create index if not exists promotion_packs_featured_idx on public.promotion_packs (featured);
+create index if not exists promotion_packs_order_index_idx on public.promotion_packs (order_index);
+
+create table if not exists public.promotion_pack_items (
+  pack_id integer not null references public.promotion_packs(id) on delete cascade,
+  product_id integer not null references public.products(id) on delete cascade,
+  quantity integer not null default 1,
+  order_index integer not null,
+  primary key (pack_id, product_id)
+);
+
+create index if not exists promotion_pack_items_pack_id_idx on public.promotion_pack_items (pack_id);
+create index if not exists promotion_pack_items_product_id_idx on public.promotion_pack_items (product_id);
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_products_updated_at on public.products;
+create trigger trg_products_updated_at
+before update on public.products
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trg_promotion_packs_updated_at on public.promotion_packs;
+create trigger trg_promotion_packs_updated_at
+before update on public.promotion_packs
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trg_site_content_meta_updated_at on public.site_content_meta;
+create trigger trg_site_content_meta_updated_at
+before update on public.site_content_meta
+for each row execute function public.set_updated_at();
+
+
 -- Seed inicial para PintoFruta en Supabase
 begin;
 
@@ -184,3 +403,41 @@ insert into public.promotion_pack_items (pack_id, product_id, quantity, order_in
 insert into public.promotion_pack_items (pack_id, product_id, quantity, order_index) values (2, 10, 1, 3) on conflict (pack_id, product_id) do nothing;
 
 commit;
+
+
+create table if not exists public.order_excel_templates (
+  id integer primary key,
+  template_key text not null,
+  audience text not null,
+  version integer not null,
+  file_name text not null,
+  storage_bucket text not null default 'uploads',
+  storage_path text not null,
+  mime_type text not null default 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  active boolean not null default true,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create unique index if not exists order_excel_templates_key_version_key
+  on public.order_excel_templates (template_key, audience, version);
+
+create index if not exists order_excel_templates_active_idx
+  on public.order_excel_templates (template_key, audience, active);
+
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_order_excel_templates_updated_at on public.order_excel_templates;
+create trigger trg_order_excel_templates_updated_at
+before update on public.order_excel_templates
+for each row execute function public.set_updated_at();
+

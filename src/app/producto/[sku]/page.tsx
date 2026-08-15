@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { recordProductView } from "@/app/catalog-actions";
@@ -6,7 +5,8 @@ import { getProductBySku } from "@/application/catalog";
 import { CartAddButton } from "@/components/cart/cart-add-button";
 import { buttonVariants } from "@/components/ui/button";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
-import { formatCurrency, publicAsset } from "@/lib/catalog";
+import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
+import { formatCurrency } from "@/lib/catalog";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 
 export default async function ProductPage({
@@ -15,32 +15,21 @@ export default async function ProductPage({
   params: Promise<{ sku: string }>;
 }) {
   const { sku } = await params;
-  const product = await getProductBySku(sku);
+  const viewer = await getCurrentViewer();
+  const product = await getProductBySku(sku, viewer);
 
   if (!product) {
     notFound();
   }
 
-  const viewer = await getCurrentViewer();
-
   await recordProductView(product.id).catch(() => undefined);
-
   return (
     <main className="pf-shell flex w-full flex-1 flex-col gap-6 px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
       <Link href="/galeria" className="text-sm font-semibold text-[var(--pf-primary-dark)] hover:underline">
         ← Volver a la galería
       </Link>
       <section className="grid gap-6 rounded-[2rem] border border-[var(--pf-border)] bg-[var(--pf-surface)] p-5 shadow-sm lg:grid-cols-[1.1fr_.9fr]">
-        <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] bg-[rgba(245,243,239,0.82)]">
-          <Image
-            src={publicAsset(product.image)}
-            alt={product.name}
-            fill
-            className="object-contain p-6"
-            sizes="(max-width: 1024px) 100vw, 55vw"
-            priority
-          />
-        </div>
+        <ProductFabricGallery product={product} />
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.32em] text-[var(--pf-secondary-dark)]">Ficha de producto</p>
@@ -63,6 +52,16 @@ export default async function ProductPage({
             <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-4">
               <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Categoría</p>
               <p className="mt-1 text-lg font-semibold text-[var(--pf-text)]">{product.categoryName}</p>
+            </div>
+            <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-4">
+              <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Telas</p>
+              <p className="mt-1 text-lg font-semibold text-[var(--pf-text)]">
+                {product.fabricIds?.length ? `${product.fabricIds.length} disponibles` : "Sin definir"}
+              </p>
+            </div>
+            <div className="rounded-3xl border border-[var(--pf-border)] bg-[rgba(255,255,255,0.88)] p-4">
+              <p className="text-xs uppercase tracking-[0.28em] text-[var(--pf-muted)]">Sólo miembros</p>
+              <p className="mt-1 text-lg font-semibold text-[var(--pf-text)]">{product.onlyMembers ? "Sí" : "No"}</p>
             </div>
           </div>
 
