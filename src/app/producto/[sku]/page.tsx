@@ -2,12 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { recordProductView } from "@/app/catalog-actions";
+import { CartAddButton } from "@/components/cart/cart-add-button";
 import { getProductBySku } from "@/application/catalog";
 import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
 import { ProductImageCarousel } from "@/components/site/product-image-carousel";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { getSiteContent } from "@/infrastructure/site-content.repository";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
+import { appendReturnTo, normalizeReturnTo } from "@/lib/navigation";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 
 function isVisibleProduct(
@@ -51,10 +53,13 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ sku: string }>;
+  searchParams: Promise<{ returnTo?: string }>;
 }) {
   const { sku } = await params;
+  const { returnTo: returnToParam } = await searchParams;
   const viewer = await getCurrentViewer();
   const authenticated = Boolean(viewer?.authenticated);
   const product = await getProductBySku(sku, viewer);
@@ -64,6 +69,8 @@ export default async function ProductPage({
   }
 
   const content = await getSiteContent();
+  const returnTo = normalizeReturnTo(returnToParam, "/galeria");
+  const currentProductReturnTo = `/producto/${sku}`;
   const relatedProducts = content.products
     .filter((item) => item.id !== product.id && isVisibleProduct(item, authenticated))
     .filter((item) => {
@@ -96,9 +103,9 @@ export default async function ProductPage({
   return (
     <main className="bg-[#fbf8f2] text-[var(--pf-text)]">
       <div className="mx-auto flex w-full max-w-[1220px] flex-col px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-        <div className="flex items-center justify-between border-b border-[rgba(0,0,0,0.08)] pb-4 text-[11px] font-black uppercase tracking-[0.35em] text-[var(--pf-muted)]">
-          <Link href="/galeria" className="transition hover:text-[var(--pf-primary-darker)]">
-            Volver a la galeria
+        <div className="flex items-center justify-between pb-4 text-[11px] font-black uppercase tracking-[0.35em] text-[var(--pf-muted)]">
+          <Link href={returnTo} className="transition hover:text-[var(--pf-primary-darker)]">
+            Volver
           </Link>
           <span>{product.sku}</span>
         </div>
@@ -116,13 +123,20 @@ export default async function ProductPage({
             <p className="mt-2 font-serif text-[clamp(2.4rem,5vw,4rem)] leading-none">{formatCurrency(heroPrice)}</p>
             <p className="mt-2 text-[10px] font-black uppercase tracking-[0.28em] text-white/60">Un solo precio para todos</p>
           </div>
-          <p className="mx-auto mt-6 max-w-3xl text-sm leading-7 text-[var(--pf-muted)]">
-            {product.description || product.detail}
-          </p>
+          <div className="mt-6 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
+          </div>
         </section>
 
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
           <ProductFabricGallery product={product} />
+          <div className="mt-8 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
+          </div>
         </section>
 
         <ProductImageCarousel
@@ -131,6 +145,11 @@ export default async function ProductPage({
           eyebrow="Mas vistas"
           title="Todas las imagenes del producto en loop infinito"
         />
+        <div className="mt-4 flex justify-center">
+          <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+            Agregar al carrito
+          </CartAddButton>
+        </div>
 
         <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
@@ -140,7 +159,7 @@ export default async function ProductPage({
           />
 
           <div className="mt-10 flex justify-center">
-            <div className="relative w-full max-w-5xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-white px-6 py-8 sm:px-10 sm:py-12">
+            <div className="relative w-full max-w-5xl overflow-hidden bg-transparent px-6 py-8 sm:px-10 sm:py-12">
               <Image
                 src={publicAsset("/assets/images/medidas/01.svg")}
                 alt="Medidas del producto"
@@ -150,6 +169,11 @@ export default async function ProductPage({
                 priority={false}
               />
             </div>
+          </div>
+          <div className="mt-6 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
           </div>
         </section>
 
@@ -161,7 +185,7 @@ export default async function ProductPage({
           />
 
           <div className="mt-10 flex justify-center">
-            <div className="relative w-full max-w-5xl overflow-hidden border border-[rgba(0,0,0,0.08)] bg-white px-6 py-8 sm:px-10 sm:py-12">
+            <div className="relative w-full max-w-5xl overflow-hidden bg-transparent px-6 py-8 sm:px-10 sm:py-12">
               <Image
                 src={publicAsset("/assets/images/medidas/02.svg")}
                 alt="Sistema de apertura"
@@ -171,6 +195,11 @@ export default async function ProductPage({
                 priority={false}
               />
             </div>
+          </div>
+          <div className="mt-6 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
           </div>
         </section>
 
@@ -186,6 +215,11 @@ export default async function ProductPage({
             <DetailRow label="Financiacion" value="Tenemos opciones para compras de monto alto." />
             <DetailRow label="Envios" value="Coordinamos entrega y retiro segun la zona." />
             <DetailRow label="Fabricante" value={product.brand} />
+          </div>
+          <div className="mt-6 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
           </div>
         </section>
 
@@ -218,19 +252,30 @@ export default async function ProductPage({
               ))}
             </div>
           </div>
+          <div className="mt-6 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
+          </div>
         </section>
 
         {relatedProducts.length > 0 ? (
           <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
-            <SectionTitle
-              eyebrow="Relacionados"
-              title="Mas sofas"
-              description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
-            />
+          <SectionTitle
+            eyebrow="Relacionados"
+            title="Mas sofas"
+            description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
+          />
 
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {relatedProducts.map((item) => (
-                <Link key={item.id} href={`/producto/${item.sku}`} className="group block">
+          <div className="mt-6 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
+          </div>
+
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {relatedProducts.map((item) => (
+              <Link key={item.id} href={appendReturnTo(`/producto/${item.sku}`, currentProductReturnTo)} className="group block">
                   <div className="relative min-h-[240px] border border-[rgba(0,0,0,0.08)] bg-white">
                     <Image
                       src={publicAsset(item.image)}
@@ -273,6 +318,11 @@ export default async function ProductPage({
                 <p className="mt-4 text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-text)]">{name}</p>
               </article>
             ))}
+          </div>
+          <div className="mt-6 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
           </div>
         </section>
       </div>

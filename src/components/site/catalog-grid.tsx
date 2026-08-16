@@ -15,11 +15,19 @@ function getColumnClass(columns: number) {
   return "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3";
 }
 
-export function CatalogGrid({ products, columns = 3 }: { products: ProductItem[]; columns?: number }) {
+export function CatalogGrid({
+  products,
+  columns = 3,
+  returnTo,
+}: {
+  products: ProductItem[];
+  columns?: number;
+  returnTo?: string;
+}) {
   return (
     <div className={`grid gap-4 ${getColumnClass(columns)}`}>
       {products.map((product) => (
-        <ProductCard key={product.id} product={product} href={`/producto/${product.sku}`} />
+        <ProductCard key={product.id} product={product} href={`/producto/${product.sku}`} returnTo={returnTo} />
       ))}
     </div>
   );

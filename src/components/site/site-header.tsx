@@ -47,7 +47,7 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
   return (
     <>
       <header className="sticky top-0 z-[10010] hidden lg:block">
-        <div className="border-b border-[var(--pf-border)] bg-[rgba(245,243,239,0.96)] shadow-[0_14px_32px_rgba(29,24,20,0.08)] backdrop-blur">
+        <div className="border-b-2 border-[#e7c56a] bg-[#050505] shadow-[0_14px_32px_rgba(0,0,0,0.18)] backdrop-blur">
           <div className="pf-shell grid gap-4 px-4 py-4 lg:grid-cols-[auto_1fr_auto] lg:items-center lg:gap-6 lg:px-12">
             <Link
               href="/"

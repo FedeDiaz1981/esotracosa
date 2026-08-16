@@ -57,7 +57,7 @@ export function SiteBannerStrip({ banners }: SiteBannerStripProps) {
   const accent = ACCENTS[index % ACCENTS.length];
 
   return (
-    <div className="relative z-[10011] border-b border-[rgba(212,168,26,0.3)] bg-[linear-gradient(180deg,rgba(29,24,20,0.98),rgba(57,38,18,0.98))]">
+    <div className="relative z-[10011] border-b border-[rgba(212,168,26,0.3)] bg-[#050505]">
       <div
         className="pf-shell px-3 py-2 sm:px-4"
         aria-live="polite"

@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getHomePageViewModel } from "@/application/catalog";
-import { BrandLogoWall } from "@/components/site/brand-logo-wall";
 import { CategoryMenuStrip } from "@/components/site/category-menu-strip";
 import { FeaturedProductsCarousel } from "@/components/site/featured-products-carousel";
 import { HeroCarousel } from "@/components/site/hero-carousel";
@@ -34,22 +33,13 @@ export default async function HomePage() {
               </Link>
             }
           />
-          <FeaturedProductsCarousel products={content.featuredProducts} />
+          <FeaturedProductsCarousel products={content.featuredProducts} returnTo="/" />
         </section>
       </div>
 
       <div className="mt-6 sm:mt-8 lg:mt-10">
         <SpotlightBanner slide={content.spotlightSlide} />
       </div>
-
-      <section className="w-full bg-[linear-gradient(180deg,rgba(251,250,247,0.98)_0%,rgba(248,246,242,0.96)_48%,rgba(241,236,229,0.96)_100%)] py-10 sm:py-12 lg:py-14">
-        <div className="pf-shell px-4 sm:px-6 lg:px-12">
-          <div className="space-y-5">
-            <SectionHeading eyebrow="Identidad" title="Marcas destacadas" />
-            <BrandLogoWall brands={content.brands} />
-          </div>
-        </div>
-      </section>
 
       <div className="pf-shell flex flex-col gap-10 px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
         <section id="trending-products" className="space-y-5">
@@ -62,7 +52,7 @@ export default async function HomePage() {
               </Link>
             }
           />
-          <FeaturedProductsCarousel products={content.trendingProducts} />
+          <FeaturedProductsCarousel products={content.trendingProducts} returnTo="/" />
         </section>
       </div>
 

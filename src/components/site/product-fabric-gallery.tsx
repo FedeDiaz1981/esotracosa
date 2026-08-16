@@ -34,9 +34,9 @@ export function ProductFabricGallery({ product }: FabricGalleryProps) {
   };
 
   return (
-    <div className="bg-white px-0 py-4 sm:py-6">
+    <div className="bg-transparent px-0 py-4 sm:py-6">
       <div className="grid gap-10 xl:grid-cols-[1.04fr_.96fr] xl:items-center">
-        <div className="relative min-h-[460px] bg-white">
+        <div className="relative min-h-[460px] bg-transparent">
           <Image
             src={publicAsset(heroImage)}
             alt={product.name}

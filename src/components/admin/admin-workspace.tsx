@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { deleteAdminRecord, deleteAdminRecords, saveAdminRecord } from "@/app/admin/actions";
 import type {
   AdminCrudViewModel,
@@ -47,6 +48,24 @@ type UploadState = {
   fileName?: string;
 };
 
+function getInitials(name: string) {
+  const parts = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) {
+    return "PF";
+  }
+
+  const initials = parts
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+
+  return initials || "PF";
+}
+
 const sidebarSections: { title: string; keys: AdminTableKey[] }[] = [
   { title: "Listas", keys: ["products", "packs", "brands", "fabrics", "categories", "users"] },
   { title: "Contenido", keys: ["hero_slides", "banners"] },
@@ -88,6 +107,17 @@ function toDraftValue(field: AdminFieldDefinition, value: unknown): string | num
   }
 
   if (field.kind === "image_gallery") {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    if (Array.isArray(value)) {
+      return JSON.stringify(value);
+    }
+
+    return "[]";
+  }
+  if (field.kind === "fabric_variants") {
     if (typeof value === "string") {
       return value;
     }
@@ -185,7 +215,7 @@ function draftFromRow(table: AdminTableDefinition, row: Record<string, unknown> 
           }))
         : [];
 
-      draft[field.key] = toDraftValue(field, rowVariants.length > 0 ? rowVariants : fallbackVariants);
+      draft[field.key] = serializeFabricVariants(rowVariants.length > 0 ? rowVariants : fallbackVariants);
       continue;
     }
 
@@ -715,7 +745,7 @@ function PackProductsField({
   );
 }
 
-export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
+export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewModel; viewerName: string }) {
   const { overview, tables, productSelectionRows } = model;
   const initialTableKey = (tables.find((table) => table.key === "hero_slides")?.key ?? tables[0]?.key ?? "") as AdminTableKey;
 
@@ -892,7 +922,7 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
           <div className="rounded-[28px] border border-white/10 bg-white/10 p-4 shadow-[0_20px_50px_rgba(29,24,20,0.14)]">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,var(--pf-secondary-dark)_0%,var(--pf-primary)_100%)] text-lg font-black tracking-tight text-white">
-                PF
+                {getInitials(viewerName)}
               </div>
               <div>
                 <p className="text-lg font-semibold text-[var(--pf-secondary-faint)]">Pintofruta</p>
@@ -911,12 +941,11 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                 return null;
               }
 
-              return (
-                <div key={section.title}>
-                  <div className="mb-3 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.34em] text-[#f8f1e7]/70">
-                    <span>{section.title}</span>
-                    <span>?</span>
-                  </div>
+                return (
+                  <div key={section.title}>
+                    <div className="mb-3 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.34em] text-[#f8f1e7]/70">
+                      <span>{section.title}</span>
+                    </div>
                   <div className="space-y-2">
                     {sectionTables.map((table) => {
                       const active = table.key === selectedTable.key;
@@ -1750,17 +1779,19 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                           const nextImages = [...images];
                                           nextImages[index] = publicUrl;
 
-                                          setEditor((current) =>
-                                            current
-                                              ? {
-                                                  ...current,
-                                                  draft: {
-                                                    ...current.draft,
-                                                    [field.key]: serializeMultiSelectValues(nextImages.filter(Boolean)),
-                                                  },
-                                                }
-                                              : current,
-                                          );
+                                          flushSync(() => {
+                                            setEditor((current) =>
+                                              current
+                                                ? {
+                                                    ...current,
+                                                    draft: {
+                                                      ...current.draft,
+                                                      [field.key]: serializeMultiSelectValues(nextImages.filter(Boolean)),
+                                                    },
+                                                  }
+                                                : current,
+                                            );
+                                          });
                                           setUploadStates((current) => ({
                                             ...current,
                                             [slotKey]: {
@@ -1954,17 +1985,19 @@ export function AdminWorkspace({ model }: { model: AdminCrudViewModel }) {
                                                 ? variants.map((item) => (item.fabricId === fabricId ? { ...item, image: publicUrl } : item))
                                                 : [...variants, { fabricId, image: publicUrl, order: variants.length + 1 }];
 
-                                              setEditor((current) =>
-                                                current
-                                                  ? {
-                                                      ...current,
-                                                      draft: {
-                                                        ...current.draft,
-                                                        [field.key]: serializeFabricVariants(nextVariants),
-                                                      },
-                                                    }
-                                                  : current,
-                                              );
+                                          flushSync(() => {
+                                            setEditor((current) =>
+                                              current
+                                                ? {
+                                                    ...current,
+                                                    draft: {
+                                                      ...current.draft,
+                                                      [field.key]: serializeFabricVariants(nextVariants),
+                                                    },
+                                                  }
+                                                : current,
+                                            );
+                                          });
                                               setUploadStates((current) => ({
                                                 ...current,
                                                 [slotKey]: {

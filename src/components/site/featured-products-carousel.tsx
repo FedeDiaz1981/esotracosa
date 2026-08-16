@@ -8,6 +8,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "motion/react";
 import type { ProductItem } from "@/domain/site-content";
 import { isNewArrival, publicAsset } from "@/lib/catalog";
+import { appendReturnTo } from "@/lib/navigation";
 import { Button } from "@/components/ui/button";
 
 function getInventoryLabel(product: ProductItem) {
@@ -39,7 +40,7 @@ function ProductSeal({ label }: { label: string }) {
   );
 }
 
-function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
+function MobileFeaturedRail({ products, returnTo }: { products: ProductItem[]; returnTo?: string }) {
   const [emblaRef] = useEmblaCarousel({ loop: products.length > 1, align: "start" });
   const router = useRouter();
 
@@ -56,7 +57,7 @@ function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
               <div key={product.id} className="min-w-0 flex-[0_0_66vw] px-2 pb-3">
                 <motion.button
                   type="button"
-                  onClick={() => router.push(`/producto/${product.sku}`)}
+                  onClick={() => router.push(appendReturnTo(`/producto/${product.sku}`, returnTo))}
                   initial={{ opacity: 0.6, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.35, delay: index * 0.03 }}
@@ -113,7 +114,7 @@ function MobileFeaturedRail({ products }: { products: ProductItem[] }) {
   );
 }
 
-export function FeaturedProductsCarousel({ products }: { products: ProductItem[] }) {
+export function FeaturedProductsCarousel({ products, returnTo }: { products: ProductItem[]; returnTo?: string }) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
@@ -139,7 +140,7 @@ export function FeaturedProductsCarousel({ products }: { products: ProductItem[]
 
   return (
     <>
-      <MobileFeaturedRail products={products} />
+      <MobileFeaturedRail products={products} returnTo={returnTo} />
 
       <div className="relative hidden md:block">
         <Button
@@ -177,7 +178,7 @@ export function FeaturedProductsCarousel({ products }: { products: ProductItem[]
               <button
                 key={product.id}
                 type="button"
-                onClick={() => router.push(`/producto/${product.sku}`)}
+                onClick={() => router.push(appendReturnTo(`/producto/${product.sku}`, returnTo))}
                 className="group block w-[min(78vw,16.75rem)] shrink-0 snap-start sm:w-[17rem] lg:w-[17.5rem]"
               >
                 <article

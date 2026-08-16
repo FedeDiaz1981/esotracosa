@@ -697,6 +697,19 @@ async function saveProduct(record: PayloadRecord) {
       )
     : null;
   const existing = existingResult?.rows[0];
+  const existingFabricVariantRows = providedId
+    ? await postgresPool!.query<{
+        fabric_id: number;
+        image: string;
+        sort_order: number;
+      }>(
+        `select fabric_id, image, sort_order
+         from product_fabric_variants
+         where product_id = $1
+         order by sort_order, fabric_id`,
+        [providedId],
+      )
+    : null;
   const id = providedId || (await nextNumericId("products"));
 
   const selectedCategoryIds = parseNumberArray(record.categoryIds);
@@ -739,10 +752,26 @@ async function saveProduct(record: PayloadRecord) {
   const finalImages = images.length > 0 ? images : image ? [image] : [];
   const relatedProductIds = parseNumberArray(record.relatedProductIds).filter((productId) => productId !== id);
   const onlyMembers = toBoolean(record.onlyMembers);
-  const fabricVariants = parseFabricVariants(record.fabricVariants);
-  const fabricIds = fabricVariants.length > 0
-    ? [...new Set(fabricVariants.map((variant) => variant.fabricId))]
-    : parseNumberArray(record.fabricIds);
+  const existingFabricVariants = (existingFabricVariantRows?.rows ?? []).map((variant) => ({
+    fabricId: variant.fabric_id,
+    image: variant.image,
+    order: variant.sort_order,
+  }));
+  const rawFabricVariants = parseFabricVariants(record.fabricVariants);
+  const fabricVariantMap = new Map<number, FabricVariantDraft>();
+  for (const variant of existingFabricVariants) {
+    fabricVariantMap.set(variant.fabricId, variant);
+  }
+  for (const variant of rawFabricVariants) {
+    const existingVariant = fabricVariantMap.get(variant.fabricId);
+    fabricVariantMap.set(variant.fabricId, {
+      fabricId: variant.fabricId,
+      image: variant.image || existingVariant?.image || "",
+      order: variant.order || existingVariant?.order || fabricVariantMap.size + 1,
+      });
+  }
+  const finalFabricVariants = [...fabricVariantMap.values()].filter((variant) => Boolean(variant.image));
+  const fabricIds = fabricVariantMap.size > 0 ? [...fabricVariantMap.keys()] : parseNumberArray(record.fabricIds);
   const featuredPriority =
     record.featuredPriority == null || record.featuredPriority === ""
       ? existing?.featured_priority ?? null
@@ -758,6 +787,15 @@ async function saveProduct(record: PayloadRecord) {
   const hasTemplateRowMap = Object.prototype.hasOwnProperty.call(record, "templateRowMap");
   const templateRowMap = hasTemplateRowMap ? parseTemplateRowMap(record.templateRowMap) : existingTemplateRowMap;
   const finalTemplateRowMap = hasTemplateRowMap ? templateRowMap : existingTemplateRowMap;
+  adminLog("product:payload", {
+    id,
+    sku,
+    fabricVariantsRaw: toStringValue(record.fabricVariants),
+    rawFabricVariantsCount: rawFabricVariants.length,
+    existingFabricVariantsCount: existingFabricVariants.length,
+    finalFabricVariantsCount: finalFabricVariants.length,
+    fabricIds,
+  });
 
   const runTransaction = async (client: PoolClient) => {
     await client.query("begin");
@@ -770,7 +808,8 @@ async function saveProduct(record: PayloadRecord) {
             vegano, kosher, testeado_en_animales, public_price, member_price, image, images, fabric_ids, related_product_ids, only_members,
             status, featured, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
           ) values (
-            $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16::jsonb,$17::jsonb,$18::jsonb,$19,$20,$21,$22,$23,$24,$25,$26,$27
+            $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18::jsonb,$19,$20,
+            $21,$22,$23,$24,$25,$26,$27,$28,$29::jsonb
           )
           on conflict (id) do update set
             sku = excluded.sku,
@@ -837,7 +876,7 @@ async function saveProduct(record: PayloadRecord) {
       );
 
       await client.query("delete from product_fabric_variants where product_id = $1", [id]);
-      for (const [index, variant] of fabricVariants.entries()) {
+      for (const [index, variant] of finalFabricVariants.entries()) {
         if (!variant.image) {
           continue;
         }

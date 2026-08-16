@@ -208,6 +208,7 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
     featuredOnly,
     trendingOnly,
   }, viewer);
+  const currentReturnTo = buildHref({});
 
   const sortedProducts = [...gallery.products].sort((left, right) => {
     if (sort === "price") {
@@ -526,7 +527,7 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
             </div>
           </div>
 
-          <CatalogGrid products={sortedProducts} columns={Number(view)} />
+          <CatalogGrid products={sortedProducts} columns={Number(view)} returnTo={currentReturnTo} />
         </section>
       </div>
     </main>

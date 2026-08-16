@@ -18,5 +18,5 @@ export default async function AdminPage() {
 
   const model = await getAdminPanelViewModel();
 
-  return <AdminWorkspace model={model} />;
+  return <AdminWorkspace model={model} viewerName={viewer.name} />;
 }

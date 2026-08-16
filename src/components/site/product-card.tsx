@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { ProductItem } from "@/domain/site-content";
 import { isNewArrival, publicAsset } from "@/lib/catalog";
+import { appendReturnTo } from "@/lib/navigation";
 
 function getInventoryLabel(product: ProductItem) {
   if (product.stock == null) {
@@ -21,10 +22,12 @@ export function ProductCard({
   product,
   onSelect,
   href,
+  returnTo,
 }: {
   product: ProductItem;
   onSelect?: (product: ProductItem) => void;
   href?: string;
+  returnTo?: string;
 }) {
   const router = useRouter();
   const isNew = isNewArrival({
@@ -39,7 +42,7 @@ export function ProductCard({
       type="button"
       onClick={() => {
         if (href) {
-          router.push(href);
+          router.push(appendReturnTo(href, returnTo));
           return;
         }
 

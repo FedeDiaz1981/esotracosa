@@ -1,5 +1,7 @@
-﻿import {
+import {
+  Armchair,
   Ban,
+  BedDouble,
   CandyOff,
   Coffee,
   Dna,
@@ -9,6 +11,7 @@
   Package,
   ShieldCheck,
   ShoppingBag,
+  Sofa,
   Sparkles,
   Snowflake,
   Sprout,
@@ -30,11 +33,16 @@ const CATEGORY_ICON_KEYS = [
   "candy-off",
   "wheat-off",
   "sprout",
+  "armchair",
+  "sofa",
+  "bed-double",
 ] as const;
 
 export type CategoryIconKey = (typeof CATEGORY_ICON_KEYS)[number];
 
 const keywordRules: Array<{ patterns: RegExp[]; icon: CategoryIconKey }> = [
+  { patterns: [/sof[aá]\s*cama/, /sillon\s*cama/, /camastro/, /divan/, /chaise/], icon: "bed-double" },
+  { patterns: [/sof[aá]/, /fut[oó]n/, /sill[oó]n/, /butaca/, /living/, /sal[aó]n/], icon: "armchair" },
   { patterns: [/promo/, /oferta/, /descuento/], icon: "megaphone" },
   { patterns: [/refrig/, /frio/, /helad/], icon: "snowflake" },
   { patterns: [/congel/, /freezer/], icon: "snowflake" },
@@ -108,6 +116,9 @@ export const categoryIconLabels: Record<CategoryIconKey, string> = {
   "candy-off": "Sin azúcar",
   "wheat-off": "Sin gluten",
   sprout: "Vegano",
+  armchair: "Sillón",
+  sofa: "Sofá",
+  "bed-double": "Sofá cama",
 };
 
 export const categoryIconComponents = {
@@ -125,4 +136,7 @@ export const categoryIconComponents = {
   "candy-off": CandyOff,
   "wheat-off": WheatOff,
   sprout: Sprout,
+  armchair: Armchair,
+  sofa: Sofa,
+  "bed-double": BedDouble,
 } satisfies Record<CategoryIconKey, typeof Package>;

@@ -223,6 +223,26 @@ function isExpired(payload: SessionPayload) {
   return payload.expiresAt <= Date.now();
 }
 
+function isTransientConnectionError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes("connection closed") ||
+    message.includes("connection terminated unexpectedly") ||
+    message.includes("terminating connection") ||
+    message.includes("socket hang up") ||
+    message.includes("econnreset") ||
+    message.includes("etimedout") ||
+    message.includes("econnrefused") ||
+    message.includes("enotfound") ||
+    message.includes("enetunreach") ||
+    message.includes("timeout")
+  );
+}
+
 export async function createSupabaseAuthClient() {
   return createClient(getSupabaseUrl(), getSupabaseAnonKey(), {
     auth: {
@@ -340,7 +360,17 @@ export const getCurrentViewer = cache(async (): Promise<ViewerSession | null> =>
     return null;
   }
 
-  const storedUser = await findStoredUserByEmailOrAuthUserId(payload.authUserId, payload.email);
+  let storedUser: StoredUserRow | null = null;
+
+  try {
+    storedUser = await findStoredUserByEmailOrAuthUserId(payload.authUserId, payload.email);
+  } catch (error) {
+    if (!isTransientConnectionError(error)) {
+      throw error;
+    }
+
+    return getCurrentViewerFromCookie();
+  }
 
   if (!storedUser || !storedUser.active) {
     return null;

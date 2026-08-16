@@ -31,6 +31,19 @@ async function SearchPageContent({
     brand: params.brand,
     category: params.category,
   }, viewer);
+  const currentSearch = new URLSearchParams();
+
+  if (params.q?.trim()) {
+    currentSearch.set("q", params.q.trim());
+  }
+  if (params.brand?.trim()) {
+    currentSearch.set("brand", params.brand.trim());
+  }
+  if (params.category?.trim()) {
+    currentSearch.set("category", params.category.trim());
+  }
+
+  const currentReturnTo = currentSearch.toString() ? `/busqueda?${currentSearch.toString()}` : "/busqueda";
 
   return (
     <main className="pf-shell flex w-full flex-1 flex-col gap-8 px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
@@ -44,7 +57,7 @@ async function SearchPageContent({
           </Link>
         }
       />
-      <CatalogGrid products={products} />
+      <CatalogGrid products={products} returnTo={currentReturnTo} />
     </main>
   );
 }

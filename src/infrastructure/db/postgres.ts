@@ -1,36 +1,23 @@
-import dns from "node:dns";
 import { Pool, type PoolConfig } from "pg";
 
-const databaseUrl = process.env.DATABASE_URL;
-const isRemotePostgres = Boolean(databaseUrl && /supabase\.co|render\.com/i.test(databaseUrl));
+const databaseUrl = process.env.DATABASE_URL_POOLER || process.env.SUPABASE_POOLER_URL || process.env.DATABASE_URL;
 
-if (isRemotePostgres) {
-  dns.setDefaultResultOrder("ipv4first");
-}
+const isRemotePostgres = Boolean(databaseUrl && /supabase\.co|render\.com/i.test(databaseUrl));
 
 let poolPromise: Promise<Pool> | null = null;
 
-function buildPoolConfig(url: URL, host: string): PoolConfig {
-  const user = decodeURIComponent(url.username || "");
-  const password = decodeURIComponent(url.password || "");
-  const database = url.pathname.replace(/^\//, "");
-
+function buildPoolConfig(connectionString: string): PoolConfig {
   return {
-    host,
-    port: url.port ? Number(url.port) : 5432,
-    user: user || undefined,
-    password: password || undefined,
-    database: database || undefined,
+    connectionString,
     ssl: isRemotePostgres
       ? {
           rejectUnauthorized: false,
-          servername: url.hostname,
         }
       : undefined,
     max: 5,
     keepAlive: true,
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 30_000,
   };
 }
 
@@ -39,8 +26,7 @@ async function createPool() {
     throw new Error("DATABASE_URL no está configurada.");
   }
 
-  const url = new URL(databaseUrl);
-  return new Pool(buildPoolConfig(url, url.hostname));
+  return new Pool(buildPoolConfig(databaseUrl));
 }
 
 async function getPool() {
@@ -70,7 +56,10 @@ function isTransientConnectionError(error: unknown) {
     message.includes("etimedout") ||
     message.includes("econnrefused") ||
     message.includes("enotfound") ||
-    message.includes("enetunreach")
+    message.includes("enetunreach") ||
+    message.includes("queryaaaa") ||
+    message.includes("query aaaa") ||
+    message.includes("timeout")
   );
 }
 
@@ -81,10 +70,10 @@ async function resetPool() {
   try {
     const pool = previous ? await previous : null;
     if (pool) {
-      await pool.end();
+      await pool.end().catch(() => undefined);
     }
   } catch {
-    // Ignorado a propósito: si la conexión ya estaba cerrada, forzamos una recreación limpia.
+    // Si el pool ya estaba roto, lo recreamos en la próxima llamada.
   }
 }
 
@@ -117,8 +106,7 @@ export const postgresPool: Pool | null = databaseUrl
 
         if (prop === "end") {
           return async () => {
-            const pool = await getPool();
-            return pool.end();
+            await resetPool();
           };
         }
 
