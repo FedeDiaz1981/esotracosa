@@ -10,6 +10,8 @@ export type AdminTableKey =
   | "hero_slides"
   | "banners"
   | "packs"
+  | "product_lots"
+  | "product_lot_reservations"
   | "categories"
   | "brands"
   | "fabrics"
@@ -77,6 +79,8 @@ export interface AdminCrudViewModel {
 
 const tableOrder: AdminTableKey[] = [
   "products",
+  "product_lots",
+  "product_lot_reservations",
   "packs",
   "brands",
   "fabrics",
@@ -275,6 +279,120 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
           "Fila por template",
           "Uso interno. Completa la fila exacta a marcar por cada plantilla guardada.",
         ),
+      ],
+    },
+    {
+      key: "product_lots",
+      label: "Lotes",
+      description: "Ofertas por lote con cupos limitados y precio especial.",
+      idField: "id",
+      rowLabelField: "title",
+      rows: (content.productLots ?? []).map((lot) => ({
+        ...lot,
+        productLabel: `${lot.productSku ?? lot.productId} · ${lot.productName ?? "Sin producto"}`,
+        fabricLabel: lot.fixedFabricName || (lot.fixedFabricId ? `Tela ${lot.fixedFabricId}` : "Sin tela fija"),
+        imageModeLabel: lot.useFabricImage ? "Desde tela" : "Imagen propia",
+        availableUnits: Math.max(0, lot.availableUnits),
+      })),
+      columns: [
+        { key: "id", label: "ID" },
+        { key: "productLabel", label: "Producto" },
+        { key: "fabricLabel", label: "Tela fija" },
+        { key: "title", label: "Titulo" },
+        { key: "lotUnitPrice", label: "Precio lote" },
+        { key: "regularUnitPrice", label: "Precio normal" },
+        { key: "totalUnits", label: "Unidades" },
+        { key: "reservedUnits", label: "Reservadas" },
+        { key: "availableUnits", label: "Disponibles" },
+        { key: "imageModeLabel", label: "Imagen" },
+        { key: "status", label: "Estado" },
+      ],
+      fields: [
+        numberField("id", "ID", true, "Se genera automaticamente.", true, true),
+        selectField(
+          "productId",
+          "Producto",
+          productOptions,
+          true,
+          "Elegí el producto al que pertenece este lote.",
+        ),
+        selectField("fixedFabricId", "Tela fija", [], true, "Elegí la tela específica de ese producto."),
+        booleanField(
+          "useFabricImage",
+          "Usar imagen de la tela",
+          "Si está activo, se reutiliza la imagen ya cargada en la tela seleccionada.",
+        ),
+        textField("title", "Titulo", true),
+        textareaField("description", "Descripcion", true),
+        numberField("regularUnitPrice", "Precio normal", true),
+        numberField("lotUnitPrice", "Precio lote", true, "Precio especial por unidad."),
+        numberField("totalUnits", "Unidades totales", true),
+        numberField("reservedUnits", "Unidades reservadas", false, "Se actualiza con las reservas.", true, true),
+        selectField(
+          "status",
+          "Estado",
+          [
+            { value: "draft", label: "Borrador" },
+            { value: "open", label: "Abierto" },
+            { value: "sold_out", label: "Completo" },
+            { value: "in_production", label: "En producción" },
+            { value: "closed", label: "Cerrado" },
+          ],
+          true,
+        ),
+        booleanField("onlyMembers", "Sólo miembros", "Si está activo, sólo lo verán usuarios logueados."),
+        fileField("image", "Imagen", false, "Se usa sólo cuando no reutilizas la imagen de la tela."),
+      ],
+    },
+    {
+      key: "product_lot_reservations",
+      label: "Reservas de lote",
+      description: "Reservas realizadas por usuarios sobre lotes disponibles.",
+      idField: "id",
+      rowLabelField: "lotTitle",
+      rows: (content.productLotReservations ?? []).map((reservation) => ({
+        ...reservation,
+        lotTitle: reservation.lotTitle ?? `Lote ${reservation.lotId}`,
+        userLabel: reservation.userName || reservation.userEmail || `Usuario ${reservation.userId}`,
+        productLabel: `${reservation.productSku ?? reservation.productId ?? "SKU"} · ${reservation.productName ?? "Producto"}`,
+        statusLabel: reservation.status,
+        updatedLabel: reservation.updatedAt ?? reservation.createdAt ?? "",
+      })),
+      columns: [
+        { key: "id", label: "ID" },
+        { key: "lotTitle", label: "Lote" },
+        { key: "userLabel", label: "Usuario" },
+        { key: "quantity", label: "Cant." },
+        { key: "unitPrice", label: "Precio unit." },
+        { key: "totalPrice", label: "Total" },
+        { key: "statusLabel", label: "Estado" },
+        { key: "updatedLabel", label: "Actualizado" },
+      ],
+      fields: [
+        numberField("id", "ID", true, "Uso interno", true, true),
+        textField("lotTitle", "Lote", true, "Solo lectura", true),
+        textField("productLabel", "Producto", true, "Solo lectura", true),
+        textField("userLabel", "Usuario", true, "Solo lectura", true),
+        numberField("quantity", "Cantidad", true, "Solo lectura", true),
+        numberField("unitPrice", "Precio unitario", true, "Solo lectura", true),
+        numberField("totalPrice", "Total", true, "Solo lectura", true),
+        selectField(
+          "status",
+          "Estado",
+          [
+            { value: "reserved", label: "Reservada" },
+            { value: "confirmed", label: "Confirmada" },
+            { value: "cancelled", label: "Anulada" },
+          ],
+          true,
+        ),
+        textareaField("notes", "Notas", false),
+        textareaField("adminNote", "Nota admin", false),
+        textareaField("cancelReason", "Motivo de anulación", false),
+        textField("confirmedAt", "Confirmada el", false, "Solo lectura", true),
+        textField("cancelledAt", "Anulada el", false, "Solo lectura", true),
+        textField("createdAt", "Creada el", false, "Solo lectura", true),
+        textField("updatedAt", "Actualizada el", false, "Solo lectura", true),
       ],
     },
     {

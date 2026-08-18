@@ -9,7 +9,7 @@ import {
 } from "@/infrastructure/order-template";
 
 export type OrderExcelRequestItem = {
-  kind?: "product" | "pack";
+  kind?: "product" | "pack" | "lot";
   sku?: string;
   id?: number;
   name?: string;
@@ -54,7 +54,7 @@ type PackCountRow = {
 };
 
 type ResolvedOrderLine = {
-  kind: "product" | "pack";
+  kind: "product" | "pack" | "lot";
   sku: string;
   name: string;
   brand: string;

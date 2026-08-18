@@ -1,8 +1,7 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { recordProductView } from "@/app/catalog-actions";
-import { CartAddButton } from "@/components/cart/cart-add-button";
 import { getProductBySku } from "@/application/catalog";
 import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
 import { ProductImageCarousel } from "@/components/site/product-image-carousel";
@@ -10,6 +9,7 @@ import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { getSiteContent } from "@/infrastructure/site-content.repository";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
 import { appendReturnTo, normalizeReturnTo } from "@/lib/navigation";
+import { LotReservationPanel } from "@/components/site/lot-reservation-panel";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 
 function isVisibleProduct(
@@ -51,26 +51,36 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export default async function ProductPage({
+export default async function CollectivePurchaseDetailPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ sku: string }>;
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ returnTo?: string }>;
 }) {
-  const { sku } = await params;
+  const { id } = await params;
   const { returnTo: returnToParam } = await searchParams;
   const viewer = await getCurrentViewer();
   const authenticated = Boolean(viewer?.authenticated);
-  const product = await getProductBySku(sku, viewer);
+  const content = await getSiteContent();
+  const lotId = Number(id);
+  const lot = Number.isFinite(lotId) && lotId > 0 ? content.productLots?.find((item) => item.id === lotId) ?? null : null;
+
+  if (!lot) {
+    notFound();
+  }
+
+  const product =
+    (lot.productSku ? await getProductBySku(lot.productSku, viewer) : null) ??
+    content.products.find((item) => item.id === lot.productId && isVisibleProduct(item, authenticated)) ??
+    null;
 
   if (!product) {
     notFound();
   }
 
-  const content = await getSiteContent();
-  const returnTo = normalizeReturnTo(returnToParam, "/galeria");
-  const currentProductReturnTo = `/producto/${sku}`;
+  const returnTo = normalizeReturnTo(returnToParam, "/");
+  const currentReturnTo = `/compra-colectiva/${lot.id}`;
   const relatedProducts = content.products
     .filter((item) => item.id !== product.id && isVisibleProduct(item, authenticated))
     .filter((item) => {
@@ -90,8 +100,9 @@ export default async function ProductPage({
 
   const imageList = product.images?.length ? product.images : product.image ? [product.image] : [];
   const heroImages = imageList.length > 0 ? imageList : [product.image ?? ""];
-  const heroPrice = resolveProductUnitPrice(product);
+  const heroPrice = lot.lotUnitPrice;
   const fabricCount = product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
+  const heroHint = `Cantidad disponible: ${lot.availableUnits} unidades`;
 
   return (
     <main className="bg-[#fbf8f2] text-[var(--pf-text)]">
@@ -104,31 +115,24 @@ export default async function ProductPage({
         </div>
 
         <section className="border-b border-[rgba(0,0,0,0.08)] px-2 py-12 text-center sm:px-6 lg:py-14">
-          <p className="text-[11px] font-black uppercase tracking-[0.5em] text-[var(--pf-secondary-dark)]">{product.brand}</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.5em] text-[var(--pf-secondary-dark)]">Compra colectiva</p>
           <p className="mt-4 text-[0.8rem] font-medium uppercase tracking-[0.38em] text-[var(--pf-muted)]">
             {product.categoryName}
           </p>
           <h1 className="mt-6 font-serif text-[clamp(3rem,8vw,7rem)] leading-[0.9] tracking-[-0.06em] text-[var(--pf-text)]">
             {product.name}
           </h1>
+          <p className="mt-4 text-[0.8rem] font-medium uppercase tracking-[0.32em] text-[var(--pf-muted)]">{lot.title}</p>
           <div className="mx-auto mt-8 max-w-[34rem] bg-[#111111] px-6 py-5 text-white sm:px-10">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">Precio</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">Precio por unidad</p>
             <p className="mt-2 font-serif text-[clamp(2.4rem,5vw,4rem)] leading-none">{formatCurrency(heroPrice)}</p>
+            <p className="mt-2 text-[10px] font-black uppercase tracking-[0.28em] text-white/60">{heroHint}</p>
           </div>
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
-          </div>
+          <LotReservationPanel lot={lot} />
         </section>
 
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
-          <ProductFabricGallery product={product} />
-          <div className="mt-8 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
-          </div>
+          <ProductFabricGallery product={product} fixedFabricId={lot.fixedFabricId ?? null} />
         </section>
 
         <ProductImageCarousel
@@ -137,11 +141,6 @@ export default async function ProductPage({
           eyebrow="Mas vistas"
           title="Todas las imagenes del producto en loop infinito"
         />
-        <div className="mt-4 flex justify-center">
-          <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-            Agregar al carrito
-          </CartAddButton>
-        </div>
 
         <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
@@ -161,11 +160,6 @@ export default async function ProductPage({
                 priority={false}
               />
             </div>
-          </div>
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
           </div>
         </section>
 
@@ -188,11 +182,6 @@ export default async function ProductPage({
               />
             </div>
           </div>
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
-          </div>
         </section>
 
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
@@ -206,12 +195,7 @@ export default async function ProductPage({
             <DetailRow label="Garantia" value="Consultanos la cobertura segun la linea y el tapizado." />
             <DetailRow label="Financiacion" value="Tenemos opciones para compras de monto alto." />
             <DetailRow label="Envios" value="Coordinamos entrega y retiro segun la zona." />
-            <DetailRow label="Fabricante" value={product.brand} />
-          </div>
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
+            <DetailRow label="Cantidad disponible" value={`${lot.availableUnits} unidades`} />
           </div>
         </section>
 
@@ -226,62 +210,18 @@ export default async function ProductPage({
             {[
               ["Marca", product.brand],
               ["Categoria", product.categoryName],
-              ["Precio", formatCurrency(heroPrice)],
+              ["Precio por unidad", formatCurrency(heroPrice)],
+              ["Cantidad disponible", `${lot.availableUnits} unidades`],
               ["Telas", `${fabricCount} variantes`],
               ["Solo miembros", product.onlyMembers ? "Si" : "No"],
-              ["Stock", product.stock == null ? "A pedido" : product.stock <= 0 ? "Agotado" : `${product.stock} unidades`],
             ].map(([label, value]) => (
               <DetailRow key={label} label={label} value={value} />
             ))}
           </div>
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
-          </div>
         </section>
 
-        {relatedProducts.length > 0 ? (
-          <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
-          <SectionTitle
-            eyebrow="Relacionados"
-            title="Mas sofas"
-            description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
-          />
-
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
-          </div>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {relatedProducts.map((item) => (
-              <Link key={item.id} href={appendReturnTo(`/producto/${item.sku}`, currentProductReturnTo)} className="group block">
-                  <div className="relative min-h-[240px] border border-[rgba(0,0,0,0.08)] bg-white">
-                    <Image
-                      src={publicAsset(item.image)}
-                      alt={item.name}
-                      fill
-                      className="object-contain p-6 transition duration-500 group-hover:scale-[1.03]"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  </div>
-                  <div className="pt-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.brand}</p>
-                    <h3 className="mt-2 text-[1.05rem] font-medium text-[var(--pf-text)]">{item.name}</h3>
-                    <p className="mt-2 text-sm font-semibold text-[var(--pf-primary-darker)]">
-                      {formatCurrency(resolveProductUnitPrice(item))}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
-          <div className="grid gap-4 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 lg:grid-cols-4">
             {[
               ["Excelente terminacion y muy buen tapizado.", "Silvia F."],
               ["La foto de la tela ayuda muchisimo para elegir.", "Victoria G."],
@@ -318,8 +258,40 @@ export default async function ProductPage({
             ))}
           </div>
         </section>
+
+        {relatedProducts.length > 0 ? (
+          <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
+            <SectionTitle
+              eyebrow="Relacionados"
+              title="Mas sofas"
+              description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
+            />
+
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {relatedProducts.map((item) => (
+                <Link key={item.id} href={appendReturnTo(`/producto/${item.sku}`, currentReturnTo)} className="group block">
+                  <div className="relative min-h-[240px] border border-[rgba(0,0,0,0.08)] bg-white">
+                    <Image
+                      src={publicAsset(item.image)}
+                      alt={item.name}
+                      fill
+                      className="object-contain p-6 transition duration-500 group-hover:scale-[1.03]"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  </div>
+                  <div className="pt-4">
+                    <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.brand}</p>
+                    <h3 className="mt-2 text-[1.05rem] font-medium text-[var(--pf-text)]">{item.name}</h3>
+                    <p className="mt-2 text-sm font-semibold text-[var(--pf-primary-darker)]">
+                      {formatCurrency(resolveProductUnitPrice(item))}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </main>
   );
 }
-

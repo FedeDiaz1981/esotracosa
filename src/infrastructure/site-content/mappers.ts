@@ -2,6 +2,8 @@ import type {
   HeaderNavigation,
   PackIncludedProduct,
   PackItem,
+  ProductLotItem,
+  ProductLotReservationItem,
   ProductFabricVariant,
   ProductItem,
   SiteContentDocument,
@@ -33,6 +35,59 @@ export type ProductRow = SeedProduct & {
   fabric_ids: unknown;
   related_product_ids: unknown;
   only_members: boolean | null;
+};
+export type ProductLotRow = {
+  id: number;
+  product_id: number;
+  fixed_fabric_id: number | null;
+  use_fabric_image: boolean | null;
+  title: string;
+  description: string;
+  total_units: number;
+  reserved_units: number;
+  regular_unit_price: number;
+  lot_unit_price: number;
+  status: string;
+  only_members: boolean;
+  image: string | null;
+  completed_at: string | null;
+  completion_email_sent_at: string | null;
+  admin_notified_at: string | null;
+  deleted_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+export type ProductLotReservationRow = {
+  id: number;
+  lot_id: number;
+  user_id: number;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  status: string;
+  notes: string | null;
+  confirmed_at: string | null;
+  cancelled_at: string | null;
+  cancel_reason: string | null;
+  admin_note: string | null;
+  confirmed_by_user_id: number | null;
+  cancelled_by_user_id: number | null;
+  lot_title_snapshot: string | null;
+  product_sku_snapshot: string | null;
+  product_name_snapshot: string | null;
+  fabric_name_snapshot: string | null;
+  lot_image_snapshot: string | null;
+  user_name: string | null;
+  user_email: string | null;
+  product_id: number;
+  fixed_fabric_id: number | null;
+  fixed_fabric_name: string | null;
+  product_sku: string | null;
+  product_name: string | null;
+  lot_title: string | null;
+  lot_image: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 };
 export type ProductFabricVariantRow = {
   product_id: number;
@@ -151,6 +206,8 @@ export function mapSiteContentDocument(params: {
   heroSlides: HeroSlideRow[];
   banners: BannerRow[];
   products: ProductRow[];
+  productLots?: ProductLotRow[];
+  productLotReservations?: ProductLotReservationRow[];
   productFabricVariants: ProductFabricVariantRow[];
   packs?: PackRow[];
   packItems?: PackItemRow[];
@@ -165,6 +222,8 @@ export function mapSiteContentDocument(params: {
     heroSlides,
     banners,
     products,
+    productLots = [],
+    productLotReservations = [],
     productFabricVariants,
     packs = [],
     packItems = [],
@@ -232,6 +291,95 @@ export function mapSiteContentDocument(params: {
     return mapped;
   });
 
+  const mappedLots: ProductLotItem[] = productLots
+    .filter((lot) => lot.deleted_at == null)
+    .map((lot) => {
+      const totalUnits = Number(lot.total_units) || 0;
+      const reservedUnits = Number(lot.reserved_units) || 0;
+      const availableUnits = Math.max(0, totalUnits - reservedUnits);
+      const fixedFabricId = lot.fixed_fabric_id ?? null;
+      const product = productMap.get(lot.product_id);
+      const resolvedFabric = product?.fabricVariants?.find((variant) => variant.fabricId === fixedFabricId);
+      const resolvedImage = lot.use_fabric_image ? resolvedFabric?.image ?? lot.image ?? undefined : lot.image ?? undefined;
+
+      return {
+        id: lot.id,
+        productId: lot.product_id,
+        productSku: product?.sku,
+        productName: product?.name,
+        fixedFabricId,
+        fixedFabricName: resolvedFabric?.fabricName,
+        useFabricImage: Boolean(lot.use_fabric_image),
+        title: lot.title,
+        description: lot.description,
+        totalUnits,
+        reservedUnits,
+        availableUnits,
+        regularUnitPrice: Number(lot.regular_unit_price) || 0,
+        lotUnitPrice: Number(lot.lot_unit_price) || 0,
+        status: lot.status,
+        onlyMembers: Boolean(lot.only_members),
+        image: resolvedImage,
+        completedAt: lot.completed_at ?? undefined,
+        completionEmailSentAt: lot.completion_email_sent_at ?? undefined,
+        adminNotifiedAt: lot.admin_notified_at ?? undefined,
+        createdAt: lot.created_at ?? undefined,
+        updatedAt: lot.updated_at ?? undefined,
+      } satisfies ProductLotItem;
+    });
+
+  const lotsByProduct = new Map<number, ProductLotItem[]>();
+  const activeLotByProduct = new Map<number, ProductLotItem>();
+
+  for (const lot of mappedLots) {
+    const lots = lotsByProduct.get(lot.productId) ?? [];
+    lots.push(lot);
+    lotsByProduct.set(lot.productId, lots);
+
+    const currentActive = activeLotByProduct.get(lot.productId);
+    const isActiveStatus = ["open", "published", "active", "reservable"].includes(String(lot.status).toLowerCase());
+    if (
+      isActiveStatus &&
+      lot.availableUnits > 0 &&
+      (!currentActive || currentActive.availableUnits < lot.availableUnits || (currentActive.updatedAt ?? "") < (lot.updatedAt ?? ""))
+    ) {
+      activeLotByProduct.set(lot.productId, lot);
+    }
+  }
+
+  for (const product of mappedProducts) {
+    product.lotOffers = lotsByProduct.get(product.id) ?? [];
+    product.activeLot = activeLotByProduct.get(product.id) ?? null;
+  }
+
+  const mappedReservations: ProductLotReservationItem[] = productLotReservations.map((reservation) => ({
+    id: reservation.id,
+    lotId: reservation.lot_id,
+    userId: reservation.user_id,
+    userName: reservation.user_name ?? undefined,
+    userEmail: reservation.user_email ?? undefined,
+    lotTitle: reservation.lot_title_snapshot ?? reservation.lot_title ?? undefined,
+    productId: reservation.product_id,
+    productSku: reservation.product_sku_snapshot ?? reservation.product_sku ?? undefined,
+    productName: reservation.product_name_snapshot ?? reservation.product_name ?? undefined,
+    fixedFabricId: reservation.fixed_fabric_id ?? undefined,
+    fixedFabricName: reservation.fixed_fabric_name ?? reservation.fabric_name_snapshot ?? undefined,
+    lotImage: reservation.lot_image_snapshot ?? reservation.lot_image ?? undefined,
+    quantity: Number(reservation.quantity) || 0,
+    unitPrice: Number(reservation.unit_price) || 0,
+    totalPrice: Number(reservation.total_price) || 0,
+    status: reservation.status,
+    notes: reservation.notes ?? undefined,
+    confirmedAt: reservation.confirmed_at ?? undefined,
+    cancelledAt: reservation.cancelled_at ?? undefined,
+    cancelReason: reservation.cancel_reason ?? undefined,
+    adminNote: reservation.admin_note ?? undefined,
+    confirmedByUserId: reservation.confirmed_by_user_id ?? undefined,
+    cancelledByUserId: reservation.cancelled_by_user_id ?? undefined,
+    createdAt: reservation.created_at ?? undefined,
+    updatedAt: reservation.updated_at ?? undefined,
+  }));
+
   const mappedPacks: PackItem[] = packs.map((pack) => {
     const itemRows = packItems
       .filter((item) => item.pack_id === pack.id)
@@ -293,8 +441,10 @@ export function mapSiteContentDocument(params: {
       text: banner.text,
       order: banner.order_index,
       active: banner.active,
-    })),
+    })), 
     products: mappedProducts,
+    productLots: mappedLots,
+    productLotReservations: mappedReservations,
     packs: mappedPacks,
     brands: brands.map((brand) => ({
       id: brand.id,

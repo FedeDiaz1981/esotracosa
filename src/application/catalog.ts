@@ -1,4 +1,4 @@
-import { getSiteContent } from "@/infrastructure/site-content.repository";
+﻿import { getSiteContent } from "@/infrastructure/site-content.repository";
 import type { ViewerSession } from "@/domain/viewer";
 import type {
   BrandItem,
@@ -7,6 +7,7 @@ import type {
   BannerItem,
   HomePageViewModel,
   PackItem,
+  ProductLotItem,
   ProductItem,
 } from "@/domain/site-content";
 import { normalizeText } from "@/lib/catalog";
@@ -311,18 +312,33 @@ function buildTrendingProducts(products: ProductItem[], limit = 12) {
     .slice(0, limit);
 }
 
+function buildCollectivePurchaseLots(products: ProductItem[], lots: ProductLotItem[], limit = 8) {
+  const visibleProductIds = new Set(products.map((product) => product.id));
+
+  return lots
+    .filter((lot) => Boolean(lot.productSku))
+    .filter((lot) => visibleProductIds.has(lot.productId))
+    .filter((lot) => lot.availableUnits > 0)
+    .filter((lot) => ["open", "published", "active", "reservable"].includes(String(lot.status).toLowerCase()))
+    .filter((lot) => Boolean(lot.fixedFabricId))
+    .sort((left, right) => {
+      const savingsLeft = Math.max(0, left.regularUnitPrice - left.lotUnitPrice);
+      const savingsRight = Math.max(0, right.regularUnitPrice - right.lotUnitPrice);
+
+      return (
+        savingsRight - savingsLeft ||
+        right.availableUnits - left.availableUnits ||
+        (right.updatedAt ?? "").localeCompare(left.updatedAt ?? "")
+      );
+    })
+    .slice(0, limit);
+}
+
 export async function getDynamicHeaderMenus(): Promise<DynamicHeaderMenu[]> {
   const content = await getSiteContent();
-  const activeBrands = content.brands.filter((brand) => brand.active !== false);
   const visibleCategories = (content.categories ?? []).filter((category) => category.visible);
 
   return [
-    buildDynamicMenu<BrandItem>(activeBrands, {
-      key: "brands",
-      label: "Marcas",
-      href: "/galeria?brand=",
-      linkFor: (brand) => "/galeria?brand=" + encodeURIComponent(brand.name),
-    }),
     buildDynamicMenu<CategoryItem>(visibleCategories, {
       key: "categories",
       label: "Categorías",
@@ -350,6 +366,7 @@ export async function getHomePageViewModel(viewer?: CatalogViewer): Promise<Home
   const spotlightSlide = heroSlides.find((item) => item.homeSpotlight) ?? heroSlides[0] ?? null;
   const featuredProducts = buildFeaturedProducts(visibleProducts, 12);
   const trendingProducts = buildTrendingProducts(visibleProducts, 8);
+  const collectivePurchaseLots = buildCollectivePurchaseLots(visibleProducts, content.productLots ?? [], 8);
   const activePromotions = [...(content.packs ?? [])]
     .filter((item) => item.active && item.items.length > 0)
     .sort((left, right) => (left.order ?? 0) - (right.order ?? 0) || left.title.localeCompare(right.title, "es", { sensitivity: "base" }));
@@ -371,6 +388,7 @@ export async function getHomePageViewModel(viewer?: CatalogViewer): Promise<Home
     homeMenuCategories,
     featuredProducts,
     trendingProducts,
+    collectivePurchaseLots,
     activePromotions,
     featuredBrands,
     stats: [
@@ -436,3 +454,4 @@ export async function getPacksGalleryPageViewModel(query = ""): Promise<PacksGal
     totalPacks: packs.length,
   };
 }
+

@@ -16,8 +16,13 @@ export const fetchCache = "force-no-store";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Pintofruta Store",
-  description: "Proyecto dinÃ¡mico basado en la maqueta estÃ¡tica de Pintofruta.",
+  title: "Es otra cosa",
+  description: "Proyecto dinámico basado en la maqueta estática de Es otra cosa.",
+  icons: {
+    icon: "/assets/images/logo/logo_v2.png",
+    shortcut: "/assets/images/logo/logo_v2.png",
+    apple: "/assets/images/logo/logo_v2.png",
+  },
 };
 
 export default async function RootLayout({

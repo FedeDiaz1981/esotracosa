@@ -13,6 +13,8 @@ import {
   type PackItemRow,
   type PackRow,
   type HeroSlideRow,
+  type ProductLotRow,
+  type ProductLotReservationRow,
   type ProductFabricVariantRow,
   type NavGroupRow,
   type NavItemRow,
@@ -74,6 +76,53 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
       client,
       "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, images, fabric_ids, related_product_ids, only_members, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by id",
     );
+    const productLotRows = await readRows<ProductLotRow>(
+      client,
+      "select id, product_id, fixed_fabric_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price, status, only_members, image, completed_at, completion_email_sent_at, admin_notified_at, deleted_at, created_at, updated_at from product_lots where deleted_at is null order by created_at desc, id desc",
+    );
+    const productLotReservationRows = await readRows<ProductLotReservationRow>(
+      client,
+      `
+        select
+          r.id,
+          r.lot_id,
+          r.user_id,
+          r.quantity,
+          r.unit_price,
+          r.total_price,
+          r.status,
+          r.notes,
+          r.confirmed_at,
+          r.cancelled_at,
+          r.cancel_reason,
+          r.admin_note,
+          r.confirmed_by_user_id,
+          r.cancelled_by_user_id,
+          r.lot_title_snapshot,
+          r.product_sku_snapshot,
+          r.product_name_snapshot,
+          r.fabric_name_snapshot,
+          r.lot_image_snapshot,
+          u.name as user_name,
+          u.email as user_email,
+          pl.product_id,
+          pl.fixed_fabric_id,
+          f.name as fixed_fabric_name,
+          p.sku as product_sku,
+          p.name as product_name,
+          pl.title as lot_title,
+          pl.image as lot_image,
+          r.created_at,
+          r.updated_at
+        from product_lot_reservations r
+        inner join product_lots pl on pl.id = r.lot_id
+        inner join products p on p.id = pl.product_id
+        inner join users u on u.id = r.user_id
+        left join fabrics f on f.id = pl.fixed_fabric_id
+        where pl.deleted_at is null and p.deleted_at is null
+        order by r.created_at desc, r.id desc
+      `,
+    );
     const productFabricVariantRows = await readRows<ProductFabricVariantRow>(
       client,
       "select product_id, fabric_id, image, sort_order, created_at, updated_at from product_fabric_variants order by product_id, sort_order, fabric_id",
@@ -111,6 +160,8 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
       heroSlides: heroSlidesRows,
       banners: bannerRows,
       products: productRows,
+      productLots: productLotRows,
+      productLotReservations: productLotReservationRows,
       productFabricVariants: productFabricVariantRows,
       packs: packRows,
       packItems: packItemRows,

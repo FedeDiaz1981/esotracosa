@@ -88,6 +88,11 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
             </form>
 
             <div className="flex items-center justify-end gap-2">
+              {viewer?.authenticated ? (
+                <Link href="/mis-reservas" className={`${buttonVariants({ variant: "secondary", size: "md" })} hidden lg:inline-flex`}>
+                  Mis reservas
+                </Link>
+              ) : null}
               <button
                 type="button"
                 onClick={openAuthModal}

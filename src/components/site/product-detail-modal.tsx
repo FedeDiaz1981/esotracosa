@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { recordProductView } from "@/app/catalog-actions";
 import { useViewer } from "@/components/auth/viewer-provider";
 import { CartAddButton } from "@/components/cart/cart-add-button";
+import { ProductLotOffer } from "@/components/site/product-lot-offer";
 import type { ProductItem } from "@/domain/site-content";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
@@ -131,6 +132,10 @@ export function ProductDetailModal({
   const shortDescription = shouldTruncateDescription
     ? `${fullDescription.slice(0, truncatedDescriptionLimit).trimEnd()}...`
     : fullDescription;
+  const activeLot =
+    product?.activeLot ??
+    product?.lotOffers?.find((item) => item.availableUnits > 0 && ["open", "published", "active", "reservable"].includes(item.status)) ??
+    null;
 
   const safeQuantity = Math.min(Math.max(quantity, 1), maxQuantity);
   const unitPrice = product ? resolveProductUnitPrice(product) : 0;
@@ -234,6 +239,8 @@ export function ProductDetailModal({
                   </div>
                 </div>
               </div>
+
+              {activeLot ? <ProductLotOffer product={product} lot={activeLot} /> : null}
 
               <div className="rounded-[1.75rem] border border-[rgba(224,208,180,0.55)] bg-[rgba(245,239,228,0.55)] p-5">
                 <p className="text-xs uppercase tracking-[0.32em] text-[var(--pf-muted)]">Total</p>

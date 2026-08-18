@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { House, Menu, Search, UserRound, X } from "lucide-react";
+import { ClipboardList, House, Menu, Search, UserRound, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -110,7 +110,7 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
   const searchButtonRef = useRef<HTMLButtonElement>(null);
   void menus;
 
-  const navColumns = viewer?.isAdmin ? "repeat(4, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))";
+  const navColumns = viewer?.isAdmin ? "repeat(5, minmax(0, 1fr))" : viewer?.authenticated ? "repeat(4, minmax(0, 1fr))" : "repeat(3, minmax(0, 1fr))";
 
   useEffect(() => {
     const searchButton = searchButtonRef.current;
@@ -177,6 +177,16 @@ export function MobileSiteChrome({ menus }: MobileSiteChromeProps) {
           >
             <Search className="size-5" />
           </button>
+
+          {viewer?.authenticated ? (
+            <Link
+              href="/mis-reservas"
+              className="flex h-12 flex-col items-center justify-center rounded-xl text-[var(--pf-primary-darker)] transition hover:bg-[rgba(200,154,21,0.08)]"
+              aria-label="Mis reservas"
+            >
+              <ClipboardList className="size-5" />
+            </Link>
+          ) : null}
 
           {viewer?.isAdmin ? (
             <Link

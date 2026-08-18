@@ -15,7 +15,7 @@ function accentWord(word: string, index: number) {
 
   return (
     <span key={`${clean}-${index}`} className="inline-flex text-[#fbf8f2]">
-      <span className="text-[#e33226]">{first.toUpperCase()}</span>
+      <span className="text-[#fbf8f2]">{first.toUpperCase()}</span>
       <span className="text-[#fbf8f2]">{rest}</span>
     </span>
   );

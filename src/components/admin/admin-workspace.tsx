@@ -7,6 +7,7 @@ import { deleteAdminRecord, deleteAdminRecords, saveAdminRecord } from "@/app/ad
 import type {
   AdminCrudViewModel,
   AdminFieldDefinition,
+  AdminFieldOption,
   AdminTableDefinition,
   AdminTableKey,
 } from "@/application/admin-crud";
@@ -66,8 +67,22 @@ function getInitials(name: string) {
   return initials || "PF";
 }
 
+function getProductFabricOptions(product: ProductItem | undefined): AdminFieldOption[] {
+  if (!product?.fabricVariants?.length) {
+    return [];
+  }
+
+  return product.fabricVariants.map((variant) => ({
+    value: String(variant.fabricId),
+    label: variant.fabricName || `Tela ${variant.fabricId}`,
+  }));
+}
+
 const sidebarSections: { title: string; keys: AdminTableKey[] }[] = [
-  { title: "Listas", keys: ["products", "packs", "brands", "fabrics", "categories", "users"] },
+  {
+    title: "Listas",
+    keys: ["products", "product_lots", "product_lot_reservations", "packs", "fabrics", "categories", "users"],
+  },
   { title: "Contenido", keys: ["hero_slides", "banners"] },
 ];
 
@@ -152,7 +167,7 @@ function emptyDraftFor(table: AdminTableDefinition): DraftRecord {
 
   for (const field of table.fields) {
     if (field.kind === "boolean") {
-      draft[field.key] = ["active", "visible", "homeMenu"].includes(field.key);
+      draft[field.key] = ["active", "visible", "homeMenu"].includes(field.key) || (table.key === "product_lots" && field.key === "onlyMembers");
       continue;
     }
 
@@ -182,6 +197,16 @@ function draftFromRow(table: AdminTableDefinition, row: Record<string, unknown> 
   for (const field of table.fields) {
     if (table.key === "products" && field.kind === "template_rows") {
       draft[field.key] = toDraftValue(field, row.template_row_map ?? row.templateRowMap);
+      continue;
+    }
+
+    if (table.key === "product_lots" && field.key === "fixedFabricId") {
+      draft[field.key] = toDraftValue(field, row.fixedFabricId ?? row.fixed_fabric_id);
+      continue;
+    }
+
+    if (table.key === "product_lots" && field.key === "useFabricImage") {
+      draft[field.key] = Boolean(row.useFabricImage ?? row.use_fabric_image);
       continue;
     }
 
@@ -479,6 +504,8 @@ function getCreateLabel(table: AdminTableDefinition) {
       return "Nuevo carrusel";
     case "products":
       return "Nuevo producto";
+    case "product_lots":
+      return "Nuevo lote";
     case "packs":
       return "Nueva promoción";
     case "brands":
@@ -770,6 +797,13 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
     () => new Map((selectedTable?.fields ?? []).map((field) => [field.key, field] as const)),
     [selectedTable],
   );
+  const productRowsById = useMemo(
+    () => new Map(productSelectionRows.map((product) => [product.id, product] as const)),
+    [productSelectionRows],
+  );
+  const selectedLotProductId = selectedTable?.key === "product_lots" ? Number(editor?.draft.productId ?? 0) : 0;
+  const selectedLotProduct = selectedLotProductId > 0 ? productRowsById.get(selectedLotProductId) : undefined;
+  const selectedLotFabricOptions = useMemo(() => getProductFabricOptions(selectedLotProduct), [selectedLotProduct]);
 
   const visibleRows = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -874,6 +908,51 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
     setSelectedRowId((current) => (current === rowId ? "" : current));
   }
 
+  async function handleConfirmReservation(row: Record<string, unknown>) {
+    const reservationId = Number(row.id);
+    if (!reservationId) {
+      return;
+    }
+
+    const response = await fetch("/api/lotes/confirmar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reservationId }),
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || "No se pudo confirmar la reserva.");
+    }
+  }
+
+  async function handleCancelReservation(row: Record<string, unknown>) {
+    const reservationId = Number(row.id);
+    if (!reservationId) {
+      return;
+    }
+
+    const reason = window.prompt("Motivo de la anulación", String(row.cancelReason ?? row.cancel_reason ?? ""));
+    if (reason === null) {
+      return;
+    }
+
+    const response = await fetch("/api/lotes/cancelar", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ reservationId, reason }),
+    });
+
+    const payload = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || "No se pudo anular la reserva.");
+    }
+  }
+
   function openNew(table: AdminTableDefinition) {
     setSelectedTableKey(table.key);
     setSelectedRowId("");
@@ -918,15 +997,14 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
   return (
     <main className="pf-admin min-h-screen bg-[radial-gradient(circle_at_top,_rgba(255,252,246,0.98),_rgba(244,235,221,0.96)_44%,_rgba(232,218,194,0.98))] text-[var(--pf-text)]">
       <div className="mx-auto flex min-h-screen max-w-[1600px] flex-col xl:flex-row">
-        <aside className="border-b border-[var(--pf-border)] bg-[linear-gradient(180deg,var(--pf-primary-darker)_0%,var(--pf-primary-dark)_52%,var(--pf-primary)_100%)] px-4 py-5 text-[#fff8ee] shadow-[inset_-1px_0_0_rgba(255,255,255,0.05)] xl:w-[300px] xl:border-b-0 xl:border-r xl:px-5 xl:py-6">
-          <div className="rounded-[28px] border border-white/10 bg-white/10 p-4 shadow-[0_20px_50px_rgba(29,24,20,0.14)]">
+        <aside className="border-b border-[rgba(200,154,21,0.26)] bg-[#0b0b0b] px-4 py-5 text-[#fbf8f2] shadow-[inset_-1px_0_0_rgba(200,154,21,0.14)] xl:w-[300px] xl:border-b-0 xl:border-r xl:px-5 xl:py-6">
+          <div className="rounded-[28px] border border-[rgba(200,154,21,0.18)] bg-[rgba(255,255,255,0.04)] p-4 shadow-[0_20px_50px_rgba(29,24,20,0.18)]">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,var(--pf-secondary-dark)_0%,var(--pf-primary)_100%)] text-lg font-black tracking-tight text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[linear-gradient(180deg,var(--pf-secondary-dark)_0%,var(--pf-primary)_100%)] text-lg font-black tracking-tight text-white shadow-[0_8px_18px_rgba(200,154,21,0.22)]">
                 {getInitials(viewerName)}
               </div>
               <div>
-                <p className="text-lg font-semibold text-[var(--pf-secondary-faint)]">Pintofruta</p>
-                <p className="text-sm text-[#f8f1e7]/80">Panel de administracion</p>
+                <p className="text-sm text-[#fbf8f2]/78">Panel de administración</p>
               </div>
             </div>
           </div>
@@ -941,11 +1019,11 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                 return null;
               }
 
-                return (
-                  <div key={section.title}>
-                    <div className="mb-3 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.34em] text-[#f8f1e7]/70">
-                      <span>{section.title}</span>
-                    </div>
+              return (
+                <div key={section.title}>
+                  <div className="mb-3 flex items-center justify-between text-[11px] font-black uppercase tracking-[0.34em] text-[#fbf8f2]/72">
+                    <span>{section.title}</span>
+                  </div>
                   <div className="space-y-2">
                     {sectionTables.map((table) => {
                       const active = table.key === selectedTable.key;
@@ -964,12 +1042,18 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                           }}
                           className={`flex w-full items-center justify-between rounded-[18px] px-4 py-4 text-left transition ${
                             active
-                              ? "bg-[linear-gradient(90deg,var(--pf-secondary-light)_0%,var(--pf-secondary)_100%)] text-[var(--pf-text)] shadow-[0_14px_30px_rgba(200,154,21,0.18)]"
-                              : "bg-transparent text-[#f8f1e7]/80 hover:bg-white/10"
+                              ? "border border-[rgba(200,154,21,0.18)] bg-[rgba(200,154,21,0.12)] text-[#fbf8f2] shadow-[0_14px_30px_rgba(200,154,21,0.14)]"
+                              : "border border-transparent bg-transparent text-[#fbf8f2]/78 hover:border-[rgba(200,154,21,0.12)] hover:bg-[rgba(255,255,255,0.05)]"
                           }`}
                         >
                           <span className="text-sm font-semibold">{table.label}</span>
-                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${active ? "bg-white/40" : "bg-white/10"}`}>
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                              active
+                                ? "bg-[rgba(200,154,21,0.26)] text-[#fbf8f2]"
+                                : "bg-[rgba(255,255,255,0.06)] text-[#fbf8f2]/72"
+                            }`}
+                          >
                             {getSidebarCount(table)}
                           </span>
                         </button>
@@ -980,7 +1064,6 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
               );
             })}
           </nav>
-
         </aside>
 
         <section className="flex-1 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
@@ -993,22 +1076,14 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                 </h1>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-3 2xl:w-[960px] 2xl:grid-cols-7">
+              <div className="grid gap-3 sm:grid-cols-2 xl:w-[860px] xl:grid-cols-3 2xl:w-[960px] 2xl:grid-cols-5">
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
                   <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Productos</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.products}</p>
                 </div>
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Promociones</p>
-                  <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.packs}</p>
-                </div>
-                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
                   <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Categorías</p>
                   <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.categories}</p>
-                </div>
-                <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
-                  <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Marcas</p>
-                  <p className="text-2xl font-black leading-none text-[var(--pf-text)]">{overview.counts.brands}</p>
                 </div>
                 <div className="flex min-h-[94px] min-w-[132px] flex-col justify-between overflow-hidden rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4 shadow-[0_10px_25px_rgba(58,44,25,0.06)]">
                   <p className="truncate text-[9px] font-black uppercase leading-none tracking-[0.22em] text-[var(--pf-muted)]">Telas</p>
@@ -1038,7 +1113,7 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
               </label>
 
               <div className="flex flex-wrap gap-3">
-                {selectedRowIds.length > 0 ? (
+                {selectedRowIds.length > 0 && selectedTable.key !== "product_lot_reservations" ? (
                   <button
                     type="button"
                     onClick={handleBulkDelete}
@@ -1048,13 +1123,15 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                   </button>
                 ) : null}
 
-                <button
-                  type="button"
-                  onClick={() => openNew(selectedTable)}
-                  className="inline-flex h-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(200,154,21,0.22)] transition hover:brightness-105"
-                >
-                  {getCreateLabel(selectedTable)}
-                </button>
+                {selectedTable.key !== "product_lot_reservations" ? (
+                  <button
+                    type="button"
+                    onClick={() => openNew(selectedTable)}
+                    className="inline-flex h-14 items-center justify-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft)_0%,var(--pf-primary)_100%)] px-6 text-sm font-black text-white shadow-[0_14px_30px_rgba(200,154,21,0.22)] transition hover:brightness-105"
+                  >
+                    {getCreateLabel(selectedTable)}
+                  </button>
+                ) : null}
               </div>
 
               <Link
@@ -1185,21 +1262,56 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                               })}
                               <td className="px-5 py-4 align-top">
                                 <div className="flex flex-wrap gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => openEdit(selectedTable, row)}
-                                    className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
-                                  >
-                                    Editar
-                                  </button>
+                                  {selectedTable.key === "product_lot_reservations" ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          try {
+                                            await handleConfirmReservation(row);
+                                            window.location.reload();
+                                          } catch (error) {
+                                            window.alert(error instanceof Error ? error.message : "No se pudo confirmar.");
+                                          }
+                                        }}
+                                        className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
+                                      >
+                                        Confirmar
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          try {
+                                            await handleCancelReservation(row);
+                                            window.location.reload();
+                                          } catch (error) {
+                                            window.alert(error instanceof Error ? error.message : "No se pudo anular.");
+                                          }
+                                        }}
+                                        className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary-darker)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
+                                      >
+                                        Anular
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => openEdit(selectedTable, row)}
+                                        className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
+                                      >
+                                        Editar
+                                      </button>
 
-                                  <button
-                                    type="button"
-                                    onClick={() => handleQuickDelete(selectedTable, row)}
-                                    className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary-darker)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
-                                  >
-                                    Borrar
-                                  </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleQuickDelete(selectedTable, row)}
+                                        className="rounded-full border border-[rgba(29,24,20,0.18)] bg-[var(--pf-primary-darker)] px-4 py-2 text-xs font-bold text-white transition hover:brightness-105"
+                                      >
+                                        Borrar
+                                      </button>
+                                    </>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -1505,7 +1617,12 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                   }
 
                   if (field.kind === "select") {
-                    const options = field.options ?? [];
+                    const options =
+                      selectedTable.key === "product_lots" && field.key === "fixedFabricId"
+                        ? selectedLotFabricOptions
+                        : field.options ?? [];
+                    const isLotProductSelect = selectedTable.key === "product_lots" && field.key === "productId";
+                    const isLotFabricSelect = selectedTable.key === "product_lots" && field.key === "fixedFabricId";
 
                     return (
                       <label key={field.key} className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
@@ -1522,12 +1639,20 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                               current
                                 ? {
                                     ...current,
-                                    draft: { ...current.draft, [field.key]: event.target.value },
+                                    draft: {
+                                      ...current.draft,
+                                      [field.key]: event.target.value,
+                                      ...(isLotProductSelect &&
+                                      String(current.draft[field.key] ?? "") !== event.target.value
+                                        ? { fixedFabricId: "" }
+                                        : {}),
+                                    },
                                   }
                                 : current,
                             )
                           }
                           className="w-full rounded-[22px] border border-[var(--pf-border-soft)] bg-white px-4 py-3 text-sm text-[var(--pf-text)] outline-none transition focus:border-[var(--pf-primary)]"
+                          disabled={isLotFabricSelect && options.length === 0}
                         >
                           <option value="">Seleccionar...</option>
                           {options.map((option) => (
@@ -1536,6 +1661,11 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                             </option>
                           ))}
                         </select>
+                        {isLotFabricSelect && options.length === 0 ? (
+                          <p className="mt-2 text-xs text-[var(--pf-muted)]">
+                            Primero elegí un producto con telas cargadas para poder fijar la tela del lote.
+                          </p>
+                        ) : null}
                       </label>
                     );
                   }
@@ -2107,6 +2237,57 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                     const imageValue = typeof value === "string" ? value.trim() : "";
                     const selectedFileName = fileNames[field.key] ?? "";
                     const uploadState = uploadStates[field.key];
+                    const isLotImageField = selectedTable.key === "product_lots" && field.key === "image";
+                    const useFabricImage = isLotImageField && Boolean(editor?.draft.useFabricImage);
+                    const selectedFabricId = Number(editor?.draft.fixedFabricId ?? 0);
+                    const selectedFabricVariant = selectedLotProduct?.fabricVariants?.find(
+                      (variant) => variant.fabricId === selectedFabricId,
+                    );
+                    const fabricImage = selectedFabricVariant?.image?.trim() ?? "";
+
+                    if (isLotImageField && useFabricImage) {
+                      return (
+                        <div key={field.key} className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
+                          <div className="mb-2 flex items-center justify-between gap-3">
+                            <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">
+                              {field.label}
+                            </span>
+                            {field.helper ? <span className="text-xs text-[var(--pf-muted)]">{field.helper}</span> : null}
+                          </div>
+
+                          <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
+                            <div className="rounded-[18px] border border-dashed border-[rgba(200,154,21,0.24)] bg-[rgba(200,154,21,0.05)] px-4 py-4 text-sm text-[var(--pf-primary-darker)]">
+                              La imagen del lote se tomará de la tela fija seleccionada.
+                            </div>
+
+                            {fabricImage ? (
+                              <div className="overflow-hidden rounded-[18px] border border-[var(--pf-border-soft)] bg-[#f7f4ee]">
+                                <div className="flex items-center justify-between border-b border-[var(--pf-border-soft)] px-4 py-2">
+                                  <span className="text-[11px] font-black uppercase tracking-[0.24em] text-[var(--pf-muted)]">
+                                    Imagen de la tela
+                                  </span>
+                                  <span className="truncate text-xs text-[var(--pf-muted)]">
+                                    {selectedFabricVariant?.fabricName || `Tela ${selectedFabricId}`}
+                                  </span>
+                                </div>
+                                <div className="flex justify-center p-4">
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={fabricImage}
+                                    alt={selectedFabricVariant?.fabricName || `Tela ${selectedFabricId}`}
+                                    className="max-h-48 w-auto rounded-[16px] object-contain"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="rounded-[18px] border border-dashed border-[var(--pf-border-soft)] bg-[rgba(245,243,239,0.6)] px-4 py-5 text-sm text-[var(--pf-muted)]">
+                                La tela fija seleccionada todavía no tiene imagen cargada.
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    }
 
                     return (
                       <div key={field.key} className={`block ${fullWidth ? "md:col-span-2" : ""}`}>

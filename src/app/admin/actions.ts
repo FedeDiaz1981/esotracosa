@@ -662,6 +662,174 @@ async function savePack(record: PayloadRecord, formData: FormData) {
   }
 }
 
+async function saveProductLot(record: PayloadRecord) {
+  const providedId = record.id == null || record.id === "" ? 0 : toNumber(record.id);
+  const existingResult = providedId
+    ? await postgresPool!.query<{
+        product_id: number;
+        fixed_fabric_id: number | null;
+        use_fabric_image: boolean | null;
+        title: string;
+        description: string;
+        total_units: number;
+        reserved_units: number;
+        regular_unit_price: number;
+        lot_unit_price: number;
+        status: string;
+        only_members: boolean;
+        image: string | null;
+      }>(
+        `select product_id, fixed_fabric_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price, status, only_members, image
+         from product_lots
+         where id = $1
+         limit 1`,
+        [providedId],
+      )
+    : null;
+  const existing = existingResult?.rows[0];
+  const id = providedId || (await nextNumericId("product_lots"));
+  const productId = toNumber(record.productId);
+
+  if (productId <= 0) {
+    throw new Error("El lote necesita un producto.");
+  }
+
+  const productResult = await postgresPool!.query<{ id: number; sku: string; name: string; public_price: number }>(
+    "select id, sku, name, public_price from products where id = $1 and deleted_at is null limit 1",
+    [productId],
+  );
+  const product = productResult.rows[0];
+
+  if (!product) {
+    throw new Error("El producto del lote no existe.");
+  }
+
+  const title = toStringValue(record.title) || `${product.name} - Lote`;
+  const description = toStringValue(record.description) || existing?.description || "";
+  const totalUnits = Math.max(1, toNumber(record.totalUnits) || existing?.total_units || 1);
+  const reservedUnits =
+    record.reservedUnits == null || record.reservedUnits === "" ? existing?.reserved_units ?? 0 : Math.max(0, toNumber(record.reservedUnits));
+  const regularUnitPrice = Math.max(1, toNumber(record.regularUnitPrice) || existing?.regular_unit_price || product.public_price);
+  const lotUnitPrice = Math.max(1, toNumber(record.lotUnitPrice) || existing?.lot_unit_price || regularUnitPrice);
+  const status = toStringValue(record.status) || existing?.status || "draft";
+  const onlyMembers =
+    record.onlyMembers == null || record.onlyMembers === "" ? existing?.only_members ?? true : toBoolean(record.onlyMembers);
+  const useFabricImage =
+    record.useFabricImage == null || record.useFabricImage === "" ? existing?.use_fabric_image ?? false : toBoolean(record.useFabricImage);
+  const rawFixedFabricId =
+    record.fixedFabricId == null || record.fixedFabricId === "" ? existing?.fixed_fabric_id ?? null : toNumber(record.fixedFabricId);
+  const fixedFabricId =
+    typeof rawFixedFabricId === "number" && Number.isFinite(rawFixedFabricId) && rawFixedFabricId > 0 ? rawFixedFabricId : null;
+  const fabricVariantRows = await postgresPool!.query<{ fabric_id: number; image: string }>(
+    `select fabric_id, image
+     from product_fabric_variants
+     where product_id = $1
+     order by sort_order, fabric_id`,
+    [productId],
+  );
+  const fabricVariantMap = new Map(fabricVariantRows.rows.map((variant) => [variant.fabric_id, variant.image]));
+
+  if (fabricVariantRows.rows.length > 0 && !fixedFabricId) {
+    throw new Error("El lote necesita una tela fija para este producto.");
+  }
+
+  if (fixedFabricId != null && !fabricVariantMap.has(fixedFabricId)) {
+    throw new Error("La tela fija elegida no pertenece a este producto.");
+  }
+
+  const fabricImage = fixedFabricId != null ? fabricVariantMap.get(fixedFabricId) ?? null : null;
+  if (useFabricImage && !fabricImage) {
+    throw new Error("La tela fija elegida no tiene imagen cargada.");
+  }
+
+  const image = useFabricImage ? null : toStringValue(record.image) || existing?.image || null;
+
+  if (!useFabricImage && !image) {
+    throw new Error("El lote necesita una imagen propia o usar la imagen de la tela.");
+  }
+
+  if (reservedUnits > totalUnits) {
+    throw new Error("Las unidades reservadas no pueden superar el total del lote.");
+  }
+
+  await postgresPool!.query(
+    `
+      insert into product_lots (
+        id, product_id, fixed_fabric_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price,
+        status, only_members, image
+      )
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      on conflict (id) do update set
+        product_id = excluded.product_id,
+        fixed_fabric_id = excluded.fixed_fabric_id,
+        use_fabric_image = excluded.use_fabric_image,
+        title = excluded.title,
+        description = excluded.description,
+        total_units = excluded.total_units,
+        reserved_units = excluded.reserved_units,
+        regular_unit_price = excluded.regular_unit_price,
+        lot_unit_price = excluded.lot_unit_price,
+        status = excluded.status,
+        only_members = excluded.only_members,
+        image = excluded.image,
+        updated_at = now()
+    `,
+    [id, productId, fixedFabricId, useFabricImage, title, description, totalUnits, reservedUnits, regularUnitPrice, lotUnitPrice, status, onlyMembers, image],
+  );
+}
+
+async function saveProductLotReservation(record: PayloadRecord) {
+  const viewer = await requireAdminViewer();
+  const id = toNumber(record.id);
+
+  if (id <= 0) {
+    throw new Error("La reserva necesita un ID válido.");
+  }
+
+  const existingResult = await postgresPool!.query<{
+    lot_id: number;
+    quantity: number;
+    status: string;
+  }>(
+    `select lot_id, quantity, status
+     from product_lot_reservations
+     where id = $1
+     limit 1`,
+    [id],
+  );
+  const existing = existingResult.rows[0];
+
+  if (!existing) {
+    throw new Error("La reserva no existe.");
+  }
+
+  const nextStatus = toStringValue(record.status) || existing.status || "reserved";
+  const notes = toStringValue(record.notes) || null;
+  const adminNote = toStringValue(record.adminNote || record.admin_note) || null;
+  const cancelReason = toStringValue(record.cancelReason || record.cancel_reason) || null;
+  const confirmedAt = nextStatus === "confirmed" ? new Date().toISOString() : null;
+  const cancelledAt = nextStatus === "cancelled" ? new Date().toISOString() : null;
+  const confirmedByUserId = nextStatus === "confirmed" ? viewer.userId : null;
+  const cancelledByUserId = nextStatus === "cancelled" ? viewer.userId : null;
+
+  await postgresPool!.query(
+    `
+      update product_lot_reservations
+      set status = $2,
+          notes = coalesce($3, notes),
+          admin_note = coalesce($4, admin_note),
+          cancel_reason = coalesce($5, cancel_reason),
+          confirmed_at = coalesce($6::timestamptz, confirmed_at),
+          cancelled_at = coalesce($7::timestamptz, cancelled_at),
+          confirmed_by_user_id = coalesce($8, confirmed_by_user_id),
+          cancelled_by_user_id = coalesce($9, cancelled_by_user_id),
+          updated_at = now()
+      where id = $1
+    `,
+    [id, nextStatus, notes, adminNote, cancelReason, confirmedAt, cancelledAt, confirmedByUserId, cancelledByUserId],
+  );
+}
+
 async function saveProduct(record: PayloadRecord) {
   const providedId = record.id == null || record.id === "" ? 0 : toNumber(record.id);
   const existingResult = providedId
@@ -1023,6 +1191,10 @@ async function saveRow(table: AdminTableKey, record: PayloadRecord, formData: Fo
   switch (table) {
     case "products":
       return saveProduct(record);
+    case "product_lots":
+      return saveProductLot(record);
+    case "product_lot_reservations":
+      return saveProductLotReservation(record);
     case "brands":
       return saveBrand(record);
     case "fabrics":
@@ -1056,6 +1228,12 @@ async function deleteRow(table: AdminTableKey, id: string) {
   switch (table) {
     case "products":
       await postgresPool!.query("delete from products where id = $1", [toNumber(id)]);
+      return;
+    case "product_lots":
+      await postgresPool!.query("delete from product_lots where id = $1", [toNumber(id)]);
+      return;
+    case "product_lot_reservations":
+      await postgresPool!.query("delete from product_lot_reservations where id = $1", [toNumber(id)]);
       return;
     case "brands":
       await postgresPool!.query("delete from brands where id = $1", [toStringValue(id)]);

@@ -1,10 +1,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { PackItem, ProductItem } from "@/domain/site-content";
+import type { PackItem, ProductItem, ProductLotItem } from "@/domain/site-content";
 
 export type CartLine = {
-  kind: "product" | "pack";
+  kind: "product" | "pack" | "lot";
   id: number;
   sku: string;
   name: string;
@@ -14,6 +14,11 @@ export type CartLine = {
   publicPrice: number;
   memberPrice: number;
   quantity: number;
+  lotId?: number;
+  reservationId?: number;
+  lotStatus?: string;
+  lotAvailableUnits?: number;
+  lotRegularUnitPrice?: number;
 };
 
 type CartContextValue = {
@@ -25,6 +30,7 @@ type CartContextValue = {
   toggleCart: () => void;
   addItem: (product: ProductItem, quantity?: number) => void;
   addPack: (pack: PackItem, quantity?: number) => void;
+  addLot: (lot: ProductLotItem, quantity?: number, reservationId?: number) => void;
   updateQuantity: (sku: string, quantity: number) => void;
   removeItem: (sku: string) => void;
   clearCart: () => void;
@@ -49,7 +55,7 @@ function safeParseCart(value: string | null): CartLine[] {
 
     return parsed
       .map((item): CartLine => ({
-        kind: item.kind === "pack" ? "pack" : "product",
+        kind: item.kind === "pack" ? "pack" : item.kind === "lot" ? "lot" : "product",
         id: Number(item.id),
         sku: String(item.sku),
         name: String(item.name),
@@ -59,6 +65,11 @@ function safeParseCart(value: string | null): CartLine[] {
         publicPrice: Number(item.publicPrice),
         memberPrice: Number(item.memberPrice ?? item.publicPrice),
         quantity: Math.max(1, Number(item.quantity) || 1),
+        lotId: item.lotId == null ? undefined : Number(item.lotId),
+        reservationId: item.reservationId == null ? undefined : Number(item.reservationId),
+        lotStatus: item.lotStatus ? String(item.lotStatus) : undefined,
+        lotAvailableUnits: item.lotAvailableUnits == null ? undefined : Number(item.lotAvailableUnits),
+        lotRegularUnitPrice: item.lotRegularUnitPrice == null ? undefined : Number(item.lotRegularUnitPrice),
       }))
       .filter((item) => item.sku && Number.isFinite(item.publicPrice) && Number.isFinite(item.memberPrice));
   } catch {
@@ -154,6 +165,48 @@ export function CartProvider({ children }: { children: ReactNode }) {
               publicPrice: pack.publicPrice,
               memberPrice: pack.publicPrice,
               quantity: nextQuantity,
+            },
+          ];
+        });
+      },
+      addLot: (lot, quantity = 1, reservationId) => {
+        setItems((current) => {
+          const nextQuantity = Math.max(1, quantity);
+          const reservationKey = reservationId == null ? undefined : Number(reservationId);
+          const sku = reservationKey ? `LOT-${lot.id}-${reservationKey}` : `LOT-${lot.id}`;
+          const existing = current.find((item) => item.sku === sku);
+
+          if (existing) {
+            return current.map((item) =>
+              item.sku === sku
+                ? {
+                    ...item,
+                    quantity: item.quantity + nextQuantity,
+                    reservationId: reservationKey ?? item.reservationId,
+                    lotAvailableUnits: lot.availableUnits,
+                  }
+                : item,
+            );
+          }
+
+          return [
+            ...current,
+            {
+              kind: "lot",
+              id: lot.id,
+              sku,
+              name: lot.title,
+              brand: lot.productName || lot.productSku || "Lote",
+              presentation: lot.description || `${lot.totalUnits} unidades`,
+              image: lot.image,
+              publicPrice: lot.lotUnitPrice,
+              memberPrice: lot.lotUnitPrice,
+              quantity: nextQuantity,
+              lotId: lot.id,
+              reservationId: reservationKey,
+              lotStatus: lot.status,
+              lotAvailableUnits: lot.availableUnits,
+              lotRegularUnitPrice: lot.regularUnitPrice,
             },
           ];
         });

@@ -8,6 +8,7 @@ import { useCart, resolveCartLineUnitPrice } from "@/components/cart/cart-contex
 import { useViewer } from "@/components/auth/viewer-provider";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
 import { Button, buttonVariants } from "@/components/ui/button";
+import type { OrderPdfLine } from "@/lib/order-pdf";
 
 const CART_TOGGLE_ID = "pf-cart-toggle";
 
@@ -30,42 +31,170 @@ export function CartPanel({
   } = useCart();
   const viewer = useViewer();
   const router = useRouter();
-  const [isGeneratingExcel, setIsGeneratingExcel] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [cancelingLotSku, setCancelingLotSku] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const cancelLotReservation = useCallback(
+    async (sku: string, reservationId?: number) => {
+      if (!reservationId || cancelingLotSku === sku) {
+        return false;
+      }
+
+      setCancelingLotSku(sku);
+
+      try {
+        const response = await fetch("/api/lotes/cancelar", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ reservationId }),
+        });
+
+        const payload = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+        if (!response.ok || !payload.ok) {
+          throw new Error(payload.error || "No se pudo cancelar la reserva.");
+        }
+
+        removeItem(sku);
+        return true;
+      } catch (error) {
+        console.error(error);
+        window.alert(error instanceof Error ? error.message : "No se pudo cancelar la reserva.");
+        return false;
+      } finally {
+        setCancelingLotSku(null);
+      }
+    },
+    [cancelingLotSku, removeItem],
+  );
+
+  const clearEntireCart = useCallback(async () => {
+    const lotItems = items.filter((item) => item.kind === "lot" && item.reservationId);
+
+    for (const item of lotItems) {
+      const cancelled = await cancelLotReservation(item.sku, item.reservationId);
+      if (!cancelled) {
+        return;
+      }
+    }
+
+    clearCart();
+  }, [cancelLotReservation, clearCart, items]);
+
+  const downloadPedidoPdf = useCallback(async () => {
+    const payloadItems: OrderPdfLine[] = items
+      .map((item) => {
+        const kind: OrderPdfLine["kind"] =
+          item.kind === "pack" ? "pack" : item.kind === "lot" ? "lot" : "product";
+
+        return {
+          kind,
+          id: item.id,
+          sku: item.sku,
+          name: item.name,
+          brand: item.brand,
+          presentation: item.presentation,
+          image: item.image,
+          publicPrice: resolveCartLineUnitPrice(item),
+          unitPrice: resolveCartLineUnitPrice(item),
+          quantity: item.quantity,
+        };
+      })
+      .filter((item) => item.sku && item.name);
+
+    const response = await fetch("/api/pedido/pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ items: payloadItems }),
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error || "No se pudo generar el PDF del pedido.");
+    }
+
+    const blob = await response.blob();
+    const objectUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = "pedido-es-otra-cosa.pdf";
+    link.rel = "noopener";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(objectUrl);
+  }, [items]);
 
   const handleConfirmPedido = useCallback(async () => {
-    if (!hydrated || items.length === 0 || isGeneratingExcel) {
+    if (!hydrated || items.length === 0 || isConfirming) {
       return;
     }
 
     try {
-      setIsGeneratingExcel(true);
+      setIsConfirming(true);
 
-      const orderPayload = JSON.stringify({
-        items: items.map((item) => ({ ...item })),
-      });
+      const pendingLotItems = items.filter((item) => item.kind === "lot" && !item.reservationId);
 
-      const response = await fetch(`/api/pedido/excel?payload=${encodeURIComponent(orderPayload)}`);
+      if (pendingLotItems.length > 0) {
+        if (!viewer?.authenticated) {
+          window.dispatchEvent(new Event("pf-auth-modal:open"));
+          return;
+        }
 
-      if (!response.ok) {
-        throw new Error("No se pudo generar el Excel del pedido.");
+        for (const item of pendingLotItems) {
+          const response = await fetch("/api/lotes/reservar", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ lotId: item.lotId ?? item.id, quantity: item.quantity }),
+          });
+
+          const payload = (await response.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.error || "No se pudo reservar el lote.");
+          }
+        }
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "pedido-pintofruta.xlsx";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(url);
+      await downloadPedidoPdf();
+      clearCart();
+      closeCart();
+      setSuccessMessage(pendingLotItems.length > 0 ? "La reserva se realizó exitosamente." : "El pedido se realizó exitosamente.");
     } catch (error) {
       console.error(error);
-      window.alert("No pudimos generar el Excel del pedido. Probá de nuevo.");
+      window.alert(error instanceof Error ? error.message : "No pudimos confirmar el pedido.");
     } finally {
-      setIsGeneratingExcel(false);
+      setIsConfirming(false);
     }
-  }, [hydrated, isGeneratingExcel, items]);
+  }, [clearCart, closeCart, downloadPedidoPdf, hydrated, isConfirming, items, viewer?.authenticated]);
+
+  const hasLotItems = items.some((item) => item.kind === "lot");
+
+  const successModal = successMessage ? (
+    <div className="fixed inset-0 z-[13000] flex items-center justify-center bg-[rgba(35,28,20,0.42)] px-4 py-6 backdrop-blur-[2px]">
+      <div className="w-full max-w-md rounded-[2rem] border border-[var(--pf-border-warm)] bg-[var(--pf-surface)] p-6 text-[var(--pf-text)] shadow-[0_30px_80px_rgba(29,24,20,0.28)]">
+        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[var(--pf-secondary-dark)]">Confirmación</p>
+        <h3 className="mt-3 text-2xl font-black tracking-tight">{successMessage}</h3>
+        <p className="mt-3 text-sm leading-7 text-[var(--pf-muted)]">
+          Ya podés seguir navegando. Si se trató de una reserva colectiva, la vas a ver en “Mis reservas”.
+        </p>
+        <div className="mt-6 flex justify-end">
+          <button
+            type="button"
+            className={buttonVariants({ variant: "primary", size: "md" })}
+            onClick={() => setSuccessMessage(null)}
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
 
   const panel = (
     <aside className="flex h-full w-full max-w-[460px] flex-col border-l border-[var(--pf-border-warm)] bg-[linear-gradient(180deg,var(--pf-surface-warm)_0%,var(--pf-sand-soft)_44%,var(--pf-cream-soft)_100%)] shadow-[0_24px_80px_rgba(29,24,20,0.26)]">
@@ -148,44 +277,114 @@ export function CartPanel({
                         <p className="truncate text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">{item.brand}</p>
                         <h3 className="line-clamp-2 text-base font-black leading-5 text-[var(--pf-text)]">{item.name}</h3>
                         <p className="mt-1 text-sm text-[var(--pf-muted)]">{item.presentation}</p>
+                        {item.kind === "lot" ? (
+                          <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--pf-secondary-dark)]">
+                            {item.reservationId ? "Reserva de lote" : "Reserva pendiente"}
+                          </p>
+                        ) : null}
                       </div>
-                      <button
-                        type="button"
-                        className="rounded-full border border-[var(--pf-border)] px-3 py-1 text-xs font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.8)]"
-                        onClick={() => removeItem(item.sku)}
-                      >
-                        Quitar
-                      </button>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.1rem] bg-[rgba(245,243,239,0.82)] px-3 py-2">
-                      <div className="flex items-center gap-2">
+                      {item.kind === "lot" ? (
+                        item.reservationId ? (
+                          <button
+                            type="button"
+                            className="rounded-full border border-[var(--pf-border)] px-3 py-1 text-xs font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.8)]"
+                            onClick={() => cancelLotReservation(item.sku, item.reservationId)}
+                            disabled={cancelingLotSku === item.sku}
+                          >
+                            {cancelingLotSku === item.sku ? "Cancelando..." : "Cancelar"}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="rounded-full border border-[var(--pf-border)] px-3 py-1 text-xs font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.8)]"
+                            onClick={() => removeItem(item.sku)}
+                          >
+                            Quitar
+                          </button>
+                        )
+                      ) : (
                         <button
                           type="button"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pf-border)] bg-white text-[var(--pf-text)]"
-                          onClick={() => updateQuantity(item.sku, item.quantity - 1)}
-                          aria-label={`Disminuir cantidad de ${item.name}`}
+                          className="rounded-full border border-[var(--pf-border)] px-3 py-1 text-xs font-semibold text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.8)]"
+                          onClick={() => removeItem(item.sku)}
                         >
-                          <Minus className="size-4" />
+                          Quitar
                         </button>
-                        <span className="min-w-12 text-center text-sm font-bold text-[var(--pf-text)]">{item.quantity}</span>
-                        <button
-                          type="button"
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pf-border)] bg-white text-[var(--pf-text)]"
-                          onClick={() => updateQuantity(item.sku, item.quantity + 1)}
-                          aria-label={`Aumentar cantidad de ${item.name}`}
-                        >
-                          <Plus className="size-4" />
-                        </button>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--pf-muted)]">Subtotal</p>
-                        <p className="text-base font-black text-[var(--pf-text)]">
-                          {formatCurrency(resolveCartLineUnitPrice(item) * item.quantity)}
-                        </p>
-                      </div>
+                      )}
                     </div>
+
+                    {item.kind === "lot" ? (
+                      <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.1rem] bg-[rgba(245,243,239,0.82)] px-3 py-2">
+                        {item.reservationId ? (
+                          <div>
+                            <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--pf-muted)]">Unidades reservadas</p>
+                            <p className="text-sm font-bold text-[var(--pf-text)]">{item.quantity}</p>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pf-border)] bg-white text-[var(--pf-text)]"
+                              onClick={() => updateQuantity(item.sku, item.quantity - 1)}
+                              aria-label={`Disminuir cantidad de ${item.name}`}
+                            >
+                              <Minus className="size-4" />
+                            </button>
+                            <span className="min-w-12 text-center text-sm font-bold text-[var(--pf-text)]">{item.quantity}</span>
+                            <button
+                              type="button"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pf-border)] bg-white text-[var(--pf-text)]"
+                              onClick={() =>
+                                updateQuantity(
+                                  item.sku,
+                                  item.lotAvailableUnits != null ? Math.min(item.lotAvailableUnits, item.quantity + 1) : item.quantity + 1,
+                                )
+                              }
+                              aria-label={`Aumentar cantidad de ${item.name}`}
+                              disabled={item.lotAvailableUnits != null ? item.quantity >= item.lotAvailableUnits : false}
+                            >
+                              <Plus className="size-4" />
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="text-right">
+                          <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--pf-muted)]">Total</p>
+                          <p className="text-base font-black text-[var(--pf-text)]">
+                            {formatCurrency(resolveCartLineUnitPrice(item) * item.quantity)}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-4 flex items-center justify-between gap-3 rounded-[1.1rem] bg-[rgba(245,243,239,0.82)] px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pf-border)] bg-white text-[var(--pf-text)]"
+                            onClick={() => updateQuantity(item.sku, item.quantity - 1)}
+                            aria-label={`Disminuir cantidad de ${item.name}`}
+                          >
+                            <Minus className="size-4" />
+                          </button>
+                          <span className="min-w-12 text-center text-sm font-bold text-[var(--pf-text)]">{item.quantity}</span>
+                          <button
+                            type="button"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--pf-border)] bg-white text-[var(--pf-text)]"
+                            onClick={() => updateQuantity(item.sku, item.quantity + 1)}
+                            aria-label={`Aumentar cantidad de ${item.name}`}
+                          >
+                            <Plus className="size-4" />
+                          </button>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--pf-muted)]">Subtotal</p>
+                          <p className="text-base font-black text-[var(--pf-text)]">
+                            {formatCurrency(resolveCartLineUnitPrice(item) * item.quantity)}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </article>
@@ -205,7 +404,9 @@ export function CartPanel({
           <button
             type="button"
             className={buttonVariants({ variant: "primary", size: "md" })}
-            onClick={() => clearCart()}
+            onClick={() => {
+              void clearEntireCart();
+            }}
             disabled={items.length === 0}
           >
             Vaciar pedido
@@ -215,9 +416,9 @@ export function CartPanel({
             variant="secondary"
             size="md"
             onClick={handleConfirmPedido}
-            disabled={items.length === 0 || isGeneratingExcel}
+            disabled={items.length === 0 || isConfirming}
           >
-            {isGeneratingExcel ? "Generando Excel..." : "Confirmar pedido"}
+            {isConfirming ? "Confirmando..." : hasLotItems ? "Confirmar reserva" : "Confirmar pedido"}
           </Button>
         </div>
       </div>
@@ -226,61 +427,67 @@ export function CartPanel({
 
   if (mode === "page") {
     return (
-      <main className="pf-shell flex w-full flex-1 flex-col px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
-        <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_460px]">
-          <section className="rounded-[2rem] border border-[var(--pf-border-warm)] bg-[linear-gradient(180deg,var(--pf-surface-warm)_0%,var(--pf-sand-soft)_58%,var(--pf-surface-strong)_100%)] p-4 shadow-sm sm:p-5">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <h1 className="text-3xl font-black tracking-tight text-[var(--pf-text)] sm:text-4xl">Mi pedido</h1>
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.92)] lg:hidden"
-                aria-label="Cerrar carrito"
-                onClick={() => router.back()}
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-          </section>
-          {panel}
-        </div>
-      </main>
+      <>
+        <main className="pf-shell flex w-full flex-1 flex-col px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
+          <div className="grid flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_460px]">
+            <section className="rounded-[2rem] border border-[var(--pf-border-warm)] bg-[linear-gradient(180deg,var(--pf-surface-warm)_0%,var(--pf-sand-soft)_58%,var(--pf-surface-strong)_100%)] p-4 shadow-sm sm:p-5">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <h1 className="text-3xl font-black tracking-tight text-[var(--pf-text)] sm:text-4xl">Mi pedido</h1>
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[var(--pf-border)] bg-[rgba(255,255,255,0.94)] text-[var(--pf-text)] transition hover:bg-[rgba(245,243,239,0.92)] lg:hidden"
+                  aria-label="Cerrar carrito"
+                  onClick={() => router.back()}
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+            </section>
+            {panel}
+          </div>
+        </main>
+        {successModal}
+      </>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[11020] pointer-events-none">
-      <input
-        id={CART_TOGGLE_ID}
-        type="checkbox"
-        checked={isOpen}
-        onChange={(event) => {
-          if (event.target.checked) {
-            openCart();
-          } else {
-            closeCart();
-          }
-        }}
-        className="peer/cart-toggle sr-only"
-      />
+    <>
+      <div className="fixed inset-0 z-[11020] pointer-events-none">
+        <input
+          id={CART_TOGGLE_ID}
+          type="checkbox"
+          checked={isOpen}
+          onChange={(event) => {
+            if (event.target.checked) {
+              openCart();
+            } else {
+              closeCart();
+            }
+          }}
+          className="peer/cart-toggle sr-only"
+        />
 
-      <label
-        htmlFor={CART_TOGGLE_ID}
-        aria-label="Cerrar carrito"
-        className={[
-          "absolute inset-0 bg-[rgba(35,28,20,0.38)] backdrop-blur-[2px] transition-opacity duration-300",
-          isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
-        ].join(" ")}
-      />
+        <label
+          htmlFor={CART_TOGGLE_ID}
+          aria-label="Cerrar carrito"
+          className={[
+            "absolute inset-0 bg-[rgba(35,28,20,0.38)] backdrop-blur-[2px] transition-opacity duration-300",
+            isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+          ].join(" ")}
+        />
 
-      <div
-        aria-hidden={!isOpen}
-        className={[
-          "pointer-events-auto absolute inset-y-0 right-0 w-full max-w-[460px] transition-transform duration-300 ease-out",
-          isOpen ? "translate-x-0" : "translate-x-full",
-        ].join(" ")}
-      >
-        {panel}
+        <div
+          aria-hidden={!isOpen}
+          className={[
+            "pointer-events-auto absolute inset-y-0 right-0 w-full max-w-[460px] transition-transform duration-300 ease-out",
+            isOpen ? "translate-x-0" : "translate-x-full",
+          ].join(" ")}
+        >
+          {panel}
+        </div>
       </div>
-    </div>
+      {successModal}
+    </>
   );
 }

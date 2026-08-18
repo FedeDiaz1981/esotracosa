@@ -1,5 +1,5 @@
 export type OrderPdfLine = {
-  kind?: "product" | "pack";
+  kind?: "product" | "pack" | "lot";
   id: number;
   sku: string;
   name: string;
@@ -68,7 +68,7 @@ export function buildOrderPdfHtml(data: OrderPdfData) {
     .map((item) => {
       const unitPrice = item.unitPrice ?? item.publicPrice;
       const subtotal = item.quantity * unitPrice;
-      const typeLabel = item.kind === "pack" ? "Promocion" : "Producto";
+      const typeLabel = item.kind === "pack" ? "Promocion" : item.kind === "lot" ? "Compra colectiva" : "Producto";
 
       return `
         <tr>

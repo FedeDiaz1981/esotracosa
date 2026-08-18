@@ -80,6 +80,8 @@ export interface ProductItem {
   description?: string;
   sourceSection?: string;
   templateRowMap?: Record<string, number>;
+  lotOffers?: ProductLotItem[];
+  activeLot?: ProductLotItem | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -140,6 +142,59 @@ export interface ProductFabricVariant {
   updatedAt?: string;
 }
 
+export interface ProductLotItem {
+  id: number;
+  productId: number;
+  productSku?: string;
+  productName?: string;
+  fixedFabricId?: number | null;
+  fixedFabricName?: string;
+  useFabricImage?: boolean;
+  title: string;
+  description: string;
+  totalUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  regularUnitPrice: number;
+  lotUnitPrice: number;
+  status: string;
+  onlyMembers: boolean;
+  image?: string;
+  completedAt?: string;
+  completionEmailSentAt?: string;
+  adminNotifiedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ProductLotReservationItem {
+  id: number;
+  lotId: number;
+  userId: number;
+  userName?: string;
+  userEmail?: string;
+  lotTitle?: string;
+  productId?: number;
+  productSku?: string;
+  productName?: string;
+  fixedFabricId?: number | null;
+  fixedFabricName?: string;
+  lotImage?: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  status: string;
+  notes?: string;
+  confirmedAt?: string;
+  cancelledAt?: string;
+  cancelReason?: string;
+  adminNote?: string;
+  confirmedByUserId?: number | null;
+  cancelledByUserId?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface UserItem {
   id: number;
   name: string;
@@ -160,6 +215,8 @@ export interface SiteContentDocument {
   heroSlides: HeroSlide[];
   banners: BannerItem[];
   products: ProductItem[];
+  productLots?: ProductLotItem[];
+  productLotReservations?: ProductLotReservationItem[];
   packs?: PackItem[];
   brands: BrandItem[];
   fabrics?: FabricItem[];
@@ -187,6 +244,7 @@ export interface HomePageViewModel {
   homeMenuCategories: CategoryItem[];
   featuredProducts: ProductItem[];
   trendingProducts: ProductItem[];
+  collectivePurchaseLots: ProductLotItem[];
   activePromotions: PackItem[];
   featuredBrands: BrandItem[];
   stats: {

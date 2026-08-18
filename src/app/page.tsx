@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { getHomePageViewModel } from "@/application/catalog";
+import { CollectivePurchaseCarousel } from "@/components/site/collective-purchase-carousel";
 import { CategoryMenuStrip } from "@/components/site/category-menu-strip";
 import { FeaturedProductsCarousel } from "@/components/site/featured-products-carousel";
 import { HeroCarousel } from "@/components/site/hero-carousel";
@@ -10,7 +10,6 @@ import { SectionHeading } from "@/components/site/section-heading";
 import { SpotlightBanner } from "@/components/site/spotlight-banner";
 import { buttonVariants } from "@/components/ui/button";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
-import { publicAsset } from "@/lib/catalog";
 
 export default async function HomePage() {
   const viewer = await getCurrentViewer();
@@ -56,69 +55,59 @@ export default async function HomePage() {
         </section>
       </div>
 
+      {viewer?.authenticated && content.collectivePurchaseLots.length > 0 ? (
+        <div className="pf-shell flex flex-col gap-10 px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
+          <section id="collective-purchase" className="space-y-5">
+            <SectionHeading
+              eyebrow="Solo miembros"
+              title="Compra colectiva"
+              description="Reservá sillones con tela fija y precio por lote, disponible sólo para usuarios logueados."
+            />
+            <CollectivePurchaseCarousel lots={content.collectivePurchaseLots} returnTo="/" />
+          </section>
+        </div>
+      ) : null}
+
       <section
-        id="Nosotros"
-        className="w-full bg-[linear-gradient(180deg,rgba(251,250,247,0.98)_0%,rgba(248,246,242,0.96)_48%,rgba(241,236,229,0.96)_100%)] py-10 sm:py-12 lg:py-14"
+        id="Resenias"
+        className="w-full bg-transparent py-10 sm:py-12 lg:py-14"
       >
         <div className="pf-shell px-4 sm:px-6 lg:px-12">
-          <div className="grid gap-8 lg:grid-cols-[1.15fr_.95fr] lg:gap-10">
-            <div className="flex flex-col justify-between">
-              <div>
-                <span className="inline-flex rounded-full bg-[rgba(200,154,21,0.14)] px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[var(--pf-primary-darker)]">
-                  Quienes somos
-                </span>
-                <h2 className="mt-3 max-w-xl text-[2.15rem] font-light leading-[0.96] tracking-[-0.05em] text-[var(--pf-text)] sm:text-[2.75rem] lg:text-[3.15rem]">
-                  Conectamos marcas, productos y personas.
-                </h2>
-                <div className="mt-4 space-y-3 text-[0.92rem] leading-6 text-[var(--pf-muted)] sm:text-[0.98rem]">
-                  <p>
-                    Somos un equipo de profesionales con foco en alimentos saludables, abastecimiento ordenado y una experiencia de compra
-                    simple. Nacimos trabajando con propuestas plant based y, con el tiempo, ampliamos la oferta para acompanar el crecimiento
-                    del canal natural, las dieteticas y los consumidores que buscan variedad y confianza.
-                  </p>
-                  <p>
-                    Con la experiencia acumulada fuimos construyendo una operacion capaz de reunir marcas lideres, pequenos productores y
-                    soluciones de logistica que permiten llegar con franjas horarias claras, stock controlado y atencion personalizada.
-                  </p>
+          <div className="grid gap-4 lg:grid-cols-4">
+            {[
+              ["Excelente terminacion y muy buen tapizado.", "Silvia F."],
+              ["La foto de la tela ayuda muchisimo para elegir.", "Victoria G."],
+              ["La compra fue simple y la atencion fue muy clara.", "Lucia M."],
+              ["Nos asesoraron bien con medidas y entrega.", "Matias L."],
+            ].map(([quote, name]) => (
+              <article
+                key={name}
+                className="group relative overflow-hidden rounded-[1.75rem] border border-[rgba(200,154,21,0.14)] bg-[linear-gradient(180deg,rgba(255,255,255,0.95)_0%,rgba(248,244,236,0.98)_100%)] p-5 shadow-[0_12px_30px_rgba(29,24,20,0.06)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(29,24,20,0.1)]"
+              >
+                <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(200,154,21,0.55),transparent)]" />
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-primary-darker)]">★★★★★</p>
+                  <span className="rounded-full border border-[rgba(200,154,21,0.16)] bg-[rgba(200,154,21,0.08)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--pf-primary-darker)]">
+                    Verificado
+                  </span>
                 </div>
-              </div>
-
-              <div className="mt-4 rounded-[1.25rem] border border-[rgba(200,154,21,0.16)] bg-[rgba(255,255,255,0.92)] px-4 py-3 text-[0.88rem] leading-6 text-[var(--pf-text)] shadow-[0_10px_24px_rgba(29,24,20,0.06)] sm:text-[0.95rem]">
-                <strong className="font-semibold text-[var(--pf-primary-darker)]">Creemos en relaciones de largo plazo:</strong>{" "}
-                cada pedido, cada consulta y cada entrega forman parte de una misma idea, hacer que comprar saludable sea mas facil, mas
-                ordenado y mas confiable.
-              </div>
-
-              <div className="mt-4 border-t border-[rgba(224,208,180,0.4)] pt-3 text-[0.85rem] leading-6 text-[var(--pf-muted)]">
-                Gracias por confiar y contar con nosotros. Estamos seguros de que, trabajando juntos, podemos seguir armando un gran equipo.
-              </div>
-            </div>
-
-            <div className="rounded-[1.5rem] border border-[rgba(200,154,21,0.14)] bg-white p-0 shadow-[0_14px_34px_rgba(29,24,20,0.08)]">
-              <div className="overflow-hidden rounded-[1.3rem] bg-white px-4 py-5 sm:px-5 sm:py-6">
-                <div className="relative mx-auto h-[170px] w-full max-w-[560px] sm:h-[210px]">
-                  <Image
-                    src={publicAsset("/assets/images/logo/logo_v2.png")}
-                    alt="Pintofruta"
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-3 grid gap-2.5 sm:grid-cols-3">
-                {content.stats.map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="rounded-[1.1rem] border border-[rgba(200,154,21,0.14)] bg-white px-3 py-3.5 text-center shadow-[0_10px_24px_rgba(29,24,20,0.05)]"
-                  >
-                    <p className="text-[1.7rem] font-black tracking-tight text-[var(--pf-primary-darker)]">{stat.value}</p>
-                    <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">{stat.label}</p>
+                <p className="mt-5 text-sm leading-7 text-[var(--pf-text)]">{quote}</p>
+                <div className="mt-5 flex items-center gap-3 border-t border-[rgba(0,0,0,0.06)] pt-4">
+                  <div className="grid size-10 place-items-center rounded-full bg-[linear-gradient(180deg,var(--pf-primary-soft),var(--pf-primary))] text-[11px] font-black uppercase tracking-[0.22em] text-white shadow-[0_8px_18px_rgba(200,154,21,0.18)]">
+                    {String(name)
+                      .split(" ")
+                      .map((part) => part[0])
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .join("")}
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.34em] text-[var(--pf-text)]">{name}</p>
+                    <p className="mt-1 text-[11px] text-[var(--pf-muted)]">Cliente satisfecho</p>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </section>
