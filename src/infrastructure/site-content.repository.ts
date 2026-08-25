@@ -16,6 +16,7 @@ import {
   type ProductLotRow,
   type ProductLotReservationRow,
   type ProductFabricVariantRow,
+  type PaymentMethodRowDb,
   type NavGroupRow,
   type NavItemRow,
   type NavSectionRow,
@@ -139,6 +140,10 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
       client,
       "select id, code, name, image, featured, active from brands order by featured desc, name",
     );
+    const paymentMethodRows = await readRows<PaymentMethodRowDb>(
+      client,
+      "select id, name, logo, order_index, active, created_at, updated_at from payment_methods order by order_index, id",
+    );
     const fabricRows = await readRows<FabricRow>(
       client,
       "select id, name, image, created_at, updated_at from fabrics order by id",
@@ -166,6 +171,7 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
       packs: packRows,
       packItems: packItemRows,
       brands: brandRows,
+      paymentMethods: paymentMethodRows,
       fabrics: fabricRows,
       categories: categoryRows,
       users: userRows,

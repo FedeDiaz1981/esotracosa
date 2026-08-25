@@ -14,6 +14,7 @@ export type AdminTableKey =
   | "product_lot_reservations"
   | "categories"
   | "brands"
+  | "payment_methods"
   | "fabrics"
   | "users"
   | "products";
@@ -83,6 +84,7 @@ const tableOrder: AdminTableKey[] = [
   "product_lot_reservations",
   "packs",
   "brands",
+  "payment_methods",
   "fabrics",
   "categories",
   "users",
@@ -414,6 +416,31 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         textField("name", "Nombre", true),
         fileField("image", "Imagen", false, "Subí el logo o imagen de la marca."),
         booleanField("active", "Activa"),
+      ],
+    },
+    {
+      key: "payment_methods",
+      label: "Medios de pago",
+      description: "Tarjetas, transferencias y métodos visibles para el cliente.",
+      idField: "id",
+      rowLabelField: "name",
+      rows: (content.paymentMethods ?? []).map((method) => ({
+        ...method,
+        logoLabel: method.logo ? "Logo cargado" : "Sin logo",
+      })),
+      columns: [
+        { key: "id", label: "ID" },
+        { key: "name", label: "Nombre" },
+        { key: "logoLabel", label: "Logo" },
+        { key: "order", label: "Orden" },
+        { key: "active", label: "Activo" },
+      ],
+      fields: [
+        numberField("id", "ID", true, "Se genera automaticamente.", true, true),
+        textField("name", "Nombre", true),
+        fileField("logo", "Logo", false, "Subí el logo del medio de pago."),
+        numberField("order", "Orden", false, "Más bajo = antes en la lista."),
+        booleanField("active", "Activo"),
       ],
     },
     {

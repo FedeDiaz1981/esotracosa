@@ -126,6 +126,16 @@ export interface BrandItem {
   active?: boolean;
 }
 
+export interface PaymentMethodItem {
+  id: number;
+  name: string;
+  logo?: string;
+  order?: number;
+  active?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface FabricItem {
   id: number;
   name: string;
@@ -219,6 +229,7 @@ export interface SiteContentDocument {
   productLotReservations?: ProductLotReservationItem[];
   packs?: PackItem[];
   brands: BrandItem[];
+  paymentMethods?: PaymentMethodItem[];
   fabrics?: FabricItem[];
   categories?: CategoryItem[];
   users?: UserItem[];

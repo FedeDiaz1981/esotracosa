@@ -11,6 +11,7 @@ import type {
 import type {
   SeedBanner,
   SeedBrand,
+  SeedPaymentMethod,
   SeedFabric,
   SeedCategory,
   SeedHeaderGroup,
@@ -98,6 +99,7 @@ export type ProductFabricVariantRow = {
   updated_at: string | null;
 };
 export type BrandRow = SeedBrand;
+export type PaymentMethodRow = SeedPaymentMethod;
 export type FabricRow = SeedFabric;
 export type CategoryRow = SeedCategory;
 export type UserRow = SeedUser;
@@ -112,6 +114,15 @@ export type PackRow = {
   active: boolean;
   featured: boolean;
   order_index: number;
+  created_at: string | null;
+  updated_at: string | null;
+};
+export type PaymentMethodRowDb = {
+  id: number;
+  name: string;
+  logo: string | null;
+  order_index: number;
+  active: boolean;
   created_at: string | null;
   updated_at: string | null;
 };
@@ -212,6 +223,7 @@ export function mapSiteContentDocument(params: {
   packs?: PackRow[];
   packItems?: PackItemRow[];
   brands: BrandRow[];
+  paymentMethods: PaymentMethodRowDb[];
   fabrics: FabricRow[];
   categories: CategoryRow[];
   users: UserRow[];
@@ -228,6 +240,7 @@ export function mapSiteContentDocument(params: {
     packs = [],
     packItems = [],
     brands,
+    paymentMethods,
     fabrics,
     categories,
     users,
@@ -417,6 +430,19 @@ export function mapSiteContentDocument(params: {
     };
   });
 
+  const mappedPaymentMethods = paymentMethods
+    .slice()
+    .sort((left, right) => left.order_index - right.order_index || left.id - right.id)
+    .map((method) => ({
+      id: method.id,
+      name: method.name,
+      logo: method.logo ?? undefined,
+      order: method.order_index,
+      active: method.active,
+      createdAt: method.created_at ?? undefined,
+      updatedAt: method.updated_at ?? undefined,
+    }));
+
   return {
     sessionRole: metaRow?.session_role ?? undefined,
     viewMode: metaRow?.view_mode ?? undefined,
@@ -454,6 +480,7 @@ export function mapSiteContentDocument(params: {
       featured: brand.featured,
       active: brand.active ?? undefined,
     })),
+    paymentMethods: mappedPaymentMethods,
     fabrics: fabrics.map((fabric) => ({
       id: fabric.id,
       name: fabric.name,

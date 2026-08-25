@@ -137,10 +137,6 @@ function generateSku(id: number) {
   return `PF${String(id).padStart(4, "0")}`;
 }
 
-function isFileValue(value: unknown): value is File {
-  return typeof File !== "undefined" && value instanceof File;
-}
-
 function isTransientConnectionError(error: unknown) {
   if (!(error instanceof Error)) {
     return false;
@@ -235,6 +231,29 @@ async function saveBrand(record: PayloadRecord) {
         featured = excluded.featured
     `,
     [id, code || id, name, toStringValue(record.image) || null, featured],
+  );
+}
+
+async function savePaymentMethod(record: PayloadRecord) {
+  const id = record.id ? toNumber(record.id) : await nextNumericId("payment_methods");
+  const name = toStringValue(record.name);
+
+  if (!name) {
+    throw new Error("El medio de pago necesita un nombre.");
+  }
+
+  await postgresPool!.query(
+    `
+      insert into payment_methods (id, name, logo, order_index, active)
+      values ($1, $2, $3, $4, $5)
+      on conflict (id) do update set
+        name = excluded.name,
+        logo = excluded.logo,
+        order_index = excluded.order_index,
+        active = excluded.active,
+        updated_at = now()
+    `,
+    [id, name, toStringValue(record.logo) || null, toNumber(record.order), toBoolean(record.active)],
   );
 }
 
@@ -530,7 +549,7 @@ function parseFabricVariants(value: unknown): FabricVariantDraft[] {
   }
 }
 
-async function savePack(record: PayloadRecord, formData: FormData) {
+async function savePack(record: PayloadRecord) {
   const id = record.id ? toNumber(record.id) : await nextNumericId("promotion_packs");
   const title = toStringValue(record.title);
   const apodo = toStringValue(record.apodo) || slugify(title);
@@ -1187,7 +1206,7 @@ async function saveMeta(record: PayloadRecord) {
   );
 }
 
-async function saveRow(table: AdminTableKey, record: PayloadRecord, formData: FormData) {
+async function saveRow(table: AdminTableKey, record: PayloadRecord) {
   switch (table) {
     case "products":
       return saveProduct(record);
@@ -1197,6 +1216,8 @@ async function saveRow(table: AdminTableKey, record: PayloadRecord, formData: Fo
       return saveProductLotReservation(record);
     case "brands":
       return saveBrand(record);
+    case "payment_methods":
+      return savePaymentMethod(record);
     case "fabrics":
       return saveFabric(record);
     case "categories":
@@ -1208,7 +1229,7 @@ async function saveRow(table: AdminTableKey, record: PayloadRecord, formData: Fo
     case "banners":
       return saveBanner(record);
     case "packs":
-      return savePack(record, formData);
+      return savePack(record);
     case "header_search_scopes":
       return saveSearchScope(record);
     case "header_sections":
@@ -1237,6 +1258,9 @@ async function deleteRow(table: AdminTableKey, id: string) {
       return;
     case "brands":
       await postgresPool!.query("delete from brands where id = $1", [toStringValue(id)]);
+      return;
+    case "payment_methods":
+      await postgresPool!.query("delete from payment_methods where id = $1", [toNumber(id)]);
       return;
     case "fabrics":
       await postgresPool!.query("delete from fabrics where id = $1", [toNumber(id)]);
@@ -1333,7 +1357,7 @@ export async function saveAdminRecord(formData: FormData) {
     throw new Error("Falta la tabla.");
   }
 
-  await saveRow(table, payload, formData);
+  await saveRow(table, payload);
   refreshAdminViews();
 }
 

@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { ProductItem } from "@/domain/site-content";
+import { formatCurrency } from "@/lib/catalog";
 import { isNewArrival, publicAsset } from "@/lib/catalog";
 import { appendReturnTo } from "@/lib/navigation";
+import { resolveProductUnitPrice } from "@/lib/pricing";
 
 function getInventoryLabel(product: ProductItem) {
   if (product.stock == null) {
@@ -16,6 +18,22 @@ function getInventoryLabel(product: ProductItem) {
   }
 
   return `${product.stock} unidades`;
+}
+
+function getSpecialPrice(product: ProductItem) {
+  if (product.memberPrice > 0 && product.memberPrice < product.publicPrice) {
+    return product.memberPrice;
+  }
+
+  return null;
+}
+
+function getPhotoCount(product: ProductItem) {
+  return product.images?.length ?? (product.image ? 1 : 0);
+}
+
+function getVariantCount(product: ProductItem) {
+  return product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
 }
 
 export function ProductCard({
@@ -36,6 +54,10 @@ export function ProductCard({
   });
   const inventoryLabel = getInventoryLabel(product);
   const isOutOfStock = product.stock != null ? product.stock <= 0 : product.status !== "published";
+  const photoCount = getPhotoCount(product);
+  const variantCount = getVariantCount(product);
+  const specialPrice = getSpecialPrice(product);
+  const unitPrice = resolveProductUnitPrice(product);
 
   return (
     <button
@@ -68,6 +90,19 @@ export function ProductCard({
             ) : null}
           </div>
 
+          <div className="absolute bottom-3 left-3 right-3 z-10 flex flex-wrap gap-2">
+            {photoCount > 1 ? (
+              <span className="inline-flex items-center rounded-full border border-[rgba(29,24,20,0.12)] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)] shadow-[0_8px_18px_rgba(29,24,20,0.12)]">
+                +{photoCount - 1} fotos
+              </span>
+            ) : null}
+            {variantCount > 0 ? (
+              <span className="inline-flex items-center rounded-full border border-[rgba(29,24,20,0.12)] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)] shadow-[0_8px_18px_rgba(29,24,20,0.12)]">
+                {variantCount} variantes
+              </span>
+            ) : null}
+          </div>
+
           <div className="absolute inset-0 p-4">
             <div className="relative h-full w-full overflow-hidden rounded-[1.15rem] bg-[rgba(255,255,255,0.98)] shadow-[0_18px_36px_rgba(29,24,20,0.10)]">
               <Image
@@ -81,8 +116,36 @@ export function ProductCard({
           </div>
         </div>
 
-        <div className="flex h-[7rem] flex-col justify-center border-t border-[rgba(212,168,26,0.16)] px-4 py-3 text-center">
-          <h3 className="line-clamp-2 text-[0.98rem] font-medium leading-6 text-[var(--pf-text)]">{product.name}</h3>
+        <div className="flex min-h-[8.5rem] flex-col justify-between border-t border-[rgba(212,168,26,0.16)] px-4 py-3">
+          <div className="text-center">
+            <h3 className="line-clamp-2 text-[0.98rem] font-medium leading-6 text-[var(--pf-text)]">{product.name}</h3>
+            <p className="mt-2 text-[1.02rem] font-black tracking-[-0.03em] text-[var(--pf-text)]">
+              {formatCurrency(unitPrice)}
+            </p>
+            {specialPrice ? (
+              <p className="mt-1 text-[11px] font-semibold text-[var(--pf-primary-darker)]">
+                Transferencia / efectivo {formatCurrency(specialPrice)}
+              </p>
+            ) : (
+              <p className="mt-1 text-[11px] font-semibold text-[var(--pf-muted)]">Cuotas disponibles</p>
+            )}
+          </div>
+
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(200,154,21,0.08)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+              Cuotas
+            </span>
+            {photoCount > 1 ? (
+              <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(255,255,255,0.9)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                +{photoCount - 1} fotos
+              </span>
+            ) : null}
+            {variantCount > 0 ? (
+              <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(255,255,255,0.9)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                {variantCount} variantes
+              </span>
+            ) : null}
+          </div>
         </div>
       </article>
     </button>

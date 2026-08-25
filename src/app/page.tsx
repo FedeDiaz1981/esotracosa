@@ -5,7 +5,6 @@ import { CollectivePurchaseCarousel } from "@/components/site/collective-purchas
 import { CategoryMenuStrip } from "@/components/site/category-menu-strip";
 import { FeaturedProductsCarousel } from "@/components/site/featured-products-carousel";
 import { HeroCarousel } from "@/components/site/hero-carousel";
-import { PromotionCarousel } from "@/components/site/promotion-carousel";
 import { SectionHeading } from "@/components/site/section-heading";
 import { SpotlightBanner } from "@/components/site/spotlight-banner";
 import { buttonVariants } from "@/components/ui/button";
@@ -24,7 +23,7 @@ export default async function HomePage() {
       <div className="pf-shell flex flex-col gap-10 px-4 pb-6 pt-8 sm:px-6 sm:pt-10 lg:px-12 lg:pb-10 lg:pt-12">
         <section id="featured-products" className="space-y-5">
           <SectionHeading
-            eyebrow="Colección / destacados"
+            eyebrow="Coleccion / destacados"
             title="Productos destacados"
             action={
               <Link href="/galeria?featured=1" className={buttonVariants({ variant: "outline", size: "md" })}>
@@ -43,7 +42,7 @@ export default async function HomePage() {
       <div className="pf-shell flex flex-col gap-10 px-4 py-6 sm:px-6 lg:px-12 lg:py-10">
         <section id="trending-products" className="space-y-5">
           <SectionHeading
-            eyebrow="Colección / tendencias"
+            eyebrow="Coleccion / tendencias"
             title="Tendencias"
             action={
               <Link href="/galeria?trending=1" className={buttonVariants({ variant: "outline", size: "md" })}>
@@ -61,17 +60,14 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="Solo miembros"
               title="Compra colectiva"
-              description="Reservá sillones con tela fija y precio por lote, disponible sólo para usuarios logueados."
+              description="Reserva sillones con tela fija y precio por lote, disponible solo para usuarios logueados."
             />
             <CollectivePurchaseCarousel lots={content.collectivePurchaseLots} returnTo="/" />
           </section>
         </div>
       ) : null}
 
-      <section
-        id="Resenias"
-        className="w-full bg-transparent py-10 sm:py-12 lg:py-14"
-      >
+      <section id="Resenias" className="w-full bg-transparent py-10 sm:py-12 lg:py-14">
         <div className="pf-shell px-4 sm:px-6 lg:px-12">
           <div className="grid gap-4 lg:grid-cols-4">
             {[

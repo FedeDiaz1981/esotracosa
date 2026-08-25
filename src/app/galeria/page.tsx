@@ -10,7 +10,7 @@ type GallerySearchParams = {
   q?: string;
   brand?: string;
   category?: string;
-  sort?: "name" | "price";
+  sort?: "name" | "price" | "best" | "new";
   view?: "2" | "3" | "4";
   featured?: "1" | "";
   trending?: "1" | "";
@@ -18,7 +18,11 @@ type GallerySearchParams = {
 };
 
 function normalizeSort(value?: string) {
-  return value === "price" ? "price" : "name";
+  if (value === "price" || value === "best" || value === "new") {
+    return value;
+  }
+
+  return "name";
 }
 
 function normalizeView(value?: string) {
@@ -35,6 +39,45 @@ function normalizeTrending(value?: string) {
 
 function normalizeType(value?: string) {
   return value === "packs" ? "packs" : "products";
+}
+
+function getProductPopularityScore(product: { salesCount?: number; viewsCount?: number }) {
+  const sales = product.salesCount ?? 0;
+  const views = product.viewsCount ?? 0;
+  return sales * 1000 + views;
+}
+
+function getProductRecencyScore(product: { createdAt?: string; updatedAt?: string }) {
+  const createdAt = product.createdAt ? new Date(product.createdAt).getTime() : 0;
+  const updatedAt = product.updatedAt ? new Date(product.updatedAt).getTime() : 0;
+  return Math.max(createdAt || 0, updatedAt || 0);
+}
+
+function sortProducts(
+  products: Awaited<ReturnType<typeof getGalleryPageViewModel>>["products"],
+  sort: "name" | "price" | "best" | "new",
+) {
+  return [...products].sort((left, right) => {
+    if (sort === "price") {
+      return resolveProductUnitPrice(left) - resolveProductUnitPrice(right) || left.name.localeCompare(right.name, "es", { sensitivity: "base" });
+    }
+
+    if (sort === "best") {
+      return (
+        getProductPopularityScore(right) - getProductPopularityScore(left) ||
+        left.name.localeCompare(right.name, "es", { sensitivity: "base" })
+      );
+    }
+
+    if (sort === "new") {
+      return (
+        getProductRecencyScore(right) - getProductRecencyScore(left) ||
+        left.name.localeCompare(right.name, "es", { sensitivity: "base" })
+      );
+    }
+
+    return left.name.localeCompare(right.name, "es", { sensitivity: "base" });
+  });
 }
 
 export default function GalleryPage({ searchParams }: { searchParams: Promise<GallerySearchParams> }) {
@@ -210,16 +253,7 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
   }, viewer);
   const currentReturnTo = buildHref({});
 
-  const sortedProducts = [...gallery.products].sort((left, right) => {
-    if (sort === "price") {
-      return (
-        resolveProductUnitPrice(left) - resolveProductUnitPrice(right) ||
-        left.name.localeCompare(right.name, "es", { sensitivity: "base" })
-      );
-    }
-
-    return left.name.localeCompare(right.name, "es", { sensitivity: "base" });
-  });
+  const sortedProducts = sortProducts(gallery.products, sort);
 
   const activeFilters = [
     brand ? { label: `Marca: ${brand}`, href: buildHref({ brand: "" }) } : null,
@@ -471,6 +505,26 @@ async function GalleryPageContent({ searchParams }: { searchParams: Promise<Gall
                       }`}
                     >
                       Precio
+                    </Link>
+                    <Link
+                      href={buildHref({ sort: "best", type: "products" })}
+                      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                        sort === "best"
+                          ? "bg-[rgba(200,154,21,0.16)] text-[var(--pf-primary-darker)]"
+                          : "text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
+                      }`}
+                    >
+                      Más vendidos
+                    </Link>
+                    <Link
+                      href={buildHref({ sort: "new", type: "products" })}
+                      className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
+                        sort === "new"
+                          ? "bg-[rgba(200,154,21,0.16)] text-[var(--pf-primary-darker)]"
+                          : "text-[var(--pf-text)] hover:bg-[rgba(245,243,239,0.75)]"
+                      }`}
+                    >
+                      Más nuevos
                     </Link>
                   </div>
                 </div>

@@ -81,9 +81,9 @@ function getProductFabricOptions(product: ProductItem | undefined): AdminFieldOp
 const sidebarSections: { title: string; keys: AdminTableKey[] }[] = [
   {
     title: "Listas",
-    keys: ["products", "product_lots", "product_lot_reservations", "packs", "fabrics", "categories", "users"],
+    keys: ["products", "product_lots", "product_lot_reservations", "packs", "brands", "fabrics", "categories", "users"],
   },
-  { title: "Contenido", keys: ["hero_slides", "banners"] },
+  { title: "Contenido", keys: ["hero_slides", "banners", "payment_methods"] },
 ];
 
 function toDraftValue(field: AdminFieldDefinition, value: unknown): string | number | boolean | null {
@@ -510,6 +510,8 @@ function getCreateLabel(table: AdminTableDefinition) {
       return "Nueva promoción";
     case "brands":
       return "Nueva marca";
+    case "payment_methods":
+      return "Nuevo medio de pago";
     case "fabrics":
       return "Nueva tela";
     case "categories":

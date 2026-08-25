@@ -89,6 +89,22 @@ export const siteContentSchemaSql = `
 
   alter table brands add column if not exists active boolean not null default true;
 
+  create table if not exists payment_methods (
+    id integer primary key,
+    name text not null,
+    logo text,
+    order_index integer not null default 0,
+    active boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now()
+  );
+
+  alter table payment_methods add column if not exists logo text;
+  alter table payment_methods add column if not exists order_index integer not null default 0;
+  alter table payment_methods add column if not exists active boolean not null default true;
+  alter table payment_methods add column if not exists created_at timestamptz not null default now();
+  alter table payment_methods add column if not exists updated_at timestamptz not null default now();
+
   create table if not exists fabrics (
     id integer primary key,
     name text not null,

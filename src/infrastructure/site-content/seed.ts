@@ -83,6 +83,16 @@ export type SeedBrand = {
   active: boolean | null;
 };
 
+export type SeedPaymentMethod = {
+  id: number;
+  name: string;
+  logo: string | null;
+  order_index: number;
+  active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 export type SeedFabric = {
   id: number;
   name: string;
@@ -249,6 +259,18 @@ export function toSeedBrandRows() {
     image: brand.image ?? null,
     active: brand.active ?? true,
   })) satisfies SeedBrand[];
+}
+
+export function toSeedPaymentMethodRows() {
+  return (fallbackSiteContent.paymentMethods ?? []).map((paymentMethod, index) => ({
+    id: paymentMethod.id,
+    name: paymentMethod.name,
+    logo: paymentMethod.logo ?? null,
+    order_index: paymentMethod.order ?? index + 1,
+    active: paymentMethod.active ?? true,
+    created_at: paymentMethod.createdAt ?? null,
+    updated_at: paymentMethod.updatedAt ?? null,
+  })) satisfies SeedPaymentMethod[];
 }
 
 export function toSeedFabricRows() {

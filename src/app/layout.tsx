@@ -4,6 +4,7 @@ import { getActiveSiteBanners, getDynamicHeaderMenus } from "@/application/catal
 import { ViewerProvider } from "@/components/auth/viewer-provider";
 import { CartProvider } from "@/components/cart/cart-context";
 import { CartPanel } from "@/components/cart/cart-panel";
+import { FloatingWhatsAppButton } from "@/components/site/floating-whatsapp-button";
 import { MobileSiteChrome } from "@/components/site/mobile-site-chrome";
 import { SiteBannerStrip } from "@/components/site/site-banner-strip";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -51,6 +52,7 @@ export default async function RootLayout({
               </main>
               <SiteFooter />
               <CartPanel />
+              <FloatingWhatsAppButton />
             </div>
           </CartProvider>
         </ViewerProvider>

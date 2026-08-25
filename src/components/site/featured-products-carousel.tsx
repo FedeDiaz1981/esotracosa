@@ -7,8 +7,9 @@ import { useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "motion/react";
 import type { ProductItem } from "@/domain/site-content";
-import { isNewArrival, publicAsset } from "@/lib/catalog";
+import { formatCurrency, isNewArrival, publicAsset } from "@/lib/catalog";
 import { appendReturnTo } from "@/lib/navigation";
+import { resolveProductUnitPrice } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 
 function getInventoryLabel(product: ProductItem) {
@@ -32,6 +33,22 @@ function getNewLabel(product: ProductItem) {
     : null;
 }
 
+function getSpecialPrice(product: ProductItem) {
+  if (product.memberPrice > 0 && product.memberPrice < product.publicPrice) {
+    return product.memberPrice;
+  }
+
+  return null;
+}
+
+function getPhotoCount(product: ProductItem) {
+  return product.images?.length ?? (product.image ? 1 : 0);
+}
+
+function getVariantCount(product: ProductItem) {
+  return product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
+}
+
 function ProductSeal({ label }: { label: string }) {
   return (
     <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[rgba(200,154,21,0.22)] bg-[var(--pf-primary-darker)] text-[9px] font-black uppercase leading-none tracking-[0.12em] text-white shadow-[0_8px_16px_rgba(29,24,20,0.18)]">
@@ -52,6 +69,10 @@ function MobileFeaturedRail({ products, returnTo }: { products: ProductItem[]; r
             const newLabel = getNewLabel(product);
             const inventoryLabel = getInventoryLabel(product);
             const isOutOfStock = product.stock != null ? product.stock <= 0 : product.status !== "published";
+            const photoCount = getPhotoCount(product);
+            const variantCount = getVariantCount(product);
+            const specialPrice = getSpecialPrice(product);
+            const unitPrice = resolveProductUnitPrice(product);
 
             return (
               <div key={product.id} className="min-w-0 flex-[0_0_66vw] px-2 pb-3">
@@ -63,7 +84,7 @@ function MobileFeaturedRail({ products, returnTo }: { products: ProductItem[]; r
                   transition={{ duration: 0.35, delay: index * 0.03 }}
                   className="group block h-full w-full text-left"
                 >
-                  <article className="flex h-full min-h-[21rem] flex-col overflow-hidden rounded-[1.6rem] border border-[rgba(29,24,20,0.14)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)]">
+                  <article className="flex h-full min-h-[25rem] flex-col overflow-hidden rounded-[1.6rem] border border-[rgba(29,24,20,0.14)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)]">
                     <div className="relative flex-[1.12] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,247,244,1))]">
                       <div className="absolute left-3 top-3 z-10">
                         {newLabel ? (
@@ -83,25 +104,66 @@ function MobileFeaturedRail({ products, returnTo }: { products: ProductItem[]; r
                         ) : null}
                       </div>
 
+                      <div className="absolute bottom-3 left-3 right-3 z-10 flex flex-wrap gap-2">
+                        {photoCount > 1 ? (
+                          <span className="inline-flex items-center rounded-full border border-[rgba(29,24,20,0.12)] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)] shadow-[0_8px_18px_rgba(29,24,20,0.12)]">
+                            +{photoCount - 1} fotos
+                          </span>
+                        ) : null}
+                        {variantCount > 0 ? (
+                          <span className="inline-flex items-center rounded-full border border-[rgba(29,24,20,0.12)] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)] shadow-[0_8px_18px_rgba(29,24,20,0.12)]">
+                            {variantCount} variantes
+                          </span>
+                        ) : null}
+                      </div>
+
                       <div className="absolute inset-0">
                         <Image
                           src={publicAsset(product.image)}
                           alt={product.name}
                           fill
-                          className="object-cover object-center transition duration-500 group-hover:scale-[1.04]"
+                          className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
                           sizes="82vw"
                         />
                       </div>
 
-                      <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                      <div className="absolute bottom-16 left-3 flex flex-wrap gap-2">
                         {product.vegano ? <ProductSeal label="Vegano" /> : null}
                         {product.kosher ? <ProductSeal label="Kosher" /> : null}
                         {product.testeadoEnAnimales === false ? <ProductSeal label="Cruelty free" /> : null}
                       </div>
                     </div>
 
-                    <div className="flex h-[5.6rem] flex-col justify-center border-t border-[rgba(29,24,20,0.08)] px-3 py-2 text-center">
-                      <h3 className="line-clamp-2 text-[0.92rem] font-medium leading-5 text-[var(--pf-text)]">{product.name}</h3>
+                    <div className="flex min-h-[8.5rem] flex-col justify-between border-t border-[rgba(29,24,20,0.08)] px-3 py-3">
+                      <div className="text-center">
+                        <h3 className="line-clamp-2 text-[0.92rem] font-medium leading-5 text-[var(--pf-text)]">{product.name}</h3>
+                        <p className="mt-2 text-[1rem] font-black tracking-[-0.03em] text-[var(--pf-text)]">
+                          {formatCurrency(unitPrice)}
+                        </p>
+                        {specialPrice ? (
+                          <p className="mt-1 text-[11px] font-semibold text-[var(--pf-primary-darker)]">
+                            Transferencia / efectivo {formatCurrency(specialPrice)}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-[11px] font-semibold text-[var(--pf-muted)]">Cuotas disponibles</p>
+                        )}
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap justify-center gap-2">
+                        <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(200,154,21,0.08)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                          Cuotas
+                        </span>
+                        {photoCount > 1 ? (
+                          <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(255,255,255,0.9)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                            +{photoCount - 1} fotos
+                          </span>
+                        ) : null}
+                        {variantCount > 0 ? (
+                          <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(255,255,255,0.9)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                            {variantCount} variantes
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </article>
                 </motion.button>
@@ -173,6 +235,10 @@ export function FeaturedProductsCarousel({ products, returnTo }: { products: Pro
             const newLabel = getNewLabel(product);
             const inventoryLabel = getInventoryLabel(product);
             const isOutOfStock = product.stock != null ? product.stock <= 0 : product.status !== "published";
+            const photoCount = getPhotoCount(product);
+            const variantCount = getVariantCount(product);
+            const specialPrice = getSpecialPrice(product);
+            const unitPrice = resolveProductUnitPrice(product);
 
             return (
               <button
@@ -183,7 +249,7 @@ export function FeaturedProductsCarousel({ products, returnTo }: { products: Pro
               >
                 <article
                   data-featured-card
-                  className="flex h-full min-h-[24.5rem] flex-col overflow-hidden rounded-[1.5rem] border border-[rgba(29,24,20,0.16)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]"
+                  className="flex h-full min-h-[27rem] flex-col overflow-hidden rounded-[1.5rem] border border-[rgba(29,24,20,0.16)] bg-white shadow-[0_10px_28px_rgba(29,24,20,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_38px_rgba(29,24,20,0.14)]"
                 >
                   <div className="relative flex-[1.08] overflow-hidden bg-[linear-gradient(180deg,rgba(255,255,255,1),rgba(248,247,244,1))]">
                     <div className="absolute left-3 top-3 z-10">
@@ -204,25 +270,66 @@ export function FeaturedProductsCarousel({ products, returnTo }: { products: Pro
                       ) : null}
                     </div>
 
+                    <div className="absolute bottom-3 left-3 right-3 z-10 flex flex-wrap gap-2">
+                      {photoCount > 1 ? (
+                        <span className="inline-flex items-center rounded-full border border-[rgba(29,24,20,0.12)] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)] shadow-[0_8px_18px_rgba(29,24,20,0.12)]">
+                          +{photoCount - 1} fotos
+                        </span>
+                      ) : null}
+                      {variantCount > 0 ? (
+                        <span className="inline-flex items-center rounded-full border border-[rgba(29,24,20,0.12)] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)] shadow-[0_8px_18px_rgba(29,24,20,0.12)]">
+                          {variantCount} variantes
+                        </span>
+                      ) : null}
+                    </div>
+
                     <div className="absolute inset-0">
                       <Image
                         src={publicAsset(product.image)}
                         alt={product.name}
                         fill
-                        className="object-cover object-center transition duration-500 group-hover:scale-[1.04]"
+                        className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
                         sizes="(max-width: 768px) 82vw, 19rem"
                       />
                     </div>
 
-                    <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                    <div className="absolute bottom-16 left-3 flex flex-wrap gap-2">
                       {product.vegano ? <ProductSeal label="Vegano" /> : null}
                       {product.kosher ? <ProductSeal label="Kosher" /> : null}
                       {product.testeadoEnAnimales === false ? <ProductSeal label="Cruelty free" /> : null}
                     </div>
                   </div>
 
-                  <div className="flex h-[7rem] flex-col justify-center border-t border-[rgba(29,24,20,0.08)] px-4 py-3 text-center">
-                    <h3 className="line-clamp-2 text-[0.98rem] font-medium leading-6 text-[var(--pf-text)]">{product.name}</h3>
+                  <div className="flex min-h-[8.75rem] flex-col justify-between border-t border-[rgba(29,24,20,0.08)] px-4 py-3">
+                    <div className="text-center">
+                      <h3 className="line-clamp-2 text-[0.98rem] font-medium leading-6 text-[var(--pf-text)]">{product.name}</h3>
+                      <p className="mt-2 text-[1.02rem] font-black tracking-[-0.03em] text-[var(--pf-text)]">
+                        {formatCurrency(unitPrice)}
+                      </p>
+                      {specialPrice ? (
+                        <p className="mt-1 text-[11px] font-semibold text-[var(--pf-primary-darker)]">
+                          Transferencia / efectivo {formatCurrency(specialPrice)}
+                        </p>
+                      ) : (
+                        <p className="mt-1 text-[11px] font-semibold text-[var(--pf-muted)]">Cuotas disponibles</p>
+                      )}
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap justify-center gap-2">
+                      <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(200,154,21,0.08)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                        Cuotas
+                      </span>
+                      {photoCount > 1 ? (
+                        <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(255,255,255,0.9)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                          +{photoCount - 1} fotos
+                        </span>
+                      ) : null}
+                      {variantCount > 0 ? (
+                        <span className="inline-flex items-center rounded-full border border-[rgba(212,168,26,0.18)] bg-[rgba(255,255,255,0.9)] px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[var(--pf-text)]">
+                          {variantCount} variantes
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 </article>
               </button>
