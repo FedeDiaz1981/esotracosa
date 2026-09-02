@@ -6,6 +6,7 @@ import type {
   ProductLotReservationItem,
   ProductFabricVariant,
   ProductItem,
+  ProductRelatedItem,
   SiteContentDocument,
 } from "@/domain/site-content";
 import type {
@@ -35,6 +36,7 @@ export type ProductRow = SeedProduct & {
   images: unknown;
   fabric_ids: unknown;
   related_product_ids: unknown;
+  measures: unknown;
   only_members: boolean | null;
 };
 export type ProductLotRow = {
@@ -98,6 +100,7 @@ export type ProductFabricVariantRow = {
   created_at: string | null;
   updated_at: string | null;
 };
+export type ProductRelatedRow = { product_id: number; related_product_id: number; sort_order: number; active: boolean };
 export type BrandRow = SeedBrand;
 export type PaymentMethodRow = SeedPaymentMethod;
 export type FabricRow = SeedFabric;
@@ -170,6 +173,25 @@ function toStringArrayFromJson(value: unknown) {
   return [];
 }
 
+function toProductMeasures(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item, index) => {
+    if (!item || typeof item !== "object") return [];
+    const candidate = item as Record<string, unknown>;
+    const publicPrice = Number(candidate.publicPrice ?? candidate.public_price);
+    if (!Number.isFinite(publicPrice) || publicPrice <= 0) return [];
+    return [{
+      id: String(candidate.id ?? `measure-${index + 1}`),
+      label: String(candidate.label ?? candidate.name ?? "Medida").trim(),
+      width: Number.isFinite(Number(candidate.width)) ? Number(candidate.width) : undefined,
+      depth: Number.isFinite(Number(candidate.depth)) ? Number(candidate.depth) : undefined,
+      height: Number.isFinite(Number(candidate.height)) ? Number(candidate.height) : undefined,
+      unit: String(candidate.unit ?? "cm").trim() || "cm",
+      publicPrice,
+    }];
+  });
+}
+
 export function mapHeaderNavigation(
   scopesRows: SearchScopeRow[],
   sectionsRows: NavSectionRow[],
@@ -220,6 +242,7 @@ export function mapSiteContentDocument(params: {
   productLots?: ProductLotRow[];
   productLotReservations?: ProductLotReservationRow[];
   productFabricVariants: ProductFabricVariantRow[];
+  productRelatedRows: ProductRelatedRow[];
   packs?: PackRow[];
   packItems?: PackItemRow[];
   brands: BrandRow[];
@@ -237,6 +260,7 @@ export function mapSiteContentDocument(params: {
     productLots = [],
     productLotReservations = [],
     productFabricVariants,
+    productRelatedRows,
     packs = [],
     packItems = [],
     brands,
@@ -247,6 +271,13 @@ export function mapSiteContentDocument(params: {
   } = params;
   const productMap = new Map<number, ProductItem>();
   const fabricNameMap = new Map(fabrics.map((fabric) => [fabric.id, fabric.name] as const));
+  const relationMap = new Map<number, number[]>();
+  for (const relation of productRelatedRows) {
+    if (!relation.active) continue;
+    const values = relationMap.get(relation.product_id) ?? [];
+    values.push(relation.related_product_id);
+    relationMap.set(relation.product_id, values);
+  }
 
   const mappedProducts = products.map((product) => {
     const categoryIds = toNumberArray(product.category_ids);
@@ -280,10 +311,13 @@ export function mapSiteContentDocument(params: {
       testeadoEnAnimales: product.testeado_en_animales ?? undefined,
       publicPrice: product.public_price,
       memberPrice: product.member_price,
+      installmentCount: Number(product.installment_count) > 0 ? Number(product.installment_count) : undefined,
+      interestFreeInstallments: toNumberArray(product.interest_free_installments),
+      measures: toProductMeasures(product.measures),
       image: product.image ?? toStringArrayFromJson(product.images)[0] ?? undefined,
       images: toStringArrayFromJson(product.images).length > 0 ? toStringArrayFromJson(product.images) : product.image ? [product.image] : undefined,
       fabricIds: toNumberArray(product.fabric_ids),
-      relatedProductIds: toNumberArray(product.related_product_ids),
+      relatedProductIds: relationMap.get(product.id) ?? toNumberArray(product.related_product_ids),
       fabricVariants: mappedVariants,
       onlyMembers: product.only_members ?? undefined,
       status: product.status,
@@ -443,6 +477,7 @@ export function mapSiteContentDocument(params: {
       updatedAt: method.updated_at ?? undefined,
     }));
 
+  const productRelations: ProductRelatedItem[] = [...relationMap.entries()].map(([productId, relatedProductIds]) => ({ productId, relatedProductIds }));
   return {
     sessionRole: metaRow?.session_role ?? undefined,
     viewMode: metaRow?.view_mode ?? undefined,
@@ -469,6 +504,7 @@ export function mapSiteContentDocument(params: {
       active: banner.active,
     })), 
     products: mappedProducts,
+    productRelations,
     productLots: mappedLots,
     productLotReservations: mappedReservations,
     packs: mappedPacks,

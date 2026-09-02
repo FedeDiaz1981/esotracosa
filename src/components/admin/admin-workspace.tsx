@@ -23,6 +23,16 @@ type PackSelection = {
 };
 
 type TemplateRowMap = Record<string, number>;
+type ProductMeasureDraft = {
+  id: string;
+  label: string;
+  width: number | "";
+  depth: number | "";
+  height: number | "";
+  unit: string;
+  publicPrice: number | "";
+};
+type ProductInstallmentDraft = { count: number | ""; interestFree: boolean };
 
 type CatalogProductRow = Pick<
   ProductItem,
@@ -81,7 +91,7 @@ function getProductFabricOptions(product: ProductItem | undefined): AdminFieldOp
 const sidebarSections: { title: string; keys: AdminTableKey[] }[] = [
   {
     title: "Listas",
-    keys: ["products", "product_lots", "product_lot_reservations", "packs", "brands", "fabrics", "categories", "users"],
+    keys: ["products", "product_related_products", "product_lots", "product_lot_reservations", "packs", "brands", "fabrics", "categories", "users"],
   },
   { title: "Contenido", keys: ["hero_slides", "banners", "payment_methods"] },
 ];
@@ -143,6 +153,10 @@ function toDraftValue(field: AdminFieldDefinition, value: unknown): string | num
 
     return "[]";
   }
+  if (field.kind === "product_measures") {
+    if (typeof value === "string") return value;
+    return Array.isArray(value) ? JSON.stringify(value) : "[]";
+  }
   if (field.kind === "password") {
     return value == null ? "" : String(value);
   }
@@ -171,7 +185,7 @@ function emptyDraftFor(table: AdminTableDefinition): DraftRecord {
       continue;
     }
 
-    if (field.kind === "pack_products" || field.kind === "multiselect" || field.kind === "image_gallery") {
+    if (field.kind === "pack_products" || field.kind === "multiselect" || field.kind === "image_gallery" || field.kind === "product_measures" || field.kind === "product_installments") {
       draft[field.key] = "[]";
       continue;
     }
@@ -241,6 +255,18 @@ function draftFromRow(table: AdminTableDefinition, row: Record<string, unknown> 
         : [];
 
       draft[field.key] = serializeFabricVariants(rowVariants.length > 0 ? rowVariants : fallbackVariants);
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "measures") {
+      draft[field.key] = toDraftValue(field, row.measures);
+      continue;
+    }
+
+    if (table.key === "products" && field.key === "installments") {
+      const count = Number(row.installmentCount ?? 0);
+      const free = Array.isArray(row.interestFreeInstallments) ? row.interestFreeInstallments.map(Number) : [];
+      draft[field.key] = JSON.stringify(count > 0 ? Array.from({ length: count }, (_, index) => ({ count: index + 1, interestFree: free.includes(index + 1) })) : []);
       continue;
     }
 
@@ -360,6 +386,53 @@ function parseFabricVariants(value: unknown) {
 
 function serializeFabricVariants(values: { fabricId: number; image: string; order: number }[]) {
   return JSON.stringify(values.map((item, index) => ({ ...item, order: index + 1 })));
+}
+
+function parseProductMeasures(value: unknown): ProductMeasureDraft[] {
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value) as unknown[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((item, index) => {
+      if (!item || typeof item !== "object") return [];
+      const candidate = item as Record<string, unknown>;
+      return [{
+        id: String(candidate.id ?? `measure-${index + 1}`),
+        label: String(candidate.label ?? "").trim(),
+        width: candidate.width == null || candidate.width === "" ? "" : Number(candidate.width),
+        depth: candidate.depth == null || candidate.depth === "" ? "" : Number(candidate.depth),
+        height: candidate.height == null || candidate.height === "" ? "" : Number(candidate.height),
+        unit: String(candidate.unit ?? "cm"),
+        publicPrice: candidate.publicPrice == null || candidate.publicPrice === "" ? "" : Number(candidate.publicPrice),
+      }];
+    });
+  } catch {
+    return [];
+  }
+}
+
+function serializeProductMeasures(values: ProductMeasureDraft[]) {
+  return JSON.stringify(values.map((item, index) => ({ ...item, id: item.id || `measure-${index + 1}` })));
+}
+
+function parseProductInstallments(value: unknown): ProductInstallmentDraft[] {
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value) as unknown[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const candidate = item as Record<string, unknown>;
+      const count = Number(candidate.count);
+      return Number.isFinite(count) && count > 0 ? [{ count, interestFree: Boolean(candidate.interestFree) }] : [];
+    });
+  } catch {
+    return [];
+  }
+}
+
+function serializeProductInstallments(values: ProductInstallmentDraft[]) {
+  return JSON.stringify(values);
 }
 
 function serializePackSelections(selections: PackSelection[]) {
@@ -1436,6 +1509,8 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                     field.kind === "file" ||
                     field.kind === "image_gallery" ||
                     field.kind === "fabric_variants" ||
+                    field.kind === "product_measures" ||
+                    field.kind === "product_installments" ||
                     field.kind === "select" ||
                     field.kind === "password" ||
                     field.kind === "boolean" ||
@@ -1992,6 +2067,69 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                       </div>
                     );
                   }
+                  if (field.kind === "product_installments") {
+                    const installments = parseProductInstallments(value);
+                    const updateInstallments = (next: ProductInstallmentDraft[]) =>
+                      setEditor((current) => current ? { ...current, draft: { ...current.draft, [field.key]: serializeProductInstallments(next) } } : current);
+                    return (
+                      <div key={field.key} className="md:col-span-2">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">{field.label}</span>
+                          {field.helper ? <span className="text-xs text-[var(--pf-muted)]">{field.helper}</span> : null}
+                        </div>
+                        <div className="space-y-2 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
+                          {installments.map((installment, index) => (
+                            <div key={`${installment.count}-${index}`} className="flex items-center gap-3 rounded-2xl border border-[var(--pf-border-soft)] bg-[#fbf8f1] px-4 py-3">
+                              <input type="number" min="1" value={String(installment.count)} onChange={(event) => updateInstallments(installments.map((item, itemIndex) => itemIndex === index ? { ...item, count: event.target.value === "" ? "" : Number(event.target.value) } : item))} className="w-28 rounded-xl border border-[var(--pf-border-soft)] bg-white px-3 py-2 text-sm" aria-label="Cantidad de cuotas" />
+                              <span className="text-sm text-[var(--pf-muted)]">cuotas</span>
+                              <label className="ml-auto flex items-center gap-2 text-sm font-semibold text-[var(--pf-text)]"><input type="checkbox" checked={installment.interestFree} onChange={(event) => updateInstallments(installments.map((item, itemIndex) => itemIndex === index ? { ...item, interestFree: event.target.checked } : item))} className="h-4 w-4 accent-[var(--pf-primary)]" /> Sin interés</label>
+                              <button type="button" onClick={() => updateInstallments(installments.filter((_, itemIndex) => itemIndex !== index))} className="rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-700">Quitar</button>
+                            </div>
+                          ))}
+                          <button type="button" onClick={() => updateInstallments([...installments, { count: 1, interestFree: false }])} className="rounded-full border border-[rgba(200,154,21,0.28)] bg-[rgba(200,154,21,0.08)] px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)]">+ Agregar cuota</button>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  if (field.kind === "product_measures") {
+                    const measures = parseProductMeasures(value);
+                    const updateMeasures = (next: ProductMeasureDraft[]) =>
+                      setEditor((current) =>
+                        current ? { ...current, draft: { ...current.draft, [field.key]: serializeProductMeasures(next) } } : current,
+                      );
+
+                    return (
+                      <div key={field.key} className="md:col-span-2">
+                        <div className="mb-2 flex items-center justify-between gap-3">
+                          <span className="text-[11px] font-black uppercase tracking-[0.28em] text-[var(--pf-muted)]">{field.label}</span>
+                          {field.helper ? <span className="text-xs text-[var(--pf-muted)]">{field.helper}</span> : null}
+                        </div>
+                        <div className="space-y-3 rounded-[22px] border border-[var(--pf-border-soft)] bg-white p-4">
+                          {measures.map((measure, index) => {
+                            const update = (changes: Partial<ProductMeasureDraft>) =>
+                              updateMeasures(measures.map((item, itemIndex) => (itemIndex === index ? { ...item, ...changes } : item)));
+                            return (
+                              <div key={measure.id} className="rounded-[18px] border border-[var(--pf-border-soft)] bg-[#fbf8f1] p-3">
+                                <div className="grid gap-2 sm:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,0.7fr))_auto]">
+                                  {(["label", "width", "depth", "height"] as const).map((key) => (
+                                    <input key={key} value={String(measure[key])} type={key === "label" ? "text" : "number"} min={key === "label" ? undefined : 0} placeholder={key === "label" ? "Nombre (ej. 2 cuerpos)" : key === "width" ? "Ancho" : key === "depth" ? "Prof.\u00a0" : "Alto"} onChange={(event) => update({ [key]: key === "label" ? event.target.value : event.target.value === "" ? "" : Number(event.target.value) })} className="min-w-0 rounded-xl border border-[var(--pf-border-soft)] bg-white px-3 py-2 text-sm" />
+                                  ))}
+                                  <button type="button" onClick={() => updateMeasures(measures.filter((_, itemIndex) => itemIndex !== index))} className="rounded-xl border border-red-200 px-3 py-2 text-xs font-semibold text-red-700">Quitar</button>
+                                </div>
+                                <div className="mt-2 grid gap-2 sm:grid-cols-3">
+                                  <input value={measure.unit} placeholder="Unidad" onChange={(event) => update({ unit: event.target.value })} className="rounded-xl border border-[var(--pf-border-soft)] bg-white px-3 py-2 text-sm" />
+                                  <input value={String(measure.publicPrice)} type="number" min="1" placeholder="Precio" onChange={(event) => update({ publicPrice: event.target.value === "" ? "" : Number(event.target.value) })} className="rounded-xl border border-[var(--pf-border-soft)] bg-white px-3 py-2 text-sm" />
+                                </div>
+                              </div>
+                            );
+                          })}
+                          <button type="button" onClick={() => updateMeasures([...measures, { id: `measure-${Date.now()}`, label: "", width: "", depth: "", height: "", unit: "cm", publicPrice: "" }])} className="rounded-full border border-[rgba(200,154,21,0.28)] bg-[rgba(200,154,21,0.08)] px-4 py-2 text-sm font-semibold text-[var(--pf-primary-darker)]">+ Agregar medida</button>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   if (field.kind === "fabric_variants") {
                     const variants = parseFabricVariants(value);
                     const fabricOptions = field.options ?? [];

@@ -127,6 +127,9 @@ export type SeedProduct = {
   testeado_en_animales: boolean | null;
   public_price: number;
   member_price: number;
+  installment_count?: number | null;
+  interest_free_installments?: unknown;
+  measures?: unknown;
   image: string | null;
   images?: string[] | null;
   fabric_ids?: number[] | null;

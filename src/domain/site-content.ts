@@ -64,6 +64,9 @@ export interface ProductItem {
   testeadoEnAnimales?: boolean;
   publicPrice: number;
   memberPrice: number;
+  installmentCount?: number;
+  interestFreeInstallments?: number[];
+  measures?: ProductMeasure[];
   image?: string;
   images?: string[];
   fabricIds?: number[];
@@ -84,6 +87,16 @@ export interface ProductItem {
   activeLot?: ProductLotItem | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface ProductMeasure {
+  id: string;
+  label: string;
+  width?: number;
+  depth?: number;
+  height?: number;
+  unit?: string;
+  publicPrice: number;
 }
 
 export interface PackIncludedProduct {
@@ -177,6 +190,11 @@ export interface ProductLotItem {
   updatedAt?: string;
 }
 
+export interface ProductRelatedItem {
+  productId: number;
+  relatedProductIds: number[];
+}
+
 export interface ProductLotReservationItem {
   id: number;
   lotId: number;
@@ -225,6 +243,7 @@ export interface SiteContentDocument {
   heroSlides: HeroSlide[];
   banners: BannerItem[];
   products: ProductItem[];
+  productRelations?: ProductRelatedItem[];
   productLots?: ProductLotItem[];
   productLotReservations?: ProductLotReservationItem[];
   packs?: PackItem[];

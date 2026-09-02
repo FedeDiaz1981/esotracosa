@@ -168,6 +168,16 @@ type FabricVariantDraft = {
   order: number;
 };
 
+type ProductMeasureDraft = {
+  id: string;
+  label: string;
+  width?: number;
+  depth?: number;
+  height?: number;
+  unit: string;
+  publicPrice: number;
+};
+
 function getJsonPayload(formData: FormData): PayloadRecord {
   const raw = formData.get("payload_json");
 
@@ -549,6 +559,47 @@ function parseFabricVariants(value: unknown): FabricVariantDraft[] {
   }
 }
 
+function parseProductMeasures(value: unknown): ProductMeasureDraft[] {
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value) as unknown[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((item, index) => {
+      if (!item || typeof item !== "object") return [];
+      const candidate = item as Record<string, unknown>;
+      const publicPrice = toNumber(candidate.publicPrice);
+      if (!toStringValue(candidate.label) || publicPrice <= 0) return [];
+      return [{
+        id: toStringValue(candidate.id) || `measure-${index + 1}`,
+        label: toStringValue(candidate.label),
+        width: candidate.width === "" || candidate.width == null ? undefined : toNumber(candidate.width),
+        depth: candidate.depth === "" || candidate.depth == null ? undefined : toNumber(candidate.depth),
+        height: candidate.height === "" || candidate.height == null ? undefined : toNumber(candidate.height),
+        unit: toStringValue(candidate.unit) || "cm",
+        publicPrice,
+      }];
+    });
+  } catch {
+    return [];
+  }
+}
+
+function parseProductInstallments(value: unknown) {
+  if (typeof value !== "string" || !value.trim()) return [] as { count: number; interestFree: boolean }[];
+  try {
+    const parsed = JSON.parse(value) as unknown[];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const candidate = item as Record<string, unknown>;
+      const count = Math.floor(toNumber(candidate.count));
+      return count > 0 ? [{ count, interestFree: toBoolean(candidate.interestFree) }] : [];
+    });
+  } catch {
+    return [];
+  }
+}
+
 async function savePack(record: PayloadRecord) {
   const id = record.id ? toNumber(record.id) : await nextNumericId("promotion_packs");
   const title = toStringValue(record.title);
@@ -860,6 +911,8 @@ async function saveProduct(record: PayloadRecord) {
         category_ids: unknown;
         category_names: unknown;
         brand: string;
+        public_price: number;
+        member_price: number;
         status: string;
         image: string | null;
         images: unknown;
@@ -874,9 +927,12 @@ async function saveProduct(record: PayloadRecord) {
         description: string | null;
         source_section: string | null;
         template_row_map: unknown;
+        measures: unknown;
+        installment_count: number | null;
+        interest_free_installments: unknown;
       }>(
         `select sku, presentation, category_id, category_name, category_ids, category_names, brand, status, image, images, fabric_ids, related_product_ids, only_members,
-                featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
+                public_price, member_price, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map, measures, installment_count, interest_free_installments
          from products
          where id = $1
          limit 1`,
@@ -930,14 +986,21 @@ async function saveProduct(record: PayloadRecord) {
       : toBoolean(record.active);
   const status = active ? "published" : "inactive";
   const brand = toStringValue(record.brand) || existing?.brand || "";
-  const price = toNumber(record.price);
+  const measures = parseProductMeasures(record.measures);
+  const price = toNumber(record.price) || existing?.public_price || measures[0]?.publicPrice || 0;
   if (price <= 0) {
     throw new Error("El producto necesita un precio válido.");
   }
   const images = parseStringArray(record.images);
   const image = images[0] || toStringValue(record.image) || existing?.image || null;
   const finalImages = images.length > 0 ? images : image ? [image] : [];
-  const relatedProductIds = parseNumberArray(record.relatedProductIds).filter((productId) => productId !== id);
+  const relatedProductIds = Object.prototype.hasOwnProperty.call(record, "relatedProductIds")
+    ? parseNumberArray(record.relatedProductIds).filter((productId) => productId !== id)
+    : parseNumberArray(existing?.related_product_ids).filter((productId) => productId !== id);
+  const installmentOptions = parseProductInstallments(record.installments);
+  const installmentCount = installmentOptions.reduce((max, item) => Math.max(max, item.count), 0);
+  const interestFreeInstallments = installmentOptions.filter((item) => item.interestFree).map((item) => item.count)
+    .sort((left, right) => left - right);
   const onlyMembers = toBoolean(record.onlyMembers);
   const existingFabricVariants = (existingFabricVariantRows?.rows ?? []).map((variant) => ({
     fabricId: variant.fabric_id,
@@ -992,11 +1055,11 @@ async function saveProduct(record: PayloadRecord) {
         `
           insert into products (
             id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand,
-            vegano, kosher, testeado_en_animales, public_price, member_price, image, images, fabric_ids, related_product_ids, only_members,
+            vegano, kosher, testeado_en_animales, public_price, member_price, measures, installment_count, interest_free_installments, image, images, fabric_ids, related_product_ids, only_members,
             status, featured, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
           ) values (
-            $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16,$17::jsonb,$18::jsonb,$19,$20,
-            $21,$22,$23,$24,$25,$26,$27,$28,$29::jsonb
+            $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18::jsonb,$19,$20::jsonb,$21::jsonb,$22::jsonb,$23,
+            $24,$25,$26,$27,$28,$29,$30,$31,$32::jsonb
           )
           on conflict (id) do update set
             sku = excluded.sku,
@@ -1013,6 +1076,9 @@ async function saveProduct(record: PayloadRecord) {
             testeado_en_animales = excluded.testeado_en_animales,
             public_price = excluded.public_price,
             member_price = excluded.member_price,
+            measures = excluded.measures,
+            installment_count = excluded.installment_count,
+            interest_free_installments = excluded.interest_free_installments,
             image = excluded.image,
             images = excluded.images,
             fabric_ids = excluded.fabric_ids,
@@ -1045,6 +1111,9 @@ async function saveProduct(record: PayloadRecord) {
           record.testeadoEnAnimales == null ? null : toBoolean(record.testeadoEnAnimales),
           price,
           price,
+          JSON.stringify(measures),
+          installmentCount,
+          JSON.stringify(interestFreeInstallments),
           image,
           JSON.stringify(finalImages),
           JSON.stringify(fabricIds),
@@ -1206,10 +1275,29 @@ async function saveMeta(record: PayloadRecord) {
   );
 }
 
+async function saveProductRelatedProducts(record: PayloadRecord) {
+  const productId = toNumber(record.productId);
+  const relatedProductIds = parseNumberArray(record.relatedProductIds).filter((id) => id !== productId);
+
+  if (!productId) throw new Error("Elegí el producto principal.");
+
+  await postgresPool!.query("delete from product_related_products where product_id = $1", [productId]);
+  if (relatedProductIds.length === 0) return;
+
+  await postgresPool!.query(
+    `insert into product_related_products (product_id, related_product_id, sort_order)
+     select $1, related_id, row_number() over ()
+     from unnest($2::int[]) as related_id`,
+    [productId, relatedProductIds],
+  );
+}
+
 async function saveRow(table: AdminTableKey, record: PayloadRecord) {
   switch (table) {
     case "products":
       return saveProduct(record);
+    case "product_related_products":
+      return saveProductRelatedProducts(record);
     case "product_lots":
       return saveProductLot(record);
     case "product_lot_reservations":
@@ -1249,6 +1337,9 @@ async function deleteRow(table: AdminTableKey, id: string) {
   switch (table) {
     case "products":
       await postgresPool!.query("delete from products where id = $1", [toNumber(id)]);
+      return;
+    case "product_related_products":
+      await postgresPool!.query("delete from product_related_products where product_id = $1", [toNumber(id)]);
       return;
     case "product_lots":
       await postgresPool!.query("delete from product_lots where id = $1", [toNumber(id)]);

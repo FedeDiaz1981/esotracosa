@@ -4,6 +4,7 @@ import { getActiveSiteBanners, getDynamicHeaderMenus } from "@/application/catal
 import { ViewerProvider } from "@/components/auth/viewer-provider";
 import { CartProvider } from "@/components/cart/cart-context";
 import { CartPanel } from "@/components/cart/cart-panel";
+import { FloatingCartButton } from "@/components/cart/floating-cart-button";
 import { FloatingWhatsAppButton } from "@/components/site/floating-whatsapp-button";
 import { MobileSiteChrome } from "@/components/site/mobile-site-chrome";
 import { SiteBannerStrip } from "@/components/site/site-banner-strip";
@@ -47,11 +48,16 @@ export default async function RootLayout({
               </div>
               <SiteHeader menus={menus} />
               <MobileSiteChrome menus={menus} />
-              <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-[88px] pb-[72px] lg:overflow-visible lg:pt-0 lg:pb-0">
+              <main
+                id="pf-scroll-root"
+                className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-[88px] pb-[72px] lg:overflow-visible lg:pt-0 lg:pb-0"
+              >
+                <div id="pf-header-focus-sentinel" aria-hidden className="h-px w-px" />
                 {children}
               </main>
               <SiteFooter />
               <CartPanel />
+              <FloatingCartButton />
               <FloatingWhatsAppButton />
             </div>
           </CartProvider>

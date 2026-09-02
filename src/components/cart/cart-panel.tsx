@@ -276,7 +276,7 @@ export function CartPanel({
                       <div className="min-w-0">
                         <p className="truncate text-[11px] font-bold uppercase tracking-[0.24em] text-[var(--pf-muted)]">{item.brand}</p>
                         <h3 className="line-clamp-2 text-base font-black leading-5 text-[var(--pf-text)]">{item.name}</h3>
-                        <p className="mt-1 text-sm text-[var(--pf-muted)]">{item.presentation}</p>
+                        <p className="mt-1 text-sm text-[var(--pf-muted)]">{item.measureLabel ? `${item.measureLabel} · ` : ""}{item.presentation}</p>
                         {item.kind === "lot" ? (
                           <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--pf-secondary-dark)]">
                             {item.reservationId ? "Reserva de lote" : "Reserva pendiente"}

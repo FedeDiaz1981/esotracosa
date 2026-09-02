@@ -145,6 +145,9 @@ export const siteContentSchemaSql = `
     testeado_en_animales boolean,
     public_price integer not null,
     member_price integer not null,
+    measures jsonb not null default '[]'::jsonb,
+    installment_count integer not null default 0,
+    interest_free_installments jsonb not null default '[]'::jsonb,
     image text,
     images jsonb not null default '[]'::jsonb,
     fabric_ids jsonb not null default '[]'::jsonb,
@@ -175,6 +178,28 @@ export const siteContentSchemaSql = `
   alter table products add column if not exists images jsonb not null default '[]'::jsonb;
   alter table products add column if not exists fabric_ids jsonb not null default '[]'::jsonb;
   alter table products add column if not exists related_product_ids jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists measures jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists installment_count integer not null default 0;
+  alter table products add column if not exists interest_free_installments jsonb not null default '[]'::jsonb;
+
+  create table if not exists product_related_products (
+    product_id integer not null references products(id) on delete cascade,
+    related_product_id integer not null references products(id) on delete cascade,
+    sort_order integer not null default 1,
+    active boolean not null default true,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    primary key (product_id, related_product_id),
+    check (product_id <> related_product_id)
+  );
+  create index if not exists product_related_products_product_idx on product_related_products (product_id, sort_order);
+  insert into product_related_products (product_id, related_product_id, sort_order)
+  select p.id, (related_id.value)::integer, related_id.ordinality::integer
+  from products p
+  cross join lateral jsonb_array_elements_text(coalesce(p.related_product_ids, '[]'::jsonb)) with ordinality as related_id(value, ordinality)
+  where p.deleted_at is null and (related_id.value)::integer <> p.id
+    and exists (select 1 from products related where related.id = (related_id.value)::integer and related.deleted_at is null)
+  on conflict (product_id, related_product_id) do nothing;
   alter table products add column if not exists only_members boolean not null default false;
   alter table products add column if not exists template_row_map jsonb not null default '{}'::jsonb;
   alter table products add column if not exists deleted_at timestamptz;
@@ -266,6 +291,21 @@ export const siteContentSchemaSql = `
   create index if not exists product_lot_reservations_confirmed_by_user_id_idx on product_lot_reservations (confirmed_by_user_id);
   create index if not exists product_lot_reservations_cancelled_by_user_id_idx on product_lot_reservations (cancelled_by_user_id);
 
+  create table if not exists product_fabric_variants (
+    product_id integer not null references products(id) on delete cascade,
+    fabric_id integer not null references fabrics(id),
+    image text not null,
+    sort_order integer not null default 1,
+    created_at timestamptz not null default now(),
+    updated_at timestamptz not null default now(),
+    primary key (product_id, fabric_id)
+  );
+
+  alter table product_fabric_variants add column if not exists image text not null default '';
+  alter table product_fabric_variants add column if not exists sort_order integer not null default 1;
+  alter table product_fabric_variants add column if not exists created_at timestamptz not null default now();
+  alter table product_fabric_variants add column if not exists updated_at timestamptz not null default now();
+
   create or replace view v_product_lot_progress as
     select
       pl.id as lot_id,
@@ -344,21 +384,6 @@ export const siteContentSchemaSql = `
     inner join users u on u.id = r.user_id
     left join fabrics f on f.id = pl.fixed_fabric_id
     where pl.deleted_at is null and p.deleted_at is null;
-
-  create table if not exists product_fabric_variants (
-    product_id integer not null references products(id) on delete cascade,
-    fabric_id integer not null references fabrics(id),
-    image text not null,
-    sort_order integer not null default 1,
-    created_at timestamptz not null default now(),
-    updated_at timestamptz not null default now(),
-    primary key (product_id, fabric_id)
-  );
-
-  alter table product_fabric_variants add column if not exists image text not null default '';
-  alter table product_fabric_variants add column if not exists sort_order integer not null default 1;
-  alter table product_fabric_variants add column if not exists created_at timestamptz not null default now();
-  alter table product_fabric_variants add column if not exists updated_at timestamptz not null default now();
 
   create table if not exists promotion_packs (
     id integer primary key,

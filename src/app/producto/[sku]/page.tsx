@@ -73,12 +73,7 @@ export default async function ProductPage({
   const currentProductReturnTo = `/producto/${sku}`;
   const relatedProducts = content.products
     .filter((item) => item.id !== product.id && isVisibleProduct(item, authenticated))
-    .filter((item) => {
-      const relatedById = (product.relatedProductIds ?? []).includes(item.id);
-      const relatedByCategory = item.categoryId === product.categoryId || item.categoryNames?.includes(product.categoryName);
-      const relatedByBrand = item.brand === product.brand;
-      return relatedById || relatedByCategory || relatedByBrand;
-    })
+    .filter((item) => (product.relatedProductIds ?? []).includes(item.id))
     .sort((left, right) => {
       const leftScore = (product.relatedProductIds ?? []).includes(left.id) ? 2 : 0;
       const rightScore = (product.relatedProductIds ?? []).includes(right.id) ? 2 : 0;
@@ -246,7 +241,7 @@ export default async function ProductPage({
           <SectionTitle
             eyebrow="Relacionados"
             title="Mas sofas"
-            description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
+            description="Productos complementarios elegidos especialmente para este producto."
           />
 
           <div className="mt-6 flex justify-center">

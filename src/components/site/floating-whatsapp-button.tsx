@@ -2,22 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
-function buildWhatsAppHref() {
-  const message = "Hola, estoy viendo la web de Es Otra Cosa y quisiera asesoramiento.";
-  const directUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL?.trim();
-  const phoneNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "");
-
-  if (directUrl) {
-    return directUrl;
-  }
-
-  if (phoneNumber) {
-    return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-  }
-
-  return "#asesor";
-}
+import { buildWhatsAppHref } from "@/lib/whatsapp";
 
 export function FloatingWhatsAppButton() {
   const href = buildWhatsAppHref();

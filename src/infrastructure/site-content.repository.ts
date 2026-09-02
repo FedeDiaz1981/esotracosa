@@ -21,6 +21,7 @@ import {
   type NavItemRow,
   type NavSectionRow,
   type ProductRow,
+  type ProductRelatedRow,
   type SearchScopeRow,
   type SiteMetaRow,
   type UserRow,
@@ -75,11 +76,15 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
     );
     const productRows = await readRows<ProductRow>(
       client,
-      "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, images, fabric_ids, related_product_ids, only_members, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by id",
+      "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, measures, installment_count, interest_free_installments, image, images, fabric_ids, related_product_ids, only_members, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by id",
     );
     const productLotRows = await readRows<ProductLotRow>(
       client,
       "select id, product_id, fixed_fabric_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price, status, only_members, image, completed_at, completion_email_sent_at, admin_notified_at, deleted_at, created_at, updated_at from product_lots where deleted_at is null order by created_at desc, id desc",
+    );
+    const productRelatedRows = await readRows<ProductRelatedRow>(
+      client,
+      "select product_id, related_product_id, sort_order, active from product_related_products order by product_id, sort_order, related_product_id",
     );
     const productLotReservationRows = await readRows<ProductLotReservationRow>(
       client,
@@ -168,6 +173,7 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
       productLots: productLotRows,
       productLotReservations: productLotReservationRows,
       productFabricVariants: productFabricVariantRows,
+      productRelatedRows,
       packs: packRows,
       packItems: packItemRows,
       brands: brandRows,

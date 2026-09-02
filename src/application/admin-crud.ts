@@ -17,7 +17,8 @@ export type AdminTableKey =
   | "payment_methods"
   | "fabrics"
   | "users"
-  | "products";
+  | "products"
+  | "product_related_products";
 
 export type AdminFieldKind =
   | "text"
@@ -31,7 +32,10 @@ export type AdminFieldKind =
   | "select"
   | "password"
   | "template_rows"
-  | "fabric_variants";
+  | "fabric_variants"
+  | "product_measures"
+  | "product_installments"
+  | "product_related_products";
 
 export interface AdminFieldOption {
   value: string;
@@ -80,6 +84,7 @@ export interface AdminCrudViewModel {
 
 const tableOrder: AdminTableKey[] = [
   "products",
+  "product_related_products",
   "product_lots",
   "product_lot_reservations",
   "packs",
@@ -175,6 +180,14 @@ function fabricVariantsField(
   return { key, label, kind: "fabric_variants", helper, options };
 }
 
+function productMeasuresField(key: string, label: string, helper?: string): AdminFieldDefinition {
+  return { key, label, kind: "product_measures", helper };
+}
+
+function productInstallmentsField(key: string, label: string, helper?: string): AdminFieldDefinition {
+  return { key, label, kind: "product_installments", helper };
+}
+
 function multiselectField(
   key: string,
   label: string,
@@ -249,17 +262,21 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         textareaField("detail", "Detalle", true),
         multiselectField("categoryIds", "Categorias", visibleCategoryOptions, "Elegi una o mas categorias visibles."),
         numberField("price", "Precio", true),
+        productMeasuresField(
+          "measures",
+          "Medidas y precios",
+          "Cargá una o más medidas. Cada medida puede tener su propio precio.",
+        ),
+        productInstallmentsField(
+          "installments",
+          "Cuotas disponibles",
+          "Agregá cada opción e indicá cuáles son sin interés.",
+        ),
         fabricVariantsField(
           "fabricVariants",
           "Telas",
           fabricOptions,
           "Marcá en qué telas está disponible este producto y cargá una foto para cada una.",
-        ),
-        multiselectField(
-          "relatedProductIds",
-          "Productos relacionados",
-          productOptions,
-          "Elegí otros productos que se mostrarán como relacionados.",
         ),
         booleanField("onlyMembers", "Sólo miembros", "Si está activo, sólo lo verán usuarios logueados."),
         imageGalleryField("images", "Imagenes", "Subí hasta 5 fotos del producto."),
@@ -281,6 +298,29 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
           "Fila por template",
           "Uso interno. Completa la fila exacta a marcar por cada plantilla guardada.",
         ),
+      ],
+    },
+    {
+      key: "product_related_products",
+      label: "Productos relacionados",
+      description: "Configurá qué productos sugerir como complementos en la tienda.",
+      idField: "productId",
+      rowLabelField: "productLabel",
+      rows: (content.productRelations ?? []).map((relation) => ({
+        productId: relation.productId,
+        productLabel: productOptions.find((option) => Number(option.value) === relation.productId)?.label ?? `Producto ${relation.productId}`,
+        relatedProductIds: JSON.stringify(relation.relatedProductIds),
+        relatedProductLabels: relation.relatedProductIds
+          .map((id) => productOptions.find((option) => Number(option.value) === id)?.label ?? `Producto ${id}`)
+          .join(", "),
+      })),
+      columns: [
+        { key: "productLabel", label: "Producto" },
+        { key: "relatedProductLabels", label: "Productos sugeridos" },
+      ],
+      fields: [
+        selectField("productId", "Producto principal", productOptions, true),
+        multiselectField("relatedProductIds", "Productos relacionados", productOptions, "Elegí uno o más productos complementarios."),
       ],
     },
     {

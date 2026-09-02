@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { PackItem, ProductItem, ProductLotItem } from "@/domain/site-content";
+import type { PackItem, ProductItem, ProductLotItem, ProductMeasure } from "@/domain/site-content";
 
 export type CartLine = {
   kind: "product" | "pack" | "lot";
@@ -13,6 +13,8 @@ export type CartLine = {
   image?: string;
   publicPrice: number;
   memberPrice: number;
+  measureId?: string;
+  measureLabel?: string;
   quantity: number;
   lotId?: number;
   reservationId?: number;
@@ -28,7 +30,7 @@ type CartContextValue = {
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
-  addItem: (product: ProductItem, quantity?: number) => void;
+  addItem: (product: ProductItem, quantity?: number, measure?: ProductMeasure | null) => void;
   addPack: (pack: PackItem, quantity?: number) => void;
   addLot: (lot: ProductLotItem, quantity?: number, reservationId?: number) => void;
   updateQuantity: (sku: string, quantity: number) => void;
@@ -64,6 +66,8 @@ function safeParseCart(value: string | null): CartLine[] {
         image: item.image ? String(item.image) : undefined,
         publicPrice: Number(item.publicPrice),
         memberPrice: Number(item.memberPrice ?? item.publicPrice),
+        measureId: item.measureId ? String(item.measureId) : undefined,
+        measureLabel: item.measureLabel ? String(item.measureLabel) : undefined,
         quantity: Math.max(1, Number(item.quantity) || 1),
         lotId: item.lotId == null ? undefined : Number(item.lotId),
         reservationId: item.reservationId == null ? undefined : Number(item.reservationId),
@@ -114,14 +118,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
       openCart: () => setIsOpen(true),
       closeCart: () => setIsOpen(false),
       toggleCart: () => setIsOpen((current) => !current),
-      addItem: (product, quantity = 1) => {
+      addItem: (product, quantity = 1, measure) => {
         setItems((current) => {
           const nextQuantity = Math.max(1, quantity);
-          const existing = current.find((item) => item.sku === product.sku);
+          const measureId = measure?.id;
+          const existing = current.find((item) => item.sku === product.sku && item.measureId === measureId);
 
           if (existing) {
             return current.map((item) =>
-              item.sku === product.sku ? { ...item, quantity: item.quantity + nextQuantity } : item,
+              item.sku === product.sku && item.measureId === measureId ? { ...item, quantity: item.quantity + nextQuantity } : item,
             );
           }
 
@@ -135,8 +140,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
               brand: product.brand,
               presentation: product.presentation,
               image: product.image,
-              publicPrice: product.publicPrice,
+              publicPrice: measure?.publicPrice ?? product.publicPrice,
               memberPrice: product.memberPrice,
+              measureId: measure?.id,
+              measureLabel: measure?.label,
               quantity: nextQuantity,
             },
           ];
