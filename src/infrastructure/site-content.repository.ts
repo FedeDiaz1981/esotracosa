@@ -80,7 +80,7 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
     );
     const productLotRows = await readRows<ProductLotRow>(
       client,
-      "select id, product_id, fixed_fabric_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price, status, only_members, image, completed_at, completion_email_sent_at, admin_notified_at, deleted_at, created_at, updated_at from product_lots where deleted_at is null order by created_at desc, id desc",
+      "select id, product_id, fixed_fabric_id, fixed_measure_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price, status, only_members, image, completed_at, completion_email_sent_at, admin_notified_at, deleted_at, created_at, updated_at from product_lots where deleted_at is null order by created_at desc, id desc",
     );
     const productRelatedRows = await readRows<ProductRelatedRow>(
       client,

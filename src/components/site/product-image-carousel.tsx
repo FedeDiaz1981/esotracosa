@@ -11,18 +11,24 @@ type ProductImageCarouselProps = {
   title?: ReactNode;
 };
 
-export function ProductImageCarousel({ images, alt, eyebrow = "Galeria", title = "Todas las vistas del producto" }: ProductImageCarouselProps) {
+export function ProductImageCarousel({ images, alt, eyebrow, title }: ProductImageCarouselProps) {
   const galleryImages = images.length > 0 ? images : [""];
 
   return (
     <section className="py-12">
       <div className="mx-auto max-w-[1220px] px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">{eyebrow}</p>
-          <h2 className="mt-4 font-serif text-[clamp(1.8rem,3vw,3rem)] leading-tight tracking-[-0.03em] text-[var(--pf-text)]">
-            {title}
-          </h2>
-        </div>
+        {eyebrow || title ? (
+          <div className="mx-auto max-w-4xl text-center">
+            {eyebrow ? (
+              <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">{eyebrow}</p>
+            ) : null}
+            {title ? (
+              <h2 className="mt-4 font-serif text-[clamp(1.8rem,3vw,3rem)] leading-tight tracking-[-0.03em] text-[var(--pf-text)]">
+                {title}
+              </h2>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="product-carousel-mask mt-10 overflow-hidden">
           <div className="product-carousel-track flex w-max">

@@ -172,6 +172,8 @@ export interface ProductLotItem {
   productName?: string;
   fixedFabricId?: number | null;
   fixedFabricName?: string;
+  fixedMeasureId?: string | null;
+  fixedMeasureLabel?: string;
   useFabricImage?: boolean;
   title: string;
   description: string;

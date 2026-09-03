@@ -1,15 +1,19 @@
 ﻿import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import { recordProductView } from "@/app/catalog-actions";
 import { CartAddButton } from "@/components/cart/cart-add-button";
+import { CatalogGrid } from "@/components/site/catalog-grid";
 import { getProductBySku } from "@/application/catalog";
 import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
 import { ProductImageCarousel } from "@/components/site/product-image-carousel";
+import { ProductMeasurePicker } from "@/components/site/product-measure-picker";
+import { ProductDynamicPrice } from "@/components/site/product-dynamic-price";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { getSiteContent } from "@/infrastructure/site-content.repository";
-import { formatCurrency, publicAsset } from "@/lib/catalog";
-import { appendReturnTo, normalizeReturnTo } from "@/lib/navigation";
+import { publicAsset } from "@/lib/catalog";
+import { normalizeReturnTo } from "@/lib/navigation";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 
 function isVisibleProduct(
@@ -27,13 +31,15 @@ function SectionTitle({
   title,
   description,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
 }) {
   return (
     <div className="mx-auto max-w-4xl text-center">
-      <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">{eyebrow}</p>
+      {eyebrow ? (
+        <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">{eyebrow}</p>
+      ) : null}
       <h2 className="mt-4 font-serif text-[clamp(1.8rem,3vw,3rem)] leading-tight tracking-[-0.03em] text-[var(--pf-text)]">
         {title}
       </h2>
@@ -42,7 +48,7 @@ function SectionTitle({
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function DetailRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="grid grid-cols-[170px_1fr] gap-4 border-b border-[rgba(0,0,0,0.08)] py-4 text-sm last:border-b-0">
       <div className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{label}</div>
@@ -85,7 +91,7 @@ export default async function ProductPage({
 
   const imageList = product.images?.length ? product.images : product.image ? [product.image] : [];
   const heroImages = imageList.length > 0 ? imageList : [product.image ?? ""];
-  const heroPrice = resolveProductUnitPrice(product);
+  const heroPrice = resolveProductUnitPrice(product, product.measures?.[0] ?? null);
   const fabricCount = product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
 
   return (
@@ -95,7 +101,6 @@ export default async function ProductPage({
           <Link href={returnTo} className="transition hover:text-[var(--pf-primary-darker)]">
             Volver
           </Link>
-          <span>{product.sku}</span>
         </div>
 
         <section className="border-b border-[rgba(0,0,0,0.08)] px-2 py-12 text-center sm:px-6 lg:py-14">
@@ -108,7 +113,9 @@ export default async function ProductPage({
           </h1>
           <div className="mx-auto mt-8 max-w-[34rem] bg-[#111111] px-6 py-5 text-white sm:px-10">
             <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">Precio</p>
-            <p className="mt-2 font-serif text-[clamp(2.4rem,5vw,4rem)] leading-none">{formatCurrency(heroPrice)}</p>
+            <p className="mt-2 font-serif text-[clamp(2.4rem,5vw,4rem)] leading-none">
+              <ProductDynamicPrice productId={product.id} initialPrice={heroPrice} />
+            </p>
           </div>
           <div className="mt-6 flex justify-center">
             <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
@@ -129,8 +136,6 @@ export default async function ProductPage({
         <ProductImageCarousel
           images={heroImages}
           alt={product.name}
-          eyebrow="Mas vistas"
-          title="Todas las imagenes del producto en loop infinito"
         />
         <div className="mt-4 flex justify-center">
           <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
@@ -140,33 +145,15 @@ export default async function ProductPage({
 
         <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
-            eyebrow="Medidas personalizables"
-            title="Medidas y configuraciones"
-            description="Un bloque visual simple para mostrar las proporciones y opciones del modelo."
+            title="Elegí tu medida"
           />
-
           <div className="mt-10 flex justify-center">
-            <div className="relative w-full max-w-5xl overflow-hidden bg-transparent px-6 py-8 sm:px-10 sm:py-12">
-              <Image
-                src={publicAsset("/assets/images/medidas/01.svg")}
-                alt="Medidas del producto"
-                width={1200}
-                height={700}
-                className="h-auto w-full object-contain"
-                priority={false}
-              />
-            </div>
-          </div>
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
+            <ProductMeasurePicker product={product} />
           </div>
         </section>
 
         <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
-            eyebrow="Sistema de apertura"
             title="Sistema de apertura"
             description="Dibujos de ejemplo meramente ilustrativos."
           />
@@ -183,18 +170,11 @@ export default async function ProductPage({
               />
             </div>
           </div>
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
-          </div>
         </section>
 
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
-            eyebrow="Informacion general"
-            title="Datos claros para la compra"
-            description="La tabla queda simple y legible, sin bloques pesados ni bordes gruesos."
+            title="Información general"
           />
 
           <div className="mx-auto mt-10 max-w-4xl border-t border-[rgba(0,0,0,0.08)]">
@@ -212,20 +192,24 @@ export default async function ProductPage({
 
         <section className="py-12">
           <SectionTitle
-            eyebrow="Caracteristicas generales"
-            title="Lo importante, en una sola mirada"
-            description="Resumen comercial y de visibilidad para que la ficha funcione bien tanto en catalogo como en detalle."
+            title="Características generales"
           />
 
           <div className="mt-10 max-w-4xl border-t border-[rgba(0,0,0,0.08)]">
             {[
-              ["Marca", product.brand],
-              ["Categoria", product.categoryName],
-              ["Precio", formatCurrency(heroPrice)],
-              ["Telas", `${fabricCount} variantes`],
-              ["Solo miembros", product.onlyMembers ? "Si" : "No"],
-              ["Stock", product.stock == null ? "A pedido" : product.stock <= 0 ? "Agotado" : `${product.stock} unidades`],
-            ].map(([label, value]) => (
+              { label: "Marca", value: product.brand },
+              { label: "Categoria", value: product.categoryName },
+              {
+                label: "Precio",
+                value: <ProductDynamicPrice productId={product.id} initialPrice={heroPrice} />,
+              },
+              { label: "Telas", value: `${fabricCount} variantes` },
+              { label: "Solo miembros", value: product.onlyMembers ? "Si" : "No" },
+              {
+                label: "Stock",
+                value: product.stock == null ? "A pedido" : product.stock <= 0 ? "Agotado" : `${product.stock} unidades`,
+              },
+            ].map(({ label, value }) => (
               <DetailRow key={label} label={label} value={value} />
             ))}
           </div>
@@ -239,39 +223,12 @@ export default async function ProductPage({
         {relatedProducts.length > 0 ? (
           <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
-            eyebrow="Relacionados"
-            title="Mas sofas"
-            description="Productos complementarios elegidos especialmente para este producto."
+            title="Productos relacionados"
           />
 
-          <div className="mt-6 flex justify-center">
-            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
-              Agregar al carrito
-            </CartAddButton>
+          <div className="mt-10">
+            <CatalogGrid products={relatedProducts} columns={3} returnTo={currentProductReturnTo} />
           </div>
-
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {relatedProducts.map((item) => (
-              <Link key={item.id} href={appendReturnTo(`/producto/${item.sku}`, currentProductReturnTo)} className="group block">
-                  <div className="relative min-h-[240px] border border-[rgba(0,0,0,0.08)] bg-white">
-                    <Image
-                      src={publicAsset(item.image)}
-                      alt={item.name}
-                      fill
-                      className="object-contain p-6 transition duration-500 group-hover:scale-[1.03]"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  </div>
-                  <div className="pt-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.brand}</p>
-                    <h3 className="mt-2 text-[1.05rem] font-medium text-[var(--pf-text)]">{item.name}</h3>
-                    <p className="mt-2 text-sm font-semibold text-[var(--pf-primary-darker)]">
-                      {formatCurrency(resolveProductUnitPrice(item))}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
           </section>
         ) : null}
 
@@ -311,6 +268,11 @@ export default async function ProductPage({
                 </div>
               </article>
             ))}
+          </div>
+          <div className="mt-8 flex justify-center">
+            <CartAddButton product={product} className="h-12 px-6 text-sm uppercase tracking-[0.22em]">
+              Agregar al carrito
+            </CartAddButton>
           </div>
         </section>
       </div>

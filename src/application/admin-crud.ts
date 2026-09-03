@@ -333,6 +333,7 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         ...lot,
         productLabel: `${lot.productSku ?? lot.productId} · ${lot.productName ?? "Sin producto"}`,
         fabricLabel: lot.fixedFabricName || (lot.fixedFabricId ? `Tela ${lot.fixedFabricId}` : "Sin tela fija"),
+        measureLabel: lot.fixedMeasureLabel || (lot.fixedMeasureId ? `Medida ${lot.fixedMeasureId}` : "Sin medida fija"),
         imageModeLabel: lot.useFabricImage ? "Desde tela" : "Imagen propia",
         availableUnits: Math.max(0, lot.availableUnits),
       })),
@@ -340,6 +341,7 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
         { key: "id", label: "ID" },
         { key: "productLabel", label: "Producto" },
         { key: "fabricLabel", label: "Tela fija" },
+        { key: "measureLabel", label: "Medida fija" },
         { key: "title", label: "Titulo" },
         { key: "lotUnitPrice", label: "Precio lote" },
         { key: "regularUnitPrice", label: "Precio normal" },
@@ -359,6 +361,7 @@ export function getAdminTableDefinitions(content: SiteContentDocument): AdminTab
           "Elegí el producto al que pertenece este lote.",
         ),
         selectField("fixedFabricId", "Tela fija", [], true, "Elegí la tela específica de ese producto."),
+        selectField("fixedMeasureId", "Medida fija", [], true, "Elegí la medida específica de ese producto."),
         booleanField(
           "useFabricImage",
           "Usar imagen de la tela",

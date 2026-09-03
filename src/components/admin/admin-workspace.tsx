@@ -88,6 +88,17 @@ function getProductFabricOptions(product: ProductItem | undefined): AdminFieldOp
   }));
 }
 
+function getProductMeasureOptions(product: ProductItem | undefined): AdminFieldOption[] {
+  if (!product?.measures?.length) {
+    return [];
+  }
+
+  return product.measures.map((measure) => ({
+    value: measure.id,
+    label: measure.label,
+  }));
+}
+
 const sidebarSections: { title: string; keys: AdminTableKey[] }[] = [
   {
     title: "Listas",
@@ -879,6 +890,7 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
   const selectedLotProductId = selectedTable?.key === "product_lots" ? Number(editor?.draft.productId ?? 0) : 0;
   const selectedLotProduct = selectedLotProductId > 0 ? productRowsById.get(selectedLotProductId) : undefined;
   const selectedLotFabricOptions = useMemo(() => getProductFabricOptions(selectedLotProduct), [selectedLotProduct]);
+  const selectedLotMeasureOptions = useMemo(() => getProductMeasureOptions(selectedLotProduct), [selectedLotProduct]);
 
   const visibleRows = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -1697,9 +1709,12 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                     const options =
                       selectedTable.key === "product_lots" && field.key === "fixedFabricId"
                         ? selectedLotFabricOptions
+                        : selectedTable.key === "product_lots" && field.key === "fixedMeasureId"
+                          ? selectedLotMeasureOptions
                         : field.options ?? [];
                     const isLotProductSelect = selectedTable.key === "product_lots" && field.key === "productId";
                     const isLotFabricSelect = selectedTable.key === "product_lots" && field.key === "fixedFabricId";
+                    const isLotMeasureSelect = selectedTable.key === "product_lots" && field.key === "fixedMeasureId";
 
                     return (
                       <label key={field.key} className={`block ${fullWidth ? "md:col-span-2" : ""}`}>
@@ -1721,7 +1736,7 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                                       [field.key]: event.target.value,
                                       ...(isLotProductSelect &&
                                       String(current.draft[field.key] ?? "") !== event.target.value
-                                        ? { fixedFabricId: "" }
+                                        ? { fixedFabricId: "", fixedMeasureId: "" }
                                         : {}),
                                     },
                                   }
@@ -1729,7 +1744,7 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                             )
                           }
                           className="w-full rounded-[22px] border border-[var(--pf-border-soft)] bg-white px-4 py-3 text-sm text-[var(--pf-text)] outline-none transition focus:border-[var(--pf-primary)]"
-                          disabled={isLotFabricSelect && options.length === 0}
+                          disabled={(isLotFabricSelect || isLotMeasureSelect) && options.length === 0}
                         >
                           <option value="">Seleccionar...</option>
                           {options.map((option) => (
@@ -1741,6 +1756,11 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                         {isLotFabricSelect && options.length === 0 ? (
                           <p className="mt-2 text-xs text-[var(--pf-muted)]">
                             Primero elegí un producto con telas cargadas para poder fijar la tela del lote.
+                          </p>
+                        ) : null}
+                        {isLotMeasureSelect && options.length === 0 ? (
+                          <p className="mt-2 text-xs text-[var(--pf-muted)]">
+                            Primero elegí un producto con medidas cargadas para poder fijar la medida del lote.
                           </p>
                         ) : null}
                       </label>

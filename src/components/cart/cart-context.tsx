@@ -44,6 +44,15 @@ const CART_STORAGE_KEY = "pintofruta_cart_v1";
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+function clampQuantity(quantity: number, maximum?: number) {
+  const normalized = Math.max(1, Math.floor(Number(quantity)) || 1);
+  if (maximum == null || !Number.isFinite(maximum)) {
+    return normalized;
+  }
+
+  return Math.min(normalized, Math.max(0, Math.floor(maximum)));
+}
+
 function safeParseCart(value: string | null): CartLine[] {
   if (!value) {
     return [];
@@ -68,7 +77,10 @@ function safeParseCart(value: string | null): CartLine[] {
         memberPrice: Number(item.memberPrice ?? item.publicPrice),
         measureId: item.measureId ? String(item.measureId) : undefined,
         measureLabel: item.measureLabel ? String(item.measureLabel) : undefined,
-        quantity: Math.max(1, Number(item.quantity) || 1),
+        quantity: clampQuantity(
+          item.quantity,
+          item.kind === "lot" && item.lotAvailableUnits != null ? item.lotAvailableUnits : undefined,
+        ),
         lotId: item.lotId == null ? undefined : Number(item.lotId),
         reservationId: item.reservationId == null ? undefined : Number(item.reservationId),
         lotStatus: item.lotStatus ? String(item.lotStatus) : undefined,
@@ -178,22 +190,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
       },
       addLot: (lot, quantity = 1, reservationId) => {
         setItems((current) => {
-          const nextQuantity = Math.max(1, quantity);
+          const nextQuantity = clampQuantity(quantity, lot.availableUnits);
           const reservationKey = reservationId == null ? undefined : Number(reservationId);
           const sku = reservationKey ? `LOT-${lot.id}-${reservationKey}` : `LOT-${lot.id}`;
           const existing = current.find((item) => item.sku === sku);
 
+          if (nextQuantity <= 0) {
+            return current;
+          }
+
           if (existing) {
-            return current.map((item) =>
-              item.sku === sku
-                ? {
-                    ...item,
-                    quantity: item.quantity + nextQuantity,
-                    reservationId: reservationKey ?? item.reservationId,
-                    lotAvailableUnits: lot.availableUnits,
-                  }
-                : item,
-            );
+            return current.map((item) => {
+              if (item.sku !== sku) {
+                return item;
+              }
+
+              return {
+                ...item,
+                quantity: clampQuantity(item.quantity + nextQuantity, lot.availableUnits),
+                reservationId: reservationKey ?? item.reservationId,
+                lotAvailableUnits: lot.availableUnits,
+              };
+            });
           }
 
           return [
@@ -221,7 +239,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
       updateQuantity: (sku, quantity) => {
         setItems((current) =>
           current
-            .map((item) => (item.sku === sku ? { ...item, quantity: Math.max(1, quantity) } : item))
+            .map((item) =>
+              item.sku === sku
+                ? {
+                    ...item,
+                    quantity: clampQuantity(quantity, item.kind === "lot" ? item.lotAvailableUnits : undefined),
+                  }
+                : item,
+            )
             .filter((item) => item.quantity > 0),
         );
       },

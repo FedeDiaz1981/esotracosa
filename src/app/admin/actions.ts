@@ -738,6 +738,7 @@ async function saveProductLot(record: PayloadRecord) {
     ? await postgresPool!.query<{
         product_id: number;
         fixed_fabric_id: number | null;
+        fixed_measure_id: string | null;
         use_fabric_image: boolean | null;
         title: string;
         description: string;
@@ -749,7 +750,7 @@ async function saveProductLot(record: PayloadRecord) {
         only_members: boolean;
         image: string | null;
       }>(
-        `select product_id, fixed_fabric_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price, status, only_members, image
+        `select product_id, fixed_fabric_id, fixed_measure_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price, status, only_members, image
          from product_lots
          where id = $1
          limit 1`,
@@ -764,8 +765,8 @@ async function saveProductLot(record: PayloadRecord) {
     throw new Error("El lote necesita un producto.");
   }
 
-  const productResult = await postgresPool!.query<{ id: number; sku: string; name: string; public_price: number }>(
-    "select id, sku, name, public_price from products where id = $1 and deleted_at is null limit 1",
+  const productResult = await postgresPool!.query<{ id: number; sku: string; name: string; public_price: number; measures: unknown }>(
+    "select id, sku, name, public_price, measures from products where id = $1 and deleted_at is null limit 1",
     [productId],
   );
   const product = productResult.rows[0];
@@ -786,6 +787,21 @@ async function saveProductLot(record: PayloadRecord) {
     record.onlyMembers == null || record.onlyMembers === "" ? existing?.only_members ?? true : toBoolean(record.onlyMembers);
   const useFabricImage =
     record.useFabricImage == null || record.useFabricImage === "" ? existing?.use_fabric_image ?? false : toBoolean(record.useFabricImage);
+  const rawFixedMeasureId =
+    record.fixedMeasureId == null || record.fixedMeasureId === "" ? existing?.fixed_measure_id ?? null : toStringValue(record.fixedMeasureId);
+  const productMeasures = parseProductMeasures(
+    typeof product.measures === "string" ? product.measures : JSON.stringify(product.measures ?? []),
+  );
+  const fixedMeasureId = rawFixedMeasureId?.trim() || null;
+
+  if (productMeasures.length > 0 && !fixedMeasureId) {
+    throw new Error("El lote necesita una medida fija para este producto.");
+  }
+
+  if (fixedMeasureId != null && !productMeasures.some((measure) => measure.id === fixedMeasureId)) {
+    throw new Error("La medida fija elegida no pertenece a este producto.");
+  }
+
   const rawFixedFabricId =
     record.fixedFabricId == null || record.fixedFabricId === "" ? existing?.fixed_fabric_id ?? null : toNumber(record.fixedFabricId);
   const fixedFabricId =
@@ -825,13 +841,14 @@ async function saveProductLot(record: PayloadRecord) {
   await postgresPool!.query(
     `
       insert into product_lots (
-        id, product_id, fixed_fabric_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price,
+        id, product_id, fixed_fabric_id, fixed_measure_id, use_fabric_image, title, description, total_units, reserved_units, regular_unit_price, lot_unit_price,
         status, only_members, image
       )
-      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       on conflict (id) do update set
         product_id = excluded.product_id,
         fixed_fabric_id = excluded.fixed_fabric_id,
+        fixed_measure_id = excluded.fixed_measure_id,
         use_fabric_image = excluded.use_fabric_image,
         title = excluded.title,
         description = excluded.description,
@@ -844,7 +861,7 @@ async function saveProductLot(record: PayloadRecord) {
         image = excluded.image,
         updated_at = now()
     `,
-    [id, productId, fixedFabricId, useFabricImage, title, description, totalUnits, reservedUnits, regularUnitPrice, lotUnitPrice, status, onlyMembers, image],
+    [id, productId, fixedFabricId, fixedMeasureId, useFabricImage, title, description, totalUnits, reservedUnits, regularUnitPrice, lotUnitPrice, status, onlyMembers, image],
   );
 }
 

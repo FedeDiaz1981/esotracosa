@@ -2,15 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { recordProductView } from "@/app/catalog-actions";
-import { getProductBySku } from "@/application/catalog";
+import { CatalogGrid } from "@/components/site/catalog-grid";
 import { ProductFabricGallery } from "@/components/site/product-fabric-gallery";
 import { ProductImageCarousel } from "@/components/site/product-image-carousel";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
 import { getSiteContent } from "@/infrastructure/site-content.repository";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
-import { appendReturnTo, normalizeReturnTo } from "@/lib/navigation";
+import { normalizeReturnTo } from "@/lib/navigation";
 import { LotReservationPanel } from "@/components/site/lot-reservation-panel";
-import { resolveProductUnitPrice } from "@/lib/pricing";
 
 function isVisibleProduct(
   product: {
@@ -27,13 +26,15 @@ function SectionTitle({
   title,
   description,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description?: string;
 }) {
   return (
     <div className="mx-auto max-w-4xl text-center">
-      <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">{eyebrow}</p>
+      {eyebrow ? (
+        <p className="text-[10px] font-black uppercase tracking-[0.45em] text-[var(--pf-secondary-dark)]">{eyebrow}</p>
+      ) : null}
       <h2 className="mt-4 font-serif text-[clamp(1.8rem,3vw,3rem)] leading-tight tracking-[-0.03em] text-[var(--pf-text)]">
         {title}
       </h2>
@@ -71,7 +72,9 @@ export default async function CollectivePurchaseDetailPage({
   }
 
   const product =
-    (lot.productSku ? await getProductBySku(lot.productSku, viewer) : null) ??
+    content.products.find(
+      (item) => lot.productSku && item.sku.toLowerCase() === lot.productSku.toLowerCase() && isVisibleProduct(item, authenticated),
+    ) ??
     content.products.find((item) => item.id === lot.productId && isVisibleProduct(item, authenticated)) ??
     null;
 
@@ -103,15 +106,20 @@ export default async function CollectivePurchaseDetailPage({
   const heroPrice = lot.lotUnitPrice;
   const fabricCount = product.fabricVariants?.length ?? product.fabricIds?.length ?? 0;
   const heroHint = `Cantidad disponible: ${lot.availableUnits} unidades`;
+  const fixedMeasure = product.measures?.find((measure) => measure.id === lot.fixedMeasureId) ?? null;
+  const fixedMeasureDimensions = fixedMeasure
+    ? [fixedMeasure.width, fixedMeasure.depth, fixedMeasure.height].every((value) => value != null)
+      ? `${fixedMeasure.width} x ${fixedMeasure.depth} x ${fixedMeasure.height} ${fixedMeasure.unit ?? "cm"}`
+      : "Medida definida para este lote"
+    : "Sin medida fijada";
 
   return (
     <main className="bg-[#fbf8f2] text-[var(--pf-text)]">
       <div className="mx-auto flex w-full max-w-[1220px] flex-col px-4 py-6 sm:px-6 lg:px-8 lg:py-10">
-        <div className="flex items-center justify-between pb-4 text-[11px] font-black uppercase tracking-[0.35em] text-[var(--pf-muted)]">
+        <div className="flex items-center pb-4 text-[11px] font-black uppercase tracking-[0.35em] text-[var(--pf-muted)]">
           <Link href={returnTo} className="transition hover:text-[var(--pf-primary-darker)]">
             Volver
           </Link>
-          <span>{product.sku}</span>
         </div>
 
         <section className="border-b border-[rgba(0,0,0,0.08)] px-2 py-12 text-center sm:px-6 lg:py-14">
@@ -134,38 +142,28 @@ export default async function CollectivePurchaseDetailPage({
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
           <ProductFabricGallery product={product} fixedFabricId={lot.fixedFabricId ?? null} />
         </section>
+        <LotReservationPanel lot={lot} />
 
         <ProductImageCarousel
           images={heroImages}
           alt={product.name}
-          eyebrow="Mas vistas"
-          title="Todas las imagenes del producto en loop infinito"
         />
+        <LotReservationPanel lot={lot} />
 
         <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
-            eyebrow="Medidas personalizables"
-            title="Medidas y configuraciones"
-            description="Un bloque visual simple para mostrar las proporciones y opciones del modelo."
+            title="Elegí tu medida"
           />
-
-          <div className="mt-10 flex justify-center">
-            <div className="relative w-full max-w-5xl overflow-hidden bg-transparent px-6 py-8 sm:px-10 sm:py-12">
-              <Image
-                src={publicAsset("/assets/images/medidas/01.svg")}
-                alt="Medidas del producto"
-                width={1200}
-                height={700}
-                className="h-auto w-full object-contain"
-                priority={false}
-              />
-            </div>
+          <div className="mx-auto mt-10 max-w-2xl rounded-[1.5rem] border border-[rgba(200,154,21,0.3)] bg-[linear-gradient(180deg,rgba(246,226,167,0.5),rgba(255,250,240,0.95))] p-6 text-center shadow-[0_14px_28px_rgba(200,154,21,0.1)]">
+            <p className="text-[10px] font-black uppercase tracking-[0.38em] text-[var(--pf-muted)]">Medida fijada en el lote</p>
+            <p className="mt-3 text-xl font-black text-[var(--pf-text)]">{lot.fixedMeasureLabel ?? "Sin medida fijada"}</p>
+            <p className="mt-2 text-sm text-[var(--pf-muted)]">{fixedMeasureDimensions}</p>
           </div>
+          <LotReservationPanel lot={lot} />
         </section>
 
         <section className="border-b border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
-            eyebrow="Sistema de apertura"
             title="Sistema de apertura"
             description="Dibujos de ejemplo meramente ilustrativos."
           />
@@ -182,13 +180,12 @@ export default async function CollectivePurchaseDetailPage({
               />
             </div>
           </div>
+          <LotReservationPanel lot={lot} />
         </section>
 
         <section className="border-y border-[rgba(0,0,0,0.08)] py-12">
           <SectionTitle
-            eyebrow="Informacion general"
-            title="Datos claros para la compra"
-            description="La tabla queda simple y legible, sin bloques pesados ni bordes gruesos."
+            title="Información general"
           />
 
           <div className="mx-auto mt-10 max-w-4xl border-t border-[rgba(0,0,0,0.08)]">
@@ -196,14 +193,14 @@ export default async function CollectivePurchaseDetailPage({
             <DetailRow label="Financiacion" value="Tenemos opciones para compras de monto alto." />
             <DetailRow label="Envios" value="Coordinamos entrega y retiro segun la zona." />
             <DetailRow label="Cantidad disponible" value={`${lot.availableUnits} unidades`} />
+            <DetailRow label="Medida" value={lot.fixedMeasureLabel ?? "No especificada"} />
           </div>
+          <LotReservationPanel lot={lot} />
         </section>
 
         <section className="py-12">
           <SectionTitle
-            eyebrow="Caracteristicas generales"
-            title="Lo importante, en una sola mirada"
-            description="Resumen comercial y de visibilidad para que la ficha funcione bien tanto en catalogo como en detalle."
+            title="Características generales"
           />
 
           <div className="mt-10 max-w-4xl border-t border-[rgba(0,0,0,0.08)]">
@@ -218,6 +215,7 @@ export default async function CollectivePurchaseDetailPage({
               <DetailRow key={label} label={label} value={value} />
             ))}
           </div>
+          <LotReservationPanel lot={lot} />
         </section>
 
         <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
@@ -257,37 +255,17 @@ export default async function CollectivePurchaseDetailPage({
               </article>
             ))}
           </div>
+          <LotReservationPanel lot={lot} />
         </section>
 
         {relatedProducts.length > 0 ? (
           <section className="border-t border-[rgba(0,0,0,0.08)] py-12">
             <SectionTitle
-              eyebrow="Relacionados"
-              title="Mas sofas"
-              description="Productos que combinan por categoria, marca o por la relacion cargada en la ficha."
+              title="Productos relacionados"
             />
 
-            <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {relatedProducts.map((item) => (
-                <Link key={item.id} href={appendReturnTo(`/producto/${item.sku}`, currentReturnTo)} className="group block">
-                  <div className="relative min-h-[240px] border border-[rgba(0,0,0,0.08)] bg-white">
-                    <Image
-                      src={publicAsset(item.image)}
-                      alt={item.name}
-                      fill
-                      className="object-contain p-6 transition duration-500 group-hover:scale-[1.03]"
-                      sizes="(max-width: 768px) 100vw, 33vw"
-                    />
-                  </div>
-                  <div className="pt-4">
-                    <p className="text-[10px] font-black uppercase tracking-[0.34em] text-[var(--pf-muted)]">{item.brand}</p>
-                    <h3 className="mt-2 text-[1.05rem] font-medium text-[var(--pf-text)]">{item.name}</h3>
-                    <p className="mt-2 text-sm font-semibold text-[var(--pf-primary-darker)]">
-                      {formatCurrency(resolveProductUnitPrice(item))}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+            <div className="mt-10">
+              <CatalogGrid products={relatedProducts} columns={3} returnTo={currentReturnTo} />
             </div>
           </section>
         ) : null}

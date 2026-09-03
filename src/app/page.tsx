@@ -60,7 +60,6 @@ export default async function HomePage() {
             <SectionHeading
               eyebrow="Solo miembros"
               title="Compra colectiva"
-              description="Reserva sillones con tela fija y precio por lote, disponible solo para usuarios logueados."
             />
             <CollectivePurchaseCarousel lots={content.collectivePurchaseLots} returnTo="/" />
           </section>

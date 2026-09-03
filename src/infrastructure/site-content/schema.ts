@@ -232,6 +232,7 @@ export const siteContentSchemaSql = `
   alter table product_lots add column if not exists regular_unit_price integer not null default 0;
   alter table product_lots add column if not exists lot_unit_price integer not null default 0;
   alter table product_lots add column if not exists fixed_fabric_id integer references fabrics(id);
+  alter table product_lots add column if not exists fixed_measure_id text;
   alter table product_lots add column if not exists use_fabric_image boolean not null default false;
   alter table product_lots add column if not exists status text not null default 'draft';
   alter table product_lots add column if not exists only_members boolean not null default true;

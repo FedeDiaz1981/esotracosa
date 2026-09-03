@@ -95,7 +95,7 @@ export function FloatingCartButton() {
       onClick={toggleCart}
       aria-label={isOpen ? "Cerrar carrito" : `Abrir carrito con ${totalItems} productos`}
       className={[
-        "group right-4 bottom-[220px] z-[2147483000] overflow-hidden rounded-full border border-[rgba(200,154,21,0.24)]",
+        "group hidden right-4 bottom-[220px] z-[2147483000] overflow-hidden rounded-full border border-[rgba(200,154,21,0.24)] md:block",
         "bg-[linear-gradient(135deg,var(--pf-surface),rgba(250,247,242,0.88),rgba(227,188,70,0.16))]",
         "px-4 py-3 text-left text-[var(--pf-text)] shadow-[0_18px_42px_rgba(29,24,20,0.16)]",
         "backdrop-blur-md transition duration-300 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(212,168,26,0.45)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--pf-surface)]",

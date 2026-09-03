@@ -43,6 +43,7 @@ export type ProductLotRow = {
   id: number;
   product_id: number;
   fixed_fabric_id: number | null;
+  fixed_measure_id: string | null;
   use_fabric_image: boolean | null;
   title: string;
   description: string;
@@ -347,6 +348,8 @@ export function mapSiteContentDocument(params: {
       const fixedFabricId = lot.fixed_fabric_id ?? null;
       const product = productMap.get(lot.product_id);
       const resolvedFabric = product?.fabricVariants?.find((variant) => variant.fabricId === fixedFabricId);
+      const fixedMeasureId = lot.fixed_measure_id ?? null;
+      const resolvedMeasure = product?.measures?.find((measure) => measure.id === fixedMeasureId);
       const resolvedImage = lot.use_fabric_image ? resolvedFabric?.image ?? lot.image ?? undefined : lot.image ?? undefined;
 
       return {
@@ -356,6 +359,8 @@ export function mapSiteContentDocument(params: {
         productName: product?.name,
         fixedFabricId,
         fixedFabricName: resolvedFabric?.fabricName,
+        fixedMeasureId,
+        fixedMeasureLabel: resolvedMeasure?.label,
         useFabricImage: Boolean(lot.use_fabric_image),
         title: lot.title,
         description: lot.description,
