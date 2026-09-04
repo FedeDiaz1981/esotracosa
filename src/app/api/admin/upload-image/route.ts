@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const fallbackName = toStringValue(formData.get("fallbackName")) || "imagen";
 
     if (!(fileEntry instanceof File) || fileEntry.size <= 0) {
-      return Response.json({ ok: false, error: "Falta el archivo de imagen." }, { status: 400 });
+      return Response.json({ ok: false, error: "Falta el archivo de imagen o video." }, { status: 400 });
     }
 
     adminLog("request:start", {
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "No se pudo subir la imagen.",
+        error: error instanceof Error ? error.message : "No se pudo subir el archivo.",
       },
       { status: 500 },
     );

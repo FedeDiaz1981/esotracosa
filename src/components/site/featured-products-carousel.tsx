@@ -7,7 +7,7 @@ import { useRef, useState, type KeyboardEvent } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "motion/react";
 import type { ProductItem } from "@/domain/site-content";
-import { formatCurrency, isNewArrival, publicAsset } from "@/lib/catalog";
+import { formatCurrency, isNewArrival, isVideoAsset, publicAsset } from "@/lib/catalog";
 import { appendReturnTo } from "@/lib/navigation";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 import { ProductDetailModal } from "@/components/site/product-detail-modal";
@@ -129,13 +129,17 @@ function FeaturedCard({
           </div>
 
           <div className="absolute inset-0">
-            <Image
-              src={publicAsset(product.image)}
-              alt={product.name}
-              fill
-              className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
-              sizes="(max-width: 768px) 82vw, 19rem"
-            />
+            {isVideoAsset(product.image) ? (
+              <video src={publicAsset(product.image)} muted playsInline className="h-full w-full object-contain p-4" />
+            ) : (
+              <Image
+                src={publicAsset(product.image)}
+                alt={product.name}
+                fill
+                className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 82vw, 19rem"
+              />
+            )}
           </div>
 
           <div className="absolute bottom-16 left-3 flex flex-wrap gap-2">

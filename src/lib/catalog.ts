@@ -10,6 +10,10 @@ export function publicAsset(path: string | undefined | null, fallback = "/assets
   return path.startsWith("/") ? path : `/${path}`;
 }
 
+export function isVideoAsset(path: string | undefined | null) {
+  return /\.(mp4|webm|mov|m4v|ogg)(?:[?#].*)?$/i.test(path ?? "");
+}
+
 export function formatCurrency(value: number | null | undefined) {
   if (value == null || Number.isNaN(value)) {
     return "Sin calcular";

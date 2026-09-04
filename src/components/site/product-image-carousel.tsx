@@ -1,8 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { publicAsset } from "@/lib/catalog";
+import { useEffect, useState } from "react";
+import { isVideoAsset, publicAsset } from "@/lib/catalog";
 
 type ProductImageCarouselProps = {
   images: string[];
@@ -13,6 +15,30 @@ type ProductImageCarouselProps = {
 
 export function ProductImageCarousel({ images, alt, eyebrow, title }: ProductImageCarouselProps) {
   const galleryImages = images.length > 0 ? images : [""];
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (activeIndex == null) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setActiveIndex(null);
+      if (event.key === "ArrowLeft") {
+        setActiveIndex((current) => (current == null ? null : (current - 1 + galleryImages.length) % galleryImages.length));
+      }
+      if (event.key === "ArrowRight") {
+        setActiveIndex((current) => (current == null ? null : (current + 1) % galleryImages.length));
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [activeIndex, galleryImages.length]);
+
+  const activeImage = activeIndex == null ? "" : galleryImages[activeIndex] ?? "";
 
   return (
     <section className="py-12">
@@ -37,8 +63,20 @@ export function ProductImageCarousel({ images, alt, eyebrow, title }: ProductIma
                 {galleryImages.map((image, index) => (
                   <div
                     key={`${groupIndex}-${image || "empty"}-${index}`}
-                    className="product-carousel-item relative h-[260px] w-[min(34vw,560px)] min-w-[320px] flex-none bg-[#e7e7e7] sm:h-[320px] lg:h-[380px] lg:w-[min(30vw,560px)]"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setActiveIndex(index)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setActiveIndex(index);
+                      }
+                    }}
+                    className="product-carousel-item relative h-[260px] w-[min(34vw,560px)] min-w-[320px] flex-none cursor-zoom-in bg-[#e7e7e7] sm:h-[320px] lg:h-[380px] lg:w-[min(30vw,560px)]"
                   >
+                    {isVideoAsset(image) ? (
+                      <video src={publicAsset(image)} muted playsInline className="pointer-events-none h-full w-full object-contain p-4" />
+                    ) : (
                     <Image
                       src={publicAsset(image)}
                       alt={`${alt} ${index + 1}`}
@@ -46,6 +84,7 @@ export function ProductImageCarousel({ images, alt, eyebrow, title }: ProductIma
                       className="object-contain p-4"
                       sizes="(max-width: 768px) 82vw, 33vw"
                     />
+                    )}
                   </div>
                 ))}
               </div>
@@ -53,6 +92,31 @@ export function ProductImageCarousel({ images, alt, eyebrow, title }: ProductIma
           </div>
         </div>
       </div>
+
+      {activeIndex != null ? (
+        <div className="fixed inset-0 z-[12000] flex items-center justify-center bg-[rgba(20,17,14,0.88)] p-4 sm:p-8" role="dialog" aria-modal="true" aria-label="Visor de imágenes del producto" onClick={() => setActiveIndex(null)}>
+          <button type="button" onClick={() => setActiveIndex(null)} className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--pf-text)] shadow-lg" aria-label="Cerrar visor">
+            <X className="size-5" />
+          </button>
+          {galleryImages.length > 1 ? (
+            <>
+              <button type="button" onClick={(event) => { event.stopPropagation(); setActiveIndex((current) => (current == null ? null : (current - 1 + galleryImages.length) % galleryImages.length)); }} className="absolute left-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--pf-text)] shadow-lg sm:left-8" aria-label="Archivo anterior">
+                <ChevronLeft className="size-6" />
+              </button>
+              <button type="button" onClick={(event) => { event.stopPropagation(); setActiveIndex((current) => (current == null ? null : (current + 1) % galleryImages.length)); }} className="absolute right-3 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white text-[var(--pf-text)] shadow-lg sm:right-8" aria-label="Archivo siguiente">
+                <ChevronRight className="size-6" />
+              </button>
+            </>
+          ) : null}
+          <div className="relative flex h-full w-full max-w-6xl items-center justify-center" onClick={(event) => event.stopPropagation()}>
+            {isVideoAsset(activeImage) ? (
+              <video src={publicAsset(activeImage)} controls autoPlay playsInline className="max-h-full max-w-full rounded-xl object-contain" />
+            ) : (
+              <Image src={publicAsset(activeImage)} alt={`${alt} ${activeIndex + 1}`} width={1600} height={1200} className="max-h-full w-auto max-w-full rounded-xl object-contain" priority />
+            )}
+          </div>
+        </div>
+      ) : null}
 
       <style jsx global>{`
         .product-carousel-mask {

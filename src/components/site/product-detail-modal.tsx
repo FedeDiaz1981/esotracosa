@@ -8,7 +8,7 @@ import { useViewer } from "@/components/auth/viewer-provider";
 import { CartAddButton } from "@/components/cart/cart-add-button";
 import { ProductLotOffer } from "@/components/site/product-lot-offer";
 import type { ProductItem } from "@/domain/site-content";
-import { formatCurrency, publicAsset } from "@/lib/catalog";
+import { formatCurrency, isVideoAsset, publicAsset } from "@/lib/catalog";
 import { appendReturnTo } from "@/lib/navigation";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 import { buildProductWhatsAppHref } from "@/lib/whatsapp";
@@ -215,6 +215,16 @@ export function ProductDetailModal({
 
                 <div className="relative min-h-[300px] overflow-hidden rounded-[1.75rem] border border-[rgba(255,255,255,0.7)] bg-[rgba(255,255,255,0.82)] shadow-[inset_0_1px_0_rgba(255,255,255,0.85),0_18px_38px_rgba(29,24,20,0.08)] sm:min-h-[420px]">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.9),transparent_58%)]" />
+                  {isVideoAsset(selectedImage) ? (
+                    <video
+                      key={selectedImage || product.id}
+                      src={publicAsset(selectedImage)}
+                      controls
+                      muted
+                      playsInline
+                      className="h-full w-full object-contain p-6 sm:p-8"
+                    />
+                  ) : (
                   <Image
                     key={selectedImage || product.id}
                     src={publicAsset(selectedImage)}
@@ -224,6 +234,7 @@ export function ProductDetailModal({
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     priority
                   />
+                  )}
                 </div>
 
                 {fabricVariants.length > 0 ? (

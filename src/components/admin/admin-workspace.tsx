@@ -1959,14 +1959,14 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
 
                                   <label className="flex min-h-24 cursor-pointer flex-col justify-center gap-2 rounded-[16px] border border-dashed border-[rgba(200,154,21,0.22)] bg-white px-3 py-3 text-center transition hover:bg-[rgba(200,154,21,0.06)]">
                                     <span className="text-sm font-bold text-[var(--pf-primary-darker)]">
-                                      {imageValue ? "Cambiar imagen" : "Subir imagen"}
+                                      {imageValue ? "Cambiar imagen o video" : "Subir imagen o video"}
                                     </span>
                                     <span className="text-[11px] text-[var(--pf-muted)]">
                                       {selectedFileName || (imageValue ? "Imagen cargada" : "TodavÃ­a no hay foto")}
                                     </span>
                                     <input
                                       type="file"
-                                      accept="image/*"
+                                      accept="image/*,video/*"
                                       className="sr-only"
                                       disabled={Boolean(uploadState?.loading)}
                                       onChange={async (event) => {
@@ -2072,7 +2072,11 @@ export function AdminWorkspace({ model, viewerName }: { model: AdminCrudViewMode
                                   {imageValue ? (
                                     <div className="overflow-hidden rounded-[14px] border border-[var(--pf-border-soft)] bg-white">
                                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                                      <img src={imageValue} alt={`${field.label} ${index + 1}`} className="h-32 w-full object-contain p-2" />
+                                      {imageValue.match(/\.(mp4|webm|mov|m4v|ogg)(?:[?#].*)?$/i) ? (
+                                        <video src={imageValue} controls muted playsInline className="h-32 w-full object-contain p-2" />
+                                      ) : (
+                                        <img src={imageValue} alt={`${field.label} ${index + 1}`} className="h-32 w-full object-contain p-2" />
+                                      )}
                                     </div>
                                   ) : null}
                                 </div>

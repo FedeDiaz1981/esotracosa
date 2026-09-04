@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { getActiveSiteBanners, getDynamicHeaderMenus } from "@/application/catalog";
+import { getActivePaymentMethods, getActiveSiteBanners, getDynamicHeaderMenus } from "@/application/catalog";
 import { ViewerProvider } from "@/components/auth/viewer-provider";
 import { CartProvider } from "@/components/cart/cart-context";
 import { CartPanel } from "@/components/cart/cart-panel";
@@ -35,6 +35,7 @@ export default async function RootLayout({
   await connection();
   const banners = await getActiveSiteBanners();
   const menus = await getDynamicHeaderMenus();
+  const paymentMethods = await getActivePaymentMethods();
   const viewer = await getCurrentViewer();
 
   return (
@@ -55,7 +56,7 @@ export default async function RootLayout({
                 <div id="pf-header-focus-sentinel" aria-hidden className="h-px w-px" />
                 {children}
               </main>
-              <SiteFooter />
+              <SiteFooter paymentMethods={paymentMethods} />
               <CartPanel />
               <FloatingCartButton />
               <FloatingWhatsAppButton />

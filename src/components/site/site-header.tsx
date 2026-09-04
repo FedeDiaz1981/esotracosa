@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Search, UserRound } from "lucide-react";
+import { Search, UserRound, X } from "lucide-react";
 import { useCallback, useRef, useState, type FormEvent } from "react";
 
 import type { DynamicHeaderMenu } from "@/application/catalog";
@@ -140,9 +140,23 @@ export function SiteHeader({ menus }: SiteHeaderProps) {
                         <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-[var(--pf-muted)]">{menu.label}</p>
                         <p className="text-sm text-[var(--pf-muted)]">Agrupado por letras</p>
                       </div>
-                      <Link href="/galeria" className="btn btn-ghost btn-sm rounded-full border border-[var(--pf-border)] normal-case">
-                        Ver todo
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href="/galeria"
+                          onClick={closeAllMenus}
+                          className="btn btn-ghost btn-sm rounded-full border border-[var(--pf-border)] normal-case"
+                        >
+                          Ver todo
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={closeAllMenus}
+                          className={`${buttonVariants({ variant: "secondary", size: "icon" })} h-9 w-9 rounded-full`}
+                          aria-label={`Cerrar ${menu.label}`}
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="mt-4 grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">

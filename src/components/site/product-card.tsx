@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import type { KeyboardEvent } from "react";
 import type { ProductItem } from "@/domain/site-content";
 import { formatCurrency } from "@/lib/catalog";
-import { isNewArrival, publicAsset } from "@/lib/catalog";
+import { isNewArrival, isVideoAsset, publicAsset } from "@/lib/catalog";
 import { appendReturnTo } from "@/lib/navigation";
 import { resolveProductUnitPrice } from "@/lib/pricing";
 
@@ -126,13 +126,17 @@ export function ProductCard({
 
         <div className="absolute inset-0 p-4">
           <div className="relative h-full w-full overflow-hidden rounded-[1.15rem] bg-[rgba(255,255,255,0.98)] shadow-[0_18px_36px_rgba(29,24,20,0.10)]">
-            <Image
-              src={publicAsset(product.image)}
-              alt={product.name}
-              fill
-              className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
-              sizes="(max-width: 768px) 82vw, 19rem"
-            />
+            {isVideoAsset(product.image) ? (
+              <video src={publicAsset(product.image)} muted playsInline className="h-full w-full object-contain p-4" />
+            ) : (
+              <Image
+                src={publicAsset(product.image)}
+                alt={product.name}
+                fill
+                className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
+                sizes="(max-width: 768px) 82vw, 19rem"
+              />
+            )}
           </div>
         </div>
       </div>

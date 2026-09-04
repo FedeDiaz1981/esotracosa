@@ -7,6 +7,7 @@ import type {
   BannerItem,
   HomePageViewModel,
   PackItem,
+  PaymentMethodItem,
   ProductLotItem,
   ProductItem,
 } from "@/domain/site-content";
@@ -397,6 +398,11 @@ export async function getHomePageViewModel(viewer?: CatalogViewer): Promise<Home
       { label: "destacados", value: String(featuredProducts.length) },
     ],
   };
+}
+
+export async function getActivePaymentMethods(): Promise<PaymentMethodItem[]> {
+  const content = await getSiteContent();
+  return (content.paymentMethods ?? []).filter((method) => method.active !== false);
 }
 
 export async function getProductBySku(sku: string, viewer?: CatalogViewer): Promise<ProductItem | null> {
