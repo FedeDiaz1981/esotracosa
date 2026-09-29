@@ -76,7 +76,7 @@ export async function getSiteContent(): Promise<SiteContentDocument> {
     );
     const productRows = await readRows<ProductRow>(
       client,
-      "select id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, measures, installment_count, interest_free_installments, image, images, fabric_ids, related_product_ids, only_members, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by id",
+      "select id, sort_order, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, cash_price, offer_price, offer_mode, offer_weekdays, offer_start_date, offer_end_date, measures, installment_count, interest_free_installments, image, images, fabric_ids, related_product_ids, only_members, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, template_row_map, created_at, updated_at from products where deleted_at is null order by sort_order, id",
     );
     const productLotRows = await readRows<ProductLotRow>(
       client,

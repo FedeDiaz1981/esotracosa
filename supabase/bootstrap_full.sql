@@ -118,6 +118,7 @@ create index if not exists users_active_idx on public.users (active);
 
 create table if not exists public.products (
   id integer primary key,
+  sort_order integer not null default 0,
   sku text not null,
   name text not null,
   detail text not null,
@@ -132,6 +133,12 @@ create table if not exists public.products (
   testeado_en_animales boolean,
   public_price integer not null,
   member_price integer not null,
+  cash_price integer not null default 0,
+  offer_price integer,
+  offer_mode text not null default 'off',
+  offer_weekdays jsonb not null default '[]'::jsonb,
+  offer_start_date date,
+  offer_end_date date,
   image text,
   images jsonb not null default '[]'::jsonb,
   fabric_ids jsonb not null default '[]'::jsonb,
@@ -151,7 +158,9 @@ create table if not exists public.products (
   updated_at timestamptz not null default now()
 );
 
+alter table public.products add column if not exists sort_order integer not null default 0;
 create unique index if not exists products_sku_key on public.products (sku);
+create index if not exists products_sort_order_idx on public.products (sort_order, id);
 create index if not exists products_status_idx on public.products (status);
 create index if not exists products_featured_priority_idx on public.products (featured_priority);
 create index if not exists products_featured_idx on public.products (featured);
@@ -391,6 +400,23 @@ insert into public.products (id, sku, name, detail, presentation, category_id, c
 insert into public.products (id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, deleted_at, created_at, updated_at) values (18, 'PF018', 'Jabon Liquido Citrus 500ml', 'Jabon Liquido Citrus 500ml', '', 4, 'Hogar y cuidado', '[4]'::jsonb, '["Hogar y cuidado"]'::jsonb, 'Pureza', false, false, null, 2760, 2480, 'Content/Images/articulos/pf018.jpg', 'published', true, null, null, 30, 0, 0, 'Jabon liquido con aroma citrus y presencia de farmacia natural.', null, null, now(), now()) on conflict (id) do nothing;
 insert into public.products (id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, deleted_at, created_at, updated_at) values (19, 'PF019', 'Crema de Manos Aloe 100ml', 'Crema de Manos Aloe 100ml', '', 4, 'Hogar y cuidado', '[4]'::jsonb, '["Hogar y cuidado"]'::jsonb, 'Nube', false, false, null, 2150, 1930, 'Content/Images/articulos/pf019.jpg', 'published', false, null, null, 41, 0, 0, 'Crema suave para una ficha de cuidado mas delicada y fresca.', null, null, now(), now()) on conflict (id) do nothing;
 insert into public.products (id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand, vegano, kosher, testeado_en_animales, public_price, member_price, image, status, featured, featured_priority, trending, stock, views_count, sales_count, description, source_section, deleted_at, created_at, updated_at) values (20, 'PF020', 'Detergente Eco 900ml', 'Detergente Eco 900ml', '', 4, 'Hogar y cuidado', '[4]'::jsonb, '["Hogar y cuidado"]'::jsonb, 'Linea', false, false, null, 3270, 2940, 'Content/Images/articulos/pf020.jpg', 'published', false, null, null, 18, 0, 0, 'Detergente eco para reforzar la familia de hogar con una pieza util.', null, null, now(), now()) on conflict (id) do nothing;
+
+alter table public.products add column if not exists offer_price integer;
+alter table public.products add column if not exists offer_mode text not null default 'off';
+alter table public.products add column if not exists offer_weekdays jsonb not null default '[]'::jsonb;
+alter table public.products add column if not exists offer_start_date date;
+alter table public.products add column if not exists offer_end_date date;
+
+update public.products set cash_price = member_price where cash_price = 0;
+
+with ranked as (
+  select id, row_number() over (order by id)::integer as position
+  from public.products
+)
+update public.products
+set sort_order = ranked.position
+from ranked
+where products.id = ranked.id and products.sort_order = 0;
 
 insert into public.promotion_packs (id, apodo, title, description, category, public_price, image, active, featured, order_index, created_at, updated_at) values (1, 'desayuno-activo', 'Desayuno Activo', 'Una selección equilibrada para arrancar la mañana con opciones prácticas y saludables.', 'Alimentos saludables', 6990, 'Content/Images/articulos/pf002.jpg', true, true, 1, now(), now()) on conflict (id) do nothing;
 insert into public.promotion_packs (id, apodo, title, description, category, public_price, image, active, featured, order_index, created_at, updated_at) values (2, 'congelados-listos', 'Congelados Listos', 'Un combo pensado para resolver almuerzos rápidos sin perder variedad ni sabor.', 'Congelados', 10990, 'Content/Images/articulos/pf006.jpg', true, false, 2, now(), now()) on conflict (id) do nothing;

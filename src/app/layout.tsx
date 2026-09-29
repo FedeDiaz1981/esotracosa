@@ -7,10 +7,12 @@ import { CartPanel } from "@/components/cart/cart-panel";
 import { FloatingCartButton } from "@/components/cart/floating-cart-button";
 import { FloatingWhatsAppButton } from "@/components/site/floating-whatsapp-button";
 import { MobileSiteChrome } from "@/components/site/mobile-site-chrome";
+import { MetaPixel } from "@/components/site/meta-pixel";
 import { SiteBannerStrip } from "@/components/site/site-banner-strip";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { getCurrentViewer } from "@/infrastructure/auth/pintofruta-auth";
+import { getMetaPixelId } from "@/infrastructure/meta-pixel-config";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -37,10 +39,12 @@ export default async function RootLayout({
   const menus = await getDynamicHeaderMenus();
   const paymentMethods = await getActivePaymentMethods();
   const viewer = await getCurrentViewer();
+  const metaPixelId = await getMetaPixelId();
 
   return (
     <html lang="es" data-theme="caramellatte" className="h-full antialiased">
       <body className="min-h-screen overflow-x-hidden text-base-content">
+        <MetaPixel pixelId={metaPixelId} />
         <ViewerProvider initialViewer={viewer}>
           <CartProvider>
             <div className="relative flex h-dvh flex-col overflow-hidden lg:h-auto lg:min-h-screen lg:overflow-visible">

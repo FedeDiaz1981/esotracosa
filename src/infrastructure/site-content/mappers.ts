@@ -189,6 +189,16 @@ function toProductMeasures(value: unknown) {
       height: Number.isFinite(Number(candidate.height)) ? Number(candidate.height) : undefined,
       unit: String(candidate.unit ?? "cm").trim() || "cm",
       publicPrice,
+      cashPrice: Number(candidate.cashPrice ?? candidate.cash_price) > 0 ? Number(candidate.cashPrice ?? candidate.cash_price) : undefined,
+      offerPrice: Number(candidate.offerPrice ?? candidate.offer_price) > 0 ? Number(candidate.offerPrice ?? candidate.offer_price) : undefined,
+      offerMode: ["off", "manual", "weekly", "period"].includes(String(candidate.offerMode ?? candidate.offer_mode))
+        ? (String(candidate.offerMode ?? candidate.offer_mode) as ProductItem["offerMode"])
+        : "off",
+      offerWeekdays: toNumberArray(candidate.offerWeekdays ?? candidate.offer_weekdays),
+      offerStartDate: candidate.offerStartDate ?? candidate.offer_start_date ? String(candidate.offerStartDate ?? candidate.offer_start_date).slice(0, 10) : undefined,
+      offerEndDate: candidate.offerEndDate ?? candidate.offer_end_date ? String(candidate.offerEndDate ?? candidate.offer_end_date).slice(0, 10) : undefined,
+      openingSystemImage: String(candidate.openingSystemImage ?? "").trim() || undefined,
+      showOpeningSystem: candidate.showOpeningSystem !== false,
     }];
   });
 }
@@ -298,6 +308,7 @@ export function mapSiteContentDocument(params: {
 
     const mapped: ProductItem = {
       id: product.id,
+      sortOrder: Number(product.sort_order ?? product.id),
       sku: product.sku,
       name: product.name,
       detail: product.detail,
@@ -312,6 +323,14 @@ export function mapSiteContentDocument(params: {
       testeadoEnAnimales: product.testeado_en_animales ?? undefined,
       publicPrice: product.public_price,
       memberPrice: product.member_price,
+      cashPrice: Number(product.cash_price ?? product.member_price),
+      offerPrice: Number(product.offer_price) > 0 ? Number(product.offer_price) : undefined,
+      offerMode: ["off", "manual", "weekly", "period"].includes(String(product.offer_mode))
+        ? (String(product.offer_mode) as ProductItem["offerMode"])
+        : "off",
+      offerWeekdays: toNumberArray(product.offer_weekdays),
+      offerStartDate: product.offer_start_date ? String(product.offer_start_date).slice(0, 10) : undefined,
+      offerEndDate: product.offer_end_date ? String(product.offer_end_date).slice(0, 10) : undefined,
       installmentCount: Number(product.installment_count) > 0 ? Number(product.installment_count) : undefined,
       interestFreeInstallments: toNumberArray(product.interest_free_installments),
       measures: toProductMeasures(product.measures),

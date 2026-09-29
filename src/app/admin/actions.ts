@@ -176,6 +176,14 @@ type ProductMeasureDraft = {
   height?: number;
   unit: string;
   publicPrice: number;
+  cashPrice: number;
+  offerPrice: number | null;
+  offerMode: "off" | "manual" | "weekly" | "period";
+  offerWeekdays: number[];
+  offerStartDate: string | null;
+  offerEndDate: string | null;
+  openingSystemImage?: string;
+  showOpeningSystem: boolean;
 };
 
 function getJsonPayload(formData: FormData): PayloadRecord {
@@ -577,6 +585,14 @@ function parseProductMeasures(value: unknown): ProductMeasureDraft[] {
         height: candidate.height === "" || candidate.height == null ? undefined : toNumber(candidate.height),
         unit: toStringValue(candidate.unit) || "cm",
         publicPrice,
+        cashPrice: candidate.cashPrice == null || candidate.cashPrice === "" ? publicPrice : toNumber(candidate.cashPrice),
+        offerPrice: candidate.offerPrice == null || candidate.offerPrice === "" ? null : toNumber(candidate.offerPrice),
+        offerMode: (["off", "manual", "weekly", "period"].includes(toStringValue(candidate.offerMode)) ? toStringValue(candidate.offerMode) : "off") as ProductMeasureDraft["offerMode"],
+        offerWeekdays: parseNumberArray(candidate.offerWeekdays).filter((weekday, itemIndex, values) => weekday >= 0 && weekday <= 6 && values.indexOf(weekday) === itemIndex),
+        offerStartDate: toStringValue(candidate.offerStartDate) || null,
+        offerEndDate: toStringValue(candidate.offerEndDate) || null,
+        openingSystemImage: toStringValue(candidate.openingSystemImage) || undefined,
+        showOpeningSystem: toBoolean(candidate.showOpeningSystem),
       }];
     });
   } catch {
@@ -920,7 +936,8 @@ async function saveProductLotReservation(record: PayloadRecord) {
 async function saveProduct(record: PayloadRecord) {
   const providedId = record.id == null || record.id === "" ? 0 : toNumber(record.id);
   const existingResult = providedId
-    ? await postgresPool!.query<{
+      ? await postgresPool!.query<{
+        sort_order: number;
         sku: string;
         presentation: string;
         category_id: number;
@@ -930,6 +947,12 @@ async function saveProduct(record: PayloadRecord) {
         brand: string;
         public_price: number;
         member_price: number;
+        cash_price: number;
+        offer_price: number | null;
+        offer_mode: string | null;
+        offer_weekdays: unknown;
+        offer_start_date: string | null;
+        offer_end_date: string | null;
         status: string;
         image: string | null;
         images: unknown;
@@ -948,8 +971,8 @@ async function saveProduct(record: PayloadRecord) {
         installment_count: number | null;
         interest_free_installments: unknown;
       }>(
-        `select sku, presentation, category_id, category_name, category_ids, category_names, brand, status, image, images, fabric_ids, related_product_ids, only_members,
-                public_price, member_price, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map, measures, installment_count, interest_free_installments
+        `select sort_order, sku, presentation, category_id, category_name, category_ids, category_names, brand, status, image, images, fabric_ids, related_product_ids, only_members,
+                public_price, member_price, cash_price, offer_price, offer_mode, offer_weekdays, offer_start_date, offer_end_date, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map, measures, installment_count, interest_free_installments
          from products
          where id = $1
          limit 1`,
@@ -971,6 +994,7 @@ async function saveProduct(record: PayloadRecord) {
       )
     : null;
   const id = providedId || (await nextNumericId("products"));
+  const requestedSortOrder = toNumber(record.sortOrder);
 
   const selectedCategoryIds = parseNumberArray(record.categoryIds);
   const existingCategoryIds = parseNumberArray(existing?.category_ids);
@@ -1004,10 +1028,24 @@ async function saveProduct(record: PayloadRecord) {
   const status = active ? "published" : "inactive";
   const brand = toStringValue(record.brand) || existing?.brand || "";
   const measures = parseProductMeasures(record.measures);
-  const price = toNumber(record.price) || existing?.public_price || measures[0]?.publicPrice || 0;
-  if (price <= 0) {
-    throw new Error("El producto necesita un precio válido.");
+  if (measures.length === 0) {
+    throw new Error("El producto necesita al menos una medida con precios.");
   }
+  for (const measure of measures) {
+    if (measure.cashPrice <= 0) throw new Error(`Cargá un precio en efectivo válido para ${measure.label}.`);
+    if (measure.offerMode !== "off") {
+      if (!measure.offerPrice || measure.offerPrice <= 0 || measure.offerPrice >= measure.publicPrice) throw new Error(`El precio de oferta de ${measure.label} debe ser menor al precio de lista.`);
+      if (measure.offerMode === "weekly" && measure.offerWeekdays.length === 0) throw new Error(`Seleccioná días de oferta para ${measure.label}.`);
+      if (measure.offerMode === "period" && (!/^\d{4}-\d{2}-\d{2}$/.test(measure.offerStartDate ?? "") || !/^\d{4}-\d{2}-\d{2}$/.test(measure.offerEndDate ?? "") || String(measure.offerEndDate) < String(measure.offerStartDate))) throw new Error(`Revisá el período de oferta de ${measure.label}.`);
+    }
+  }
+  const price = measures[0].publicPrice;
+  const cashPrice = measures[0].cashPrice;
+  const offerPrice = measures[0].offerPrice;
+  const offerMode = measures[0].offerMode;
+  const offerWeekdays = measures[0].offerWeekdays;
+  const offerStartDate = measures[0].offerStartDate;
+  const offerEndDate = measures[0].offerEndDate;
   const images = parseStringArray(record.images);
   const image = images[0] || toStringValue(record.image) || existing?.image || null;
   const finalImages = images.length > 0 ? images : image ? [image] : [];
@@ -1068,17 +1106,46 @@ async function saveProduct(record: PayloadRecord) {
     await client.query("begin");
 
     try {
+      const countResult = await client.query<{ count: number }>(
+        "select count(*)::integer as count from products where deleted_at is null",
+      );
+      const productCount = countResult.rows[0]?.count ?? 0;
+      const maximumPosition = Math.max(1, existing ? productCount : productCount + 1);
+      const previousPosition = existing?.sort_order ?? 0;
+      const desiredPosition = Math.min(
+        maximumPosition,
+        Math.max(1, requestedSortOrder || previousPosition || maximumPosition),
+      );
+
+      if (!existing) {
+        await client.query(
+          "update products set sort_order = sort_order + 1 where deleted_at is null and sort_order >= $1",
+          [desiredPosition],
+        );
+      } else if (desiredPosition < previousPosition) {
+        await client.query(
+          "update products set sort_order = sort_order + 1 where deleted_at is null and id <> $1 and sort_order >= $2 and sort_order < $3",
+          [id, desiredPosition, previousPosition],
+        );
+      } else if (desiredPosition > previousPosition) {
+        await client.query(
+          "update products set sort_order = sort_order - 1 where deleted_at is null and id <> $1 and sort_order > $2 and sort_order <= $3",
+          [id, previousPosition, desiredPosition],
+        );
+      }
+
       await client.query(
         `
           insert into products (
-            id, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand,
-            vegano, kosher, testeado_en_animales, public_price, member_price, measures, installment_count, interest_free_installments, image, images, fabric_ids, related_product_ids, only_members,
+            id, sort_order, sku, name, detail, presentation, category_id, category_name, category_ids, category_names, brand,
+            vegano, kosher, testeado_en_animales, public_price, member_price, cash_price, offer_price, offer_mode, offer_weekdays, offer_start_date, offer_end_date, measures, installment_count, interest_free_installments, image, images, fabric_ids, related_product_ids, only_members,
             status, featured, featured_priority, stock, views_count, sales_count, description, source_section, template_row_map
           ) values (
-            $1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9::jsonb,$10,$11,$12,$13,$14,$15,$16::jsonb,$17,$18::jsonb,$19,$20::jsonb,$21::jsonb,$22::jsonb,$23,
-            $24,$25,$26,$27,$28,$29,$30,$31,$32::jsonb
+            $1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20::jsonb,$21::date,$22::date,$23::jsonb,$24,$25::jsonb,$26,$27::jsonb,$28::jsonb,$29::jsonb,$30,
+            $31,$32,$33,$34,$35,$36,$37,$38,$39::jsonb
           )
           on conflict (id) do update set
+            sort_order = excluded.sort_order,
             sku = excluded.sku,
             name = excluded.name,
             detail = excluded.detail,
@@ -1093,6 +1160,12 @@ async function saveProduct(record: PayloadRecord) {
             testeado_en_animales = excluded.testeado_en_animales,
             public_price = excluded.public_price,
             member_price = excluded.member_price,
+            cash_price = excluded.cash_price,
+            offer_price = excluded.offer_price,
+            offer_mode = excluded.offer_mode,
+            offer_weekdays = excluded.offer_weekdays,
+            offer_start_date = excluded.offer_start_date,
+            offer_end_date = excluded.offer_end_date,
             measures = excluded.measures,
             installment_count = excluded.installment_count,
             interest_free_installments = excluded.interest_free_installments,
@@ -1114,6 +1187,7 @@ async function saveProduct(record: PayloadRecord) {
         `,
         [
           id,
+          desiredPosition,
           sku,
           name,
           detail,
@@ -1128,6 +1202,12 @@ async function saveProduct(record: PayloadRecord) {
           record.testeadoEnAnimales == null ? null : toBoolean(record.testeadoEnAnimales),
           price,
           price,
+          cashPrice,
+          offerPrice,
+          offerMode,
+          JSON.stringify(offerWeekdays),
+          offerStartDate,
+          offerEndDate,
           JSON.stringify(measures),
           installmentCount,
           JSON.stringify(interestFreeInstallments),
@@ -1354,6 +1434,17 @@ async function deleteRow(table: AdminTableKey, id: string) {
   switch (table) {
     case "products":
       await postgresPool!.query("delete from products where id = $1", [toNumber(id)]);
+      await postgresPool!.query(`
+        with ranked as (
+          select id, row_number() over (order by sort_order, id)::integer as position
+          from products
+          where deleted_at is null
+        )
+        update products
+        set sort_order = ranked.position
+        from ranked
+        where products.id = ranked.id
+      `);
       return;
     case "product_related_products":
       await postgresPool!.query("delete from product_related_products where product_id = $1", [toNumber(id)]);
@@ -1497,6 +1588,48 @@ export async function deleteAdminRecords(formData: FormData) {
 
   for (const id of ids) {
     await deleteRow(table, id);
+  }
+
+  refreshAdminViews();
+}
+
+export async function reorderAdminProducts(formData: FormData) {
+  await requireAdminViewer();
+  await ensureDatabase();
+
+  const requestedIds = getIdsPayload(formData)
+    .map((id) => toNumber(id))
+    .filter((id) => id > 0);
+  const uniqueRequestedIds = [...new Set(requestedIds)];
+
+  if (uniqueRequestedIds.length === 0) {
+    throw new Error("Falta el orden de los productos.");
+  }
+
+  const client = await postgresPool!.connect();
+
+  try {
+    await client.query("begin");
+    const existingResult = await client.query<{ id: number }>(
+      "select id from products where deleted_at is null order by sort_order, id for update",
+    );
+    const existingIds = existingResult.rows.map((row) => row.id);
+    const existingIdSet = new Set(existingIds);
+    const orderedIds = uniqueRequestedIds.filter((id) => existingIdSet.has(id));
+    const requestedIdSet = new Set(orderedIds);
+
+    orderedIds.push(...existingIds.filter((id) => !requestedIdSet.has(id)));
+
+    for (const [index, id] of orderedIds.entries()) {
+      await client.query("update products set sort_order = $2 where id = $1", [id, index + 1]);
+    }
+
+    await client.query("commit");
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally {
+    client.release();
   }
 
   refreshAdminViews();

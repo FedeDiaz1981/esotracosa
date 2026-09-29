@@ -113,6 +113,7 @@ export type SeedUser = {
 
 export type SeedProduct = {
   id: number;
+  sort_order?: number | null;
   sku: string;
   name: string;
   detail: string;
@@ -127,6 +128,12 @@ export type SeedProduct = {
   testeado_en_animales: boolean | null;
   public_price: number;
   member_price: number;
+  cash_price?: number | null;
+  offer_price?: number | null;
+  offer_mode?: string | null;
+  offer_weekdays?: unknown;
+  offer_start_date?: string | null;
+  offer_end_date?: string | null;
   installment_count?: number | null;
   interest_free_installments?: unknown;
   measures?: unknown;

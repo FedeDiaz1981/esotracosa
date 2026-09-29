@@ -131,6 +131,7 @@ export const siteContentSchemaSql = `
 
   create table if not exists products (
     id integer primary key,
+    sort_order integer not null default 0,
     sku text not null unique,
     name text not null,
     detail text not null,
@@ -145,6 +146,12 @@ export const siteContentSchemaSql = `
     testeado_en_animales boolean,
     public_price integer not null,
     member_price integer not null,
+    cash_price integer not null default 0,
+    offer_price integer,
+    offer_mode text not null default 'off',
+    offer_weekdays jsonb not null default '[]'::jsonb,
+    offer_start_date date,
+    offer_end_date date,
     measures jsonb not null default '[]'::jsonb,
     installment_count integer not null default 0,
     interest_free_installments jsonb not null default '[]'::jsonb,
@@ -169,6 +176,16 @@ export const siteContentSchemaSql = `
   );
 
   alter table products add column if not exists created_at timestamptz not null default now();
+  alter table products add column if not exists sort_order integer not null default 0;
+  with ranked as (
+    select id, row_number() over (order by id)::integer as position
+    from products
+  )
+  update products
+  set sort_order = ranked.position
+  from ranked
+  where products.id = ranked.id and products.sort_order = 0;
+  create index if not exists products_sort_order_idx on products (sort_order, id);
   alter table products add column if not exists updated_at timestamptz not null default now();
   alter table products add column if not exists featured_priority integer;
   alter table products add column if not exists views_count integer not null default 0;
@@ -181,6 +198,13 @@ export const siteContentSchemaSql = `
   alter table products add column if not exists measures jsonb not null default '[]'::jsonb;
   alter table products add column if not exists installment_count integer not null default 0;
   alter table products add column if not exists interest_free_installments jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists cash_price integer not null default 0;
+  alter table products add column if not exists offer_price integer;
+  alter table products add column if not exists offer_mode text not null default 'off';
+  alter table products add column if not exists offer_weekdays jsonb not null default '[]'::jsonb;
+  alter table products add column if not exists offer_start_date date;
+  alter table products add column if not exists offer_end_date date;
+  update products set cash_price = member_price where cash_price = 0;
 
   create table if not exists product_related_products (
     product_id integer not null references products(id) on delete cascade,

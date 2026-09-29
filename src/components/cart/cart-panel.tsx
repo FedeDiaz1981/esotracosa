@@ -5,6 +5,7 @@ import { Minus, Plus, X } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { useCart, resolveCartLineUnitPrice } from "@/components/cart/cart-context";
+import { MercadoPagoCheckoutModal } from "@/components/cart/mercado-pago-checkout-modal";
 import { useViewer } from "@/components/auth/viewer-provider";
 import { formatCurrency, publicAsset } from "@/lib/catalog";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export function CartPanel({
   const [isConfirming, setIsConfirming] = useState(false);
   const [cancelingLotSku, setCancelingLotSku] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   const cancelLotReservation = useCallback(
     async (sku: string, reservationId?: number) => {
@@ -161,19 +163,25 @@ export function CartPanel({
         }
       }
 
-      await downloadPedidoPdf();
-      clearCart();
-      closeCart();
-      setSuccessMessage(pendingLotItems.length > 0 ? "La reserva se realizó exitosamente." : "El pedido se realizó exitosamente.");
+      setPaymentModalOpen(true);
     } catch (error) {
       console.error(error);
       window.alert(error instanceof Error ? error.message : "No pudimos confirmar el pedido.");
     } finally {
       setIsConfirming(false);
     }
-  }, [clearCart, closeCart, downloadPedidoPdf, hydrated, isConfirming, items, viewer?.authenticated]);
+  }, [hydrated, isConfirming, items, viewer?.authenticated]);
 
   const hasLotItems = items.some((item) => item.kind === "lot");
+
+  const paymentModal = paymentModalOpen ? (
+    <MercadoPagoCheckoutModal
+      items={items}
+      total={totalPrice}
+      totalItems={totalItems}
+      onClose={() => setPaymentModalOpen(false)}
+    />
+  ) : null;
 
   const successModal = successMessage ? (
     <div className="fixed inset-0 z-[13000] flex items-center justify-center bg-[rgba(35,28,20,0.42)] px-4 py-6 backdrop-blur-[2px]">
@@ -424,7 +432,7 @@ export function CartPanel({
             onClick={handleConfirmPedido}
             disabled={items.length === 0 || isConfirming}
           >
-            {isConfirming ? "Confirmando..." : hasLotItems ? "Confirmar reserva" : "Confirmar pedido"}
+            {isConfirming ? "Preparando..." : hasLotItems ? "Reservar y pagar" : "Continuar al pago"}
           </Button>
         </div>
       </div>
@@ -453,6 +461,7 @@ export function CartPanel({
           </div>
         </main>
         {successModal}
+        {paymentModal}
       </>
     );
   }
@@ -494,6 +503,7 @@ export function CartPanel({
         </div>
       </div>
       {successModal}
+      {paymentModal}
     </>
   );
 }
